@@ -1,5 +1,6 @@
 #include "GameMode.h"
 #include "EngineLoop.h"
+#include "Monster.h"
 #include "SoundManager.h"
 #include "InputCore/InputCoreTypes.h"
 #include "Camera/CameraComponent.h"
@@ -52,9 +53,8 @@ void AGameMode::RegisterLuaType(sol::state& Lua)
     Super::RegisterLuaType(Lua);
 
     DEFINE_LUA_TYPE_NO_PARENT(AGameMode,
-        // 예) FVector 위치를 인자로 받아 몬스터를 스폰하는 함수
-        "SpawnMonster", &ThisClass::SpawnMonster
-        )
+		"SpawnMonster", &ThisClass::SpawnMonster
+    )
 }
 
 bool AGameMode::BindSelfLuaProperties()
@@ -71,7 +71,7 @@ bool AGameMode::BindSelfLuaProperties()
     }
 
     LuaTable["this"] = this;
-    LuaTable[""] = "";
+    LuaTable["Name"] = *GetName();
 
     return true;
 }
@@ -135,7 +135,7 @@ void AGameMode::Tick(float DeltaTime)
     }
 }
 
-void AGameMode::SpawnMonster(const FString& MonsterName, const FVector& Location, const FRotator& Rotation)
+void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
 {
     /*if (!bGameRunning || bGameEnded)
     {
@@ -144,21 +144,20 @@ void AGameMode::SpawnMonster(const FString& MonsterName, const FVector& Location
     }*/
     // 몬스터 스폰 로직 구현
     // 예시: 몬스터를 SpawnActor로 생성하고 위치와 회전을 설정
-    AActor* SpawnedMonster = GetWorld()->SpawnActor<AActor>();
+    AMonster* SpawnedMonster = GetWorld()->SpawnActor<AMonster>();
     if (SpawnedMonster)
     {
         SpawnedMonster->SetActorLocation(Location);
         SpawnedMonster->SetActorRotation(Rotation);
-        SpawnedMonster->SetActorLabel(MonsterName); 
     }
 
     if (SpawnedMonster)
     {
-        UE_LOG(ELogLevel::Display, TEXT("Spawned monster: %s at %s"), *MonsterName, *Location.ToString());
+        UE_LOG(ELogLevel::Display, TEXT("Spawned monster at %s"), *Location.ToString());
     }
     else
     {
-        UE_LOG(ELogLevel::Error, TEXT("Failed to spawn monster: %s"), *MonsterName);
+        UE_LOG(ELogLevel::Error, TEXT("Failed to spawn monster"));
     }
 }
 

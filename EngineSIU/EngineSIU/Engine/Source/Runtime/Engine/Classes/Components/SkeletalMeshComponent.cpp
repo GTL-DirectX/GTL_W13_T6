@@ -430,6 +430,11 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
     // 소켓 맵에 없으면 본 이름으로 직접 찾기 (기존 동작)
     FTransform Transform = FTransform::Identity;
 
+    if (!GetSkeletalMeshAsset())
+    {
+        return Transform; 
+    }
+
     if (USkeleton* Skeleton = GetSkeletalMeshAsset()->GetSkeleton())
     {
         int32 BoneIndex = Skeleton->FindBoneIndex(SocketName);

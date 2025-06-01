@@ -43,7 +43,7 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
-    void SpawnMonster(const FString& MonsterName, const FVector& Location, const FRotator& Rotation);
+    void SpawnMonster(const FVector& Location, const FRotator& Rotation);
 
 
     FOnGameInit OnGameInit;
