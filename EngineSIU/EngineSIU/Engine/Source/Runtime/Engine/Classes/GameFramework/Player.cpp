@@ -2,11 +2,15 @@
 
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/ProjectileMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "World/World.h"
 
 #include "Engine/Contents/Weapons/Weapon.h"
 #include "Engine/Contents/Weapons/WeaponComponent.h"
+#include "Lua/LuaScriptComponent.h"
+#include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "sol/sol.hpp"
 
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
@@ -14,7 +18,7 @@ UObject* APlayer::Duplicate(UObject* InOuter)
 
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
+    // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     
     return NewActor;
 }
@@ -22,14 +26,26 @@ UObject* APlayer::Duplicate(UObject* InOuter)
 void APlayer::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
+    LuaScriptComponent->SetScriptName(ScriptName);
 
-    CameraComponent = AddComponent<UCameraComponent>();
+    CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
+    CameraComponent->SetRelativeLocation(FVector(2,0,0));
     CameraComponent->SetupAttachment(RootComponent);
+
+    USkeletalMesh* SkeletalMeshAsset = UAssetManager::Get().GetSkeletalMesh("Contents/Human/Human");
+    SkeletalMeshComponent->SetSkeletalMeshAsset(SkeletalMeshAsset);
+    
+    SetActorLocation(FVector(10, 10, 0) * PlayerIndex);
+    SetActorScale(FVector(0.05));
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    MoveSpeed = Velocity.Length();
+    SetActorLocation(GetActorLocation() + Velocity);
+    Velocity *= 0.8f;
 
     // if (SkeletalMeshComponent)
     // {
@@ -71,14 +87,24 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 
 void APlayer::MoveForward(float DeltaTime)
 {
-    FVector Delta = GetActorForwardVector() * MoveSpeed * DeltaTime;
-    SetActorLocation(GetActorLocation() + Delta);
+    Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+    
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity.Normalize() * MaxSpeed;
+    }
 }
 
 void APlayer::MoveRight(float DeltaTime)
 {
-    FVector Delta = GetActorRightVector() * MoveSpeed * DeltaTime;
-    SetActorLocation(GetActorLocation() + Delta);
+    Velocity += GetActorRightVector() * Acceleration * DeltaTime;
+    
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity.Normalize() * MaxSpeed;
+    }
 }
 
 void APlayer::MoveUp(float DeltaTime)
@@ -118,6 +144,39 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
     {
         GetWorld()->DisconnectedPlayer(TargetIndex);
     }
+}
+
+void APlayer::RegisterLuaType(sol::state& Lua)
+{
+    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
+        "Velocity", sol::property(&ThisClass::GetVelocity),
+        "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
+        "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
+        "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
+   )
+   // "Destroy", &ThisClass::Destroy
+}
+
+bool APlayer::BindSelfLuaProperties()
+{
+    if (!Super::BindSelfLuaProperties())
+    {
+        return false;
+    }
+
+    sol::table& LuaTable = LuaScriptComponent->GetLuaSelfTable();
+    if (!LuaTable.valid())
+    {
+        return false;
+    }
+
+    LuaTable["this"] = this;
+    // LuaTable["MoveSpeed"] = MoveSpeed;
+    // LuaTable["Acceleration"] = Acceleration;
+    // LuaTable["MaxSpeed"] = MaxSpeed;
+    // LuaTable["RotationSpeed"] = RotationSpeed;
+    
+    return true;
 }
 
 void APlayer::Attack()

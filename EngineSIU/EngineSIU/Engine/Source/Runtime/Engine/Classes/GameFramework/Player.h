@@ -2,6 +2,7 @@
 #include "Character.h"
 #include "UObject/ObjectMacros.h"
 
+class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
 
@@ -34,13 +35,28 @@ private:
 
     int PlayerIndex = -1;
     
-    float MoveSpeed = 100.0f; // 이동 속도
-    float RotationSpeed = 100.0f; // 회전 속도
-
+    FVector GetVelocity() const { return Velocity; }
+    float GetAcceleration() const { return Acceleration; }
+    void SetAcceleration(float NewAcceleration) { Acceleration = NewAcceleration; }
+    float GetMaxSpeed() const { return MaxSpeed; }
+    void SetMaxSpeed(float NewMaxSpeed) { MaxSpeed = NewMaxSpeed; }
+    float GetRotationSpeed() const { return RotationSpeed; }
+    void SetRotationSpeed(float NewRotationSpeed) { RotationSpeed = NewRotationSpeed; }
 public:
+    virtual void RegisterLuaType(sol::state& Lua) override;
+    virtual bool BindSelfLuaProperties() override;
+    
     void Attack();
     void EquipWeapon(UWeaponComponent* WeaponComponent);
 
+protected:
+    UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Player.lua")
+
 private:
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
+    
+    FVector Velocity = FVector(); // 이동 속도
+    float Acceleration = 10.0f;
+    float MaxSpeed = 100.0f;
+    float RotationSpeed = 100.0f; // 회전 속도
 };

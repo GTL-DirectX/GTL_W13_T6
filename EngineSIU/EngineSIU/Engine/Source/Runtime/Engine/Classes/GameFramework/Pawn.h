@@ -47,6 +47,8 @@ public:
 
     virtual void RegisterLuaType(sol::state& Lua) override;
 
+    float GetMoveSpeed() const { return MoveSpeed; }
+
 protected:
     UInputComponent* InputComponent;
     AController* Controller = nullptr;

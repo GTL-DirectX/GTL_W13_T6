@@ -8,6 +8,7 @@
 UObject* ACharacter::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
+    NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(NewActor)); 
 
     return NewActor;
 }
@@ -16,16 +17,18 @@ void ACharacter::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
 
-    RootComponent = AddComponent<USceneComponent>();
+    RootComponent = AddComponent<USceneComponent>("SceneComponent");
 
     if (!SkeletalMeshComponent)
     {
         SkeletalMeshComponent = AddComponent<USkeletalMeshComponent>("SkeletalMeshComponent");
+        SkeletalMeshComponent->SetupAttachment(RootComponent);
     }
 
     if (!CapsuleComponent)
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
+        CapsuleComponent->SetupAttachment(RootComponent);
     }
 
 }

@@ -138,5 +138,7 @@ void APawn::DisableInput(APlayerController* PlayerController)
 
 void APawn::RegisterLuaType(sol::state& Lua)
 {
-    DEFINE_LUA_TYPE_WITH_PARENT(APawn, sol::bases<AActor>())
+    DEFINE_LUA_TYPE_WITH_PARENT(APawn, sol::bases<AActor>(),
+        "MoveSpeed", sol::property(&ThisClass::GetMoveSpeed)
+    )
 }
