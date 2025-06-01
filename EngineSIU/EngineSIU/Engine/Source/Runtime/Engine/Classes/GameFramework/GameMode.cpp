@@ -5,10 +5,15 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/World/World.h"
+#include "Lua/LuaScriptComponent.h"
+#include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Lua/LuaScriptComponent.h"
 
 void AGameMode::PostSpawnInitialize()
 {
     AActor::PostSpawnInitialize();
+    LuaScriptComponent->SetScriptName(ScriptName);
+
 
     OnGameInit.AddLambda([]() { UE_LOG(ELogLevel::Display, TEXT("Game Initialized")); });
     
@@ -42,6 +47,35 @@ void AGameMode::PostSpawnInitialize()
     }
 }
 
+void AGameMode::RegisterLuaType(sol::state& Lua)
+{
+    Super::RegisterLuaType(Lua);
+
+    DEFINE_LUA_TYPE_NO_PARENT(AGameMode,
+        // 예) FVector 위치를 인자로 받아 몬스터를 스폰하는 함수
+        "SpawnMonster", &ThisClass::SpawnMonster
+        )
+}
+
+bool AGameMode::BindSelfLuaProperties()
+{
+    if (!Super::BindSelfLuaProperties())
+    {
+        return false;
+    }
+
+    sol::table& LuaTable = LuaScriptComponent->GetLuaSelfTable();
+    if (!LuaTable.valid())
+    {
+        return false;
+    }
+
+    LuaTable["this"] = this;
+    LuaTable[""] = "";
+
+    return true;
+}
+
 void AGameMode::InitializeComponent()
 {
 
@@ -72,8 +106,22 @@ void AGameMode::StartMatch()
     bGameEnded = false;
     GameInfo.ElapsedGameTime = 0.0f;
     GameInfo.TotalGameTime = 0.0f;
+
+    /*LuaScriptComponent->GetLuaSelfTable()["ElapsedTime"] = GameInfo.ElapsedGameTime;
+    LuaScriptComponent->ActivateFunction("StartMatch");*/
     
     OnGameStart.Broadcast();
+}
+
+void AGameMode::BeginPlay()
+{
+    Super::BeginPlay();
+    // 게임 모드가 시작되면 Lua 스크립트 컴포넌트 초기화
+    if (LuaScriptComponent)
+    {
+        LuaScriptComponent->InitializeComponent();
+        LuaScriptComponent->ActivateFunction("OnGameStart");
+    }
 }
 
 void AGameMode::Tick(float DeltaTime)
@@ -86,6 +134,34 @@ void AGameMode::Tick(float DeltaTime)
         GameInfo.ElapsedGameTime += DeltaTime / 2.0f;
     }
 }
+
+void AGameMode::SpawnMonster(const FString& MonsterName, const FVector& Location, const FRotator& Rotation)
+{
+    /*if (!bGameRunning || bGameEnded)
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("Cannot spawn monster when game is not running or has ended."));
+        return;
+    }*/
+    // 몬스터 스폰 로직 구현
+    // 예시: 몬스터를 SpawnActor로 생성하고 위치와 회전을 설정
+    AActor* SpawnedMonster = GetWorld()->SpawnActor<AActor>();
+    if (SpawnedMonster)
+    {
+        SpawnedMonster->SetActorLocation(Location);
+        SpawnedMonster->SetActorRotation(Rotation);
+        SpawnedMonster->SetActorLabel(MonsterName); 
+    }
+
+    if (SpawnedMonster)
+    {
+        UE_LOG(ELogLevel::Display, TEXT("Spawned monster: %s at %s"), *MonsterName, *Location.ToString());
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("Failed to spawn monster: %s"), *MonsterName);
+    }
+}
+
 
 void AGameMode::EndMatch(bool bIsWin)
 {
@@ -107,3 +183,4 @@ void AGameMode::Reset()
     bGameRunning = false;
     bGameEnded = true;
 }
+

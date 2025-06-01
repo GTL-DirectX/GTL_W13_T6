@@ -392,7 +392,7 @@ void AActor::InitLuaScriptComponent()
         LuaScriptComponent = GetComponentByClass<ULuaScriptComponent>();
         if (LuaScriptComponent == nullptr)
         {
-            LuaScriptComponent = AddComponent<ULuaScriptComponent>("LuaComponent");
+            LuaScriptComponent = AddComponent<ULuaScriptComponent>("LuaComponent_0");
         }
     }
 
