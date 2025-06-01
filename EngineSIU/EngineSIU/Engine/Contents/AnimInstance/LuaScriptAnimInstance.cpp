@@ -80,7 +80,10 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
     {
         return;
     }
-    
+    int32 BoneCount = RefSkeleton.RawRefBoneInfo.Num();
+    OutPose.Pose.Empty();
+    OutPose.Pose.InitBones(BoneCount);
+
     FPoseContext PrevPose(this);
     FPoseContext CurrPose(this);
     

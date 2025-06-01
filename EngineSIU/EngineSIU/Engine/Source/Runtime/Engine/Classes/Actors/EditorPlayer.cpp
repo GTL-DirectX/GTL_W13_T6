@@ -1,4 +1,4 @@
-#include "Player.h"
+#include "EditorPlayer.h"
 
 #include "UnrealClient.h"
 #include "World/World.h"
@@ -615,52 +615,4 @@ FVector AEditorPlayer::ControlBoneScale(FTransform& BoneTransform, UGizmoBaseCom
     }
     
     return BoneScale;
-}
-
-UObject* APlayer::Duplicate(UObject* InOuter)
-{
-    ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-
-    return NewActor;
-}
-
-void APlayer::Tick(float DeltaTime)
-{
-    AActor::Tick(DeltaTime);
-}
-
-ASequencerPlayer::ASequencerPlayer()
-{
-}
-
-void ASequencerPlayer::PostSpawnInitialize()
-{
-    APlayer::PostSpawnInitialize();
-    
-    RootComponent = AddComponent<USceneComponent>();
-
-    CameraComponent = AddComponent<UCameraComponent>();
-    CameraComponent->SetupAttachment(RootComponent);
-}
-
-void ASequencerPlayer::Tick(float DeltaTime)
-{
-    APlayer::Tick(DeltaTime);
-
-    if (SkeletalMeshComponent)
-    {
-        const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
-        SetActorRotation(SocketTransform.GetRotation().Rotator());
-        SetActorLocation(SocketTransform.GetTranslation());
-    }
-}
-
-UObject* ASequencerPlayer::Duplicate(UObject* InOuter)
-{
-    ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-
-    NewActor->Socket = Socket;
-    NewActor->SkeletalMeshComponent = nullptr;
-
-    return NewActor;
 }

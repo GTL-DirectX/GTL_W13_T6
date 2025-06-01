@@ -2,7 +2,7 @@
 
 #include "World/World.h"
 
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Actors/LightActor.h"
 #include "Actors/FireballActor.h"
 
@@ -41,6 +41,8 @@
 
 #include "Animation/SkeletalMeshActor.h"
 #include "Engine/Classes/Engine/AssetManager.h"
+#include "GameFramework/Player.h"
+#include "GameFramework/SequencerPlayer.h"
 #include "Particles/ParticleSystemComponent.h"
 
 
@@ -374,6 +376,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { .Label = "CapsuleCol",        .OBJ = OBJ_CAPSULE_COLLISION },
             { .Label = "SkeletalMeshActor", .OBJ = OBJ_SKELETALMESH },
             { .Label = "SequencerPlayer",   .OBJ = OBJ_SEQUENCERPLAYER },
+            { .Label = "Player",   .OBJ = OBJ_PLAYER },
         };
 
         for (const auto& primitive : primitives)
@@ -497,6 +500,10 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                 }
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:
+                {
+                    SpawnedActor = World->SpawnActor<APlayer>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYER"));
+                }
                 case OBJ_END:
                     break;
                 }

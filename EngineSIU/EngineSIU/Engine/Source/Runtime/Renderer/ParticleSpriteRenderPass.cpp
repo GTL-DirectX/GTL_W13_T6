@@ -1,4 +1,4 @@
-﻿#include "ParticleSpriteRenderPass.h"
+#include "ParticleSpriteRenderPass.h"
 
 #include "RendererHelpers.h"
 #include "UnrealClient.h"
@@ -127,29 +127,40 @@ void FParticleSpriteRenderPass::DrawParticles()
 {
     for (const auto PSC : ParticleComponents)
     {
-        FParticleDynamicData* Particle = PSC->GetParticleDynamicData();
-        if (Particle)
+        FParticleDynamicData* ParticleDynamicDataPtr = PSC->GetParticleDynamicData();
+        if (ParticleDynamicDataPtr)
         {
-            UpdateObjectConstant(PSC->GetWorldMatrix(), FVector4(), false);
-            
-            for (auto Emitter : Particle->DynamicEmitterDataArray)
+            for (auto EmitterDataBasePtr : ParticleDynamicDataPtr->DynamicEmitterDataArray)
             {
-                const FDynamicEmitterReplayDataBase& ReplayData = Emitter->GetSource();
+                const FDynamicEmitterReplayDataBase& BaseReplayData = EmitterDataBasePtr->GetSource();
 
-                if (ReplayData.eEmitterType == EDynamicEmitterType::DET_Sprite)
+                if (BaseReplayData.eEmitterType == EDynamicEmitterType::DET_Sprite)
                 {
-                    FDynamicSpriteEmitterDataBase* SpriteData = dynamic_cast<FDynamicSpriteEmitterDataBase*>(Emitter);
-                    if (SpriteData)
+                    FDynamicSpriteEmitterDataBase* SpriteEmitterData = dynamic_cast<FDynamicSpriteEmitterDataBase*>(EmitterDataBasePtr);
+                    if (SpriteEmitterData)
                     {
-                        const FDynamicSpriteEmitterReplayDataBase* SpriteParticleData = SpriteData->GetSourceData();
-                        ProcessParticles(SpriteParticleData);
+                        const FDynamicSpriteEmitterReplayDataBase* SpriteReplayData = SpriteEmitterData->GetSourceData();
+
+                        if (SpriteReplayData && SpriteReplayData->ActiveParticleCount > 0)
+                        {
+                            FMatrix FinalWorldMatrixForShader;
+                            if (SpriteReplayData->bUseLocalSpace)
+                            {
+                                FinalWorldMatrixForShader = PSC->GetWorldMatrix();
+                            }
+                            else
+                            {
+                                FinalWorldMatrixForShader = FMatrix::Identity;
+                            }
+                            UpdateObjectConstant(FinalWorldMatrixForShader, FVector4(), false);
+                            ProcessParticles(SpriteReplayData);
+                        }
                     }
                 }
             }
         }
     }
 }
-
 void FParticleSpriteRenderPass::ProcessParticles(const FDynamicSpriteEmitterReplayDataBase* ReplayData)
 {
     // ReplayData

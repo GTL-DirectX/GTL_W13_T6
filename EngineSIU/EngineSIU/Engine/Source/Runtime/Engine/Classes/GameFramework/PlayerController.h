@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h" 
 #include "Classes/Components/InputComponent.h"
 
+class APawn;
 class APlayerCameraManager;
 
 class APlayerController : public AActor
@@ -13,6 +14,8 @@ class APlayerController : public AActor
 public:
     APlayerController() = default;
     virtual ~APlayerController() override = default;
+
+    virtual UObject* Duplicate(UObject* InOuter) override;
 
     virtual void PostSpawnInitialize() override;
 
@@ -28,15 +31,15 @@ public:
 
     UInputComponent* GetInputComponent() const { return InputComponent; }
 
-    void SetViewTarget(class AActor* NewViewTarget, struct FViewTargetTransitionParams TransitionParams);
+    void SetViewTarget(AActor* NewViewTarget, FViewTargetTransitionParams TransitionParams);
 
-    virtual void Possess(AActor* InActor);
+    virtual void Possess(APawn* InActor);
 
     virtual void UnPossess();
     
     virtual void BindAction(const FString& Key, const std::function<void(float)>& Callback);
 
-    AActor* GetPossessedActor() const { return PossessedActor; }
+    APawn* GetPossessedActor() const { return PossessedActor; }
     
     // 카메라 관련 함수
     AActor* GetViewTarget() const;
@@ -54,7 +57,7 @@ protected:
 
     virtual void SetupInputComponent();
 
-    AActor* PossessedActor = nullptr;
+    APawn* PossessedActor = nullptr;
 
     bool bHasPossessed = false;
 };

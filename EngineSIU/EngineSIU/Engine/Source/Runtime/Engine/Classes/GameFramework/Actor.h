@@ -70,6 +70,7 @@ public:
     UActorComponent* AddComponent(UClass* InClass, FName InName = NAME_None, bool bTryRootComponent = true);
 
 
+    void AddOwnedComponent(UActorComponent* Component);
     /** Actor가 가지고 있는 Component를 제거합니다. */
     void RemoveOwnedComponent(UActorComponent* Component);
 
@@ -89,6 +90,7 @@ public:
 public:
     USceneComponent* GetRootComponent() const { return RootComponent; }
     bool SetRootComponent(USceneComponent* NewRootComponent);
+
 
     AActor* GetOwner() const { return Owner; }
     void SetOwner(AActor* NewOwner) { Owner = NewOwner; }

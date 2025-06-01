@@ -195,7 +195,7 @@ void FDepthOfFieldRenderPass::PrepareLayerPass(const std::shared_ptr<FEditorView
     FDepthOfFieldConstant DepthOfFieldConstant;
     if (GEngine->ActiveWorld->WorldType == EWorldType::PIE)
     {
-        if (const APlayerController* PC = GEngine->ActiveWorld->GetPlayerController())
+        if (const APlayerController* PC = GEngine->ActiveWorld->GetPlayerController(Viewport->ViewportIndex))
         {
             if (const APlayerCameraManager* PCM = PC->PlayerCameraManager)
             {

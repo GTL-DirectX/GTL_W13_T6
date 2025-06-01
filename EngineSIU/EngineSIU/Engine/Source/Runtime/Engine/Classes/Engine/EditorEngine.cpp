@@ -20,6 +20,8 @@
 #include "SkeletalMesh.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "Particles/ParticleSystem.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/Player.h"
 
 extern FEngineLoop GEngineLoop;
 
@@ -540,34 +542,69 @@ void UEditorEngine::StartPhysicsAssetViewer(FName PreviewMeshKey, FName PhysicsA
 
 void UEditorEngine::BindEssentialObjects()
 {
-    for (const auto Iter: TObjectRange<APlayer>())
+    int BindPlayerIndex = 0;
+    for (const auto Player: TObjectRange<APlayer>())
     {
-        if (Iter->GetWorld() == ActiveWorld)
+        if (Player->GetWorld() == ActiveWorld)
         {
-            ActiveWorld->SetMainPlayer(Iter);
-            break;
+            ActiveWorld->SetPlayer(BindPlayerIndex, Player);
+            Player->SetPlayerIndex(BindPlayerIndex);
+            
+            // PlayerController 생성
+            APlayerController* PC = CreatePlayerController(BindPlayerIndex);
+
+            ActiveWorld->SetPlayerController(BindPlayerIndex, PC);
+
+            PC->Possess(Player);
+            Player->SetupInputComponent(PC->GetInputComponent());
+            
+            BindPlayerIndex++;
+        }
+    }
+
+    for (int i=BindPlayerIndex; i < MAX_PLAYER; i++)
+    {
+        if (ActiveWorld->IsPlayerConnected(i))
+        {
+            CreatePlayer(i);
         }
     }
     
-    //실수로 안만들면 넣어주기
-    if (ActiveWorld->GetMainPlayer() == nullptr)
+    // 하나도 안 만들어졌다면 만들어주기
+    if (BindPlayerIndex == 0 && ActiveWorld->GetPlayer(BindPlayerIndex) == nullptr)
     {
-        APlayer* TempPlayer = ActiveWorld->SpawnActor<APlayer>();
-        TempPlayer->SetActorLabel(TEXT("OBJ_PLAYER"));
-        TempPlayer->SetActorTickInEditor(false);
-        ActiveWorld->SetMainPlayer(TempPlayer);
+        ActiveWorld->ConnectedPlayer(BindPlayerIndex);
+        CreatePlayer(BindPlayerIndex);
     }
+}
+
+void UEditorEngine::CreatePlayer(int PlayerIndex) const // TODO: World.cpp로 옮기기
+{
+    APlayer* Player = ActiveWorld->SpawnActor<APlayer>();
+    Player->SetActorLabel(TEXT("OBJ_PLAYER"));
+    Player->SetActorTickInEditor(false);
+    ActiveWorld->SetPlayer(PlayerIndex, Player);
+    Player->SetPlayerIndex(PlayerIndex);
+
+    APlayerController* PC = CreatePlayerController(PlayerIndex);
     
-    //무조건 PIE들어갈때 만들어주기
+    PC->Possess(Player);
+    Player->SetupInputComponent(PC->GetInputComponent());
+}
+
+APlayerController* UEditorEngine::CreatePlayerController(int PlayerIndex) const
+{
     APlayerController* PlayerController = ActiveWorld->SpawnActor<APlayerController>();
     PlayerController->SetActorLabel(TEXT("OBJ_PLAYER_CONTROLLER"));
     PlayerController->SetActorTickInEditor(false);
-    ActiveWorld->SetPlayerController(PlayerController);
-    
-    ActiveWorld->GetPlayerController()->Possess(ActiveWorld->GetMainPlayer());
+    ActiveWorld->SetPlayerController(PlayerIndex, PlayerController);
+
+    PlayerController->GetInputComponent()->CreateXInputController(PlayerIndex);
+
+    return PlayerController;
 }
 
-void UEditorEngine::SetPhysXScene(UWorld* World)
+void UEditorEngine::SetPhysXScene(UWorld* World) const
 {
     PhysicsManager->CreateScene(PIEWorld);
     PhysicsManager->SetCurrentScene(PIEWorld);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Components/ActorComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
@@ -9,6 +9,7 @@
 #include "Math/Rotator.h"
 #include "UObject/Casts.h"
 
+class ACharacter;
 class UParticleSystemComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
@@ -59,12 +60,15 @@ private:
 
     void RenderForSceneComponent(USceneComponent* SceneComponent, AEditorPlayer* Player) const;
     void RenderForCameraComponent(UCameraComponent* InCameraComponent);
-    void RenderForPlayerActor(APlayer* InPlayerActor);
     void RenderForActor(AActor* SelectedActor, USceneComponent* TargetComponent) const;
     
     /* Static Mesh Settings */
     void RenderForStaticMesh(UStaticMeshComponent* StaticMeshComp) const;
-    void RenderForSkeletalMesh(USkeletalMeshComponent* SkeletalMeshComp) const;
+    void RenderForSkeletalMesh(USkeletalMeshComponent* SkeletalMeshComp);
+    void RenderAddSocket(USkeletalMeshComponent* SkeletalMeshComp);
+    void RenderRemoveSocket(USkeletalMeshComponent* SkeletalMeshComp);
+    void RenderParentBoneSelectionCombo(USkeletalMeshComponent* SkeletalMeshComp, FString& BoneName);
+
     void RenderForPhysicsAsset(const USkeletalMeshComponent* SkeletalMeshComp) const;
     void RenderForParticleSystem(UParticleSystemComponent* ParticleSystemComponent) const;
 
@@ -103,6 +107,12 @@ private:
     bool IsCreateMaterial = false;
 
     const FString TemplateFilePath = FString("LuaScripts/template.lua");
+private:
+    TMap<FName, FSocketInfo> SocketMap;
+
+    FName CurrentSocketName;
+    // (3) 새로운 소켓 이름 입력 버퍼 (ImGui InputText 용)
+    char NewSocketNameBuffer[128];
 };
 
 template <typename T> requires std::derived_from<T, UActorComponent>

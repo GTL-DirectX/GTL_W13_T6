@@ -8,6 +8,7 @@
 #include "EngineLoop.h"
 #include "WindowsCursor.h"
 #include "Math/Vector.h"
+#include "World/World.h"
 
 extern FEngineLoop GEngineLoop;
 
@@ -25,6 +26,12 @@ FSlateAppMessageHandler::FSlateAppMessageHandler()
     {
         HandleRawInput(RawInput);
     });
+
+    // Xbox 컨트롤러 초기화
+    for (uint32 i = 0; i < MaxControllers; ++i)
+    {
+        XboxControllerConnected[i] = false;
+    }
 }
 
 void FSlateAppMessageHandler::HandleRawInput(const RAWINPUT& RawInput)
@@ -359,6 +366,179 @@ void FSlateAppMessageHandler::ProcessMessage(HWND hWnd, uint32 Msg, WPARAM wPara
     }
 }
 
+void FSlateAppMessageHandler::ProcessXboxControllerButtons(uint32 ControllerId)
+{
+    if (!IsXboxControllerConnected(ControllerId))
+    {
+        return;
+    }
+    
+    const XINPUT_GAMEPAD& CurrentGamepad = XboxControllerStates[ControllerId].Gamepad;
+    const XINPUT_GAMEPAD& PreviousGamepad = XboxPreviousStates[ControllerId].Gamepad;
+    
+    // 버튼 매핑 테이블
+    struct ButtonMapping
+    {
+        WORD XInputButton;
+        EXboxButtons::Type OurButton;
+    };
+    
+    static const ButtonMapping ButtonMappings[] = {
+        { XINPUT_GAMEPAD_A, EXboxButtons::A },
+        { XINPUT_GAMEPAD_B, EXboxButtons::B },
+        { XINPUT_GAMEPAD_X, EXboxButtons::X },
+        { XINPUT_GAMEPAD_Y, EXboxButtons::Y },
+        { XINPUT_GAMEPAD_LEFT_SHOULDER, EXboxButtons::LeftBumper },
+        { XINPUT_GAMEPAD_RIGHT_SHOULDER, EXboxButtons::RightBumper },
+        { XINPUT_GAMEPAD_BACK, EXboxButtons::Back },
+        { XINPUT_GAMEPAD_START, EXboxButtons::Start },
+        { XINPUT_GAMEPAD_LEFT_THUMB, EXboxButtons::LeftThumbstick },
+        { XINPUT_GAMEPAD_RIGHT_THUMB, EXboxButtons::RightThumbstick },
+        { XINPUT_GAMEPAD_DPAD_UP, EXboxButtons::DPadUp },
+        { XINPUT_GAMEPAD_DPAD_DOWN, EXboxButtons::DPadDown },
+        { XINPUT_GAMEPAD_DPAD_LEFT, EXboxButtons::DPadLeft },
+        { XINPUT_GAMEPAD_DPAD_RIGHT, EXboxButtons::DPadRight }
+    };
+    
+    // 각 버튼에 대해 상태 변화 확인
+    for (const auto& Mapping : ButtonMappings)
+    {
+        bool bCurrentPressed = (CurrentGamepad.wButtons & Mapping.XInputButton) != 0;
+        bool bPreviousPressed = (PreviousGamepad.wButtons & Mapping.XInputButton) != 0;
+        
+        if (bCurrentPressed && !bPreviousPressed)
+        {
+            // 버튼이 방금 눌림
+            OnXboxControllerButtonDown(ControllerId, Mapping.OurButton, false);
+        }
+        else if (!bCurrentPressed && bPreviousPressed)
+        {
+            // 버튼이 방금 떼어짐
+            OnXboxControllerButtonUp(ControllerId, Mapping.OurButton);
+        }
+        else if (bCurrentPressed && bPreviousPressed)
+        {
+            // 버튼이 계속 눌려있음 (반복)
+            OnXboxControllerButtonDown(ControllerId, Mapping.OurButton, true);
+        }
+    }
+    
+    // 트리거 버튼 처리 (디지털)
+    bool bLeftTriggerPressed = CurrentGamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    bool bLeftTriggerPrevPressed = PreviousGamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    bool bRightTriggerPressed = CurrentGamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    bool bRightTriggerPrevPressed = PreviousGamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    
+    if (bLeftTriggerPressed && !bLeftTriggerPrevPressed)
+    {
+        OnXboxControllerButtonDown(ControllerId, EXboxButtons::LeftTrigger, false);
+    }
+    else if (!bLeftTriggerPressed && bLeftTriggerPrevPressed)
+    {
+        OnXboxControllerButtonUp(ControllerId, EXboxButtons::LeftTrigger);
+    }
+    
+    if (bRightTriggerPressed && !bRightTriggerPrevPressed)
+    {
+        OnXboxControllerButtonDown(ControllerId, EXboxButtons::RightTrigger, false);
+    }
+    else if (!bRightTriggerPressed && bRightTriggerPrevPressed)
+    {
+        OnXboxControllerButtonUp(ControllerId, EXboxButtons::RightTrigger);
+    }
+}
+
+void FSlateAppMessageHandler::ProcessXboxControllerAnalogInputs(uint32 ControllerId)
+{
+    if (!IsXboxControllerConnected(ControllerId))
+    {
+        return;
+    }
+    
+    const XINPUT_GAMEPAD& CurrentGamepad = XboxControllerStates[ControllerId].Gamepad;
+    const XINPUT_GAMEPAD& PreviousGamepad = XboxPreviousStates[ControllerId].Gamepad;
+    
+    // 왼쪽 스틱 X축
+    float LeftStickX = NormalizeThumbstick(CurrentGamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    float PrevLeftStickX = NormalizeThumbstick(PreviousGamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    if (FMath::Abs(LeftStickX - PrevLeftStickX) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::LeftStickX, LeftStickX);
+    }
+    
+    // 왼쪽 스틱 Y축
+    float LeftStickY = NormalizeThumbstick(CurrentGamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    float PrevLeftStickY = NormalizeThumbstick(PreviousGamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+    if (FMath::Abs(LeftStickY - PrevLeftStickY) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::LeftStickY, LeftStickY);
+    }
+    
+    // 오른쪽 스틱 X축
+    float RightStickX = NormalizeThumbstick(CurrentGamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    float PrevRightStickX = NormalizeThumbstick(PreviousGamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    if (FMath::Abs(RightStickX - PrevRightStickX) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::RightStickX, RightStickX);
+    }
+    
+    // 오른쪽 스틱 Y축
+    float RightStickY = NormalizeThumbstick(CurrentGamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    float PrevRightStickY = NormalizeThumbstick(PreviousGamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+    if (FMath::Abs(RightStickY - PrevRightStickY) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::RightStickY, RightStickY);
+    }
+    
+    // 왼쪽 트리거
+    float LeftTrigger = NormalizeTrigger(CurrentGamepad.bLeftTrigger);
+    float PrevLeftTrigger = NormalizeTrigger(PreviousGamepad.bLeftTrigger);
+    if (FMath::Abs(LeftTrigger - PrevLeftTrigger) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::LeftTriggerAxis, LeftTrigger);
+    }
+    
+    // 오른쪽 트리거
+    float RightTrigger = NormalizeTrigger(CurrentGamepad.bRightTrigger);
+    float PrevRightTrigger = NormalizeTrigger(PreviousGamepad.bRightTrigger);
+    if (FMath::Abs(RightTrigger - PrevRightTrigger) > 0.01f)
+    {
+        OnXboxControllerAnalogInput(ControllerId, EXboxAnalog::RightTriggerAxis, RightTrigger);
+    }
+}
+
+float FSlateAppMessageHandler::NormalizeThumbstick(SHORT Value, SHORT DeadZone) const
+{
+    // Promote everything to int to avoid overflow
+    const int32 IntValue = static_cast<int32>(Value);
+    const int32 IntDeadZone = static_cast<int32>(DeadZone);
+    
+    if (FMath::Abs(IntValue) < IntDeadZone)
+    {
+        return 0.0f;
+    }
+
+    if (IntValue > 0)
+    {
+        return static_cast<float>(IntValue - IntDeadZone) / static_cast<float>(32767 - IntDeadZone);
+    }
+    else // IntValue < 0
+    {
+        return static_cast<float>(IntValue + IntDeadZone) / static_cast<float>(32768 - IntDeadZone);
+    }
+}
+
+float FSlateAppMessageHandler::NormalizeTrigger(BYTE Value) const
+{
+    if (Value < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+    {
+        return 0.0f;
+    }
+    
+    return static_cast<float>(Value - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / 
+           static_cast<float>(255 - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+}
+
 void FSlateAppMessageHandler::OnKeyChar(const TCHAR Character, const bool IsRepeat)
 {
     OnKeyCharDelegate.Broadcast(Character, IsRepeat);
@@ -532,6 +712,125 @@ void FSlateAppMessageHandler::OnMouseMove()
         GetModifierKeys(),
         IE_Axis,
     });
+}
+
+void FSlateAppMessageHandler::UpdateXboxControllers(float DeltaTime)
+{
+    XboxControllerUpdateTimer += DeltaTime;
+    
+    // 60Hz로 업데이트
+    if (XboxControllerUpdateTimer < XboxControllerUpdateInterval)
+    {
+        return;
+    }
+    
+    XboxControllerUpdateTimer = 0.0f;
+
+    for (uint32 ControllerId = 0; ControllerId < MaxControllers; ++ControllerId)
+    {
+        // 이전 상태 저장
+        XboxPreviousStates[ControllerId] = XboxControllerStates[ControllerId];
+        
+        // 현재 상태 가져오기
+        DWORD Result = XInputGetState(ControllerId, &XboxControllerStates[ControllerId]);
+        
+        bool bCurrentlyConnected = (Result == ERROR_SUCCESS);
+        bool bWasConnected = XboxControllerConnected[ControllerId];
+        
+        // 연결 상태 변화 감지
+        if (bCurrentlyConnected != bWasConnected)
+        {
+            XboxControllerConnected[ControllerId] = bCurrentlyConnected;
+            
+            if (bCurrentlyConnected)
+            {
+                OnXboxControllerConnected(ControllerId);
+            }
+            else
+            {
+                OnXboxControllerDisconnected(ControllerId);
+                continue; // 연결이 끊어졌으면 입력 처리하지 않음
+            }
+        }
+        
+        if (!bCurrentlyConnected)
+        {
+            continue;
+        }
+
+        // 버튼 입력 처리
+        ProcessXboxControllerButtons(ControllerId);
+        ProcessXboxControllerAnalogInputs(ControllerId);
+    }
+}
+
+void FSlateAppMessageHandler::OnXboxControllerButtonDown(uint32 ControllerId, EXboxButtons::Type Button, bool bIsRepeat)
+{
+    OnControllerButtonDownDelegate.Broadcast(FControllerButtonEvent{
+        Button,
+        GetModifierKeys(),
+        bIsRepeat ? IE_Repeat : IE_Pressed,
+        ControllerId,
+        bIsRepeat
+    });
+}
+
+void FSlateAppMessageHandler::OnXboxControllerButtonUp(uint32 ControllerId, EXboxButtons::Type Button)
+{
+    OnControllerButtonUpDelegate.Broadcast(FControllerButtonEvent{
+        Button,
+        GetModifierKeys(),
+        IE_Released,
+        ControllerId,
+        false
+    });
+}
+
+void FSlateAppMessageHandler::OnXboxControllerAnalogInput(uint32 ControllerId, EXboxAnalog::Type AnalogType, float Value)
+{
+    OnXboxControllerAnalogDelegate.Broadcast(FControllerAnalogEvent{
+        AnalogType,
+        GetModifierKeys(),
+        IE_Axis,
+        Value,
+        ControllerId
+    });
+}
+
+void FSlateAppMessageHandler::OnXboxControllerConnected(uint32 ControllerId)
+{
+    UE_LOG(ELogLevel::Display, "Xbox Controller %d connected", ControllerId);
+    OnXboxControllerConnectedDelegate.Broadcast(ControllerId);
+}
+
+void FSlateAppMessageHandler::OnXboxControllerDisconnected(uint32 ControllerId)
+{
+    UE_LOG(ELogLevel::Display, "Xbox Controller %d disconnected", ControllerId);
+    
+    // 진동 정지
+    SetXboxControllerVibration(ControllerId, 0.0f, 0.0f);
+    OnXboxControllerDisconnectedDelegate.Broadcast(ControllerId);
+}
+
+void FSlateAppMessageHandler::SetXboxControllerVibration(uint32 ControllerId, float LeftMotor, float RightMotor)
+{
+    if (ControllerId >= MaxControllers || !XboxControllerConnected[ControllerId])
+    {
+        return;
+    }
+    
+    XINPUT_VIBRATION Vibration;
+    ZeroMemory(&Vibration, sizeof(XINPUT_VIBRATION));
+    
+    Vibration.wLeftMotorSpeed = static_cast<WORD>(FMath::Clamp(LeftMotor, 0.0f, 1.0f) * 65535);
+    Vibration.wRightMotorSpeed = static_cast<WORD>(FMath::Clamp(RightMotor, 0.0f, 1.0f) * 65535);
+    
+    XInputSetState(ControllerId, &Vibration);
+}
+
+bool FSlateAppMessageHandler::IsXboxControllerConnected(uint32 ControllerId) const
+{
+    return ControllerId < MaxControllers && XboxControllerConnected[ControllerId];
 }
 
 void FSlateAppMessageHandler::OnRawMouseInput(const RAWMOUSE& RawMouseInput)

@@ -1,4 +1,4 @@
-﻿#include "RenderPassBase.h"
+#include "RenderPassBase.h"
 
 #include "Define.h"
 #include "RendererHelpers.h"
@@ -64,6 +64,8 @@ void FRenderPassBase::UpdateObjectConstant(const FMatrix& WorldMatrix, const FVe
 
 void FRenderPassBase::RenderStaticMesh_Internal(const FStaticMeshRenderData* RenderData, TArray<FStaticMaterial*> Materials, TArray<UMaterial*> OverrideMaterials, int32 SelectedSubMeshIndex)
 {
+    if (!RenderData) return;
+    if (RenderData->Vertices.IsEmpty()) return;
     UINT Stride = sizeof(FStaticMeshVertex);
     UINT Offset = 0;
 

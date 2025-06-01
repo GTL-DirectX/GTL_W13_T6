@@ -17,6 +17,10 @@
 #include "UObject/ObjectFactory.h"
 #include "PhysicsEngine/ConstraintInstance.h"
 #include <Engine/Contents/AnimInstance/LuaScriptAnimInstance.h>
+#include "Container/StringUtils.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "UObject/UObjectIterator.h"
+
 
 bool USkeletalMeshComponent::bIsCPUSkinning = false;
 
@@ -26,16 +30,17 @@ USkeletalMeshComponent::USkeletalMeshComponent()
     , AnimClass(nullptr)
     , AnimScriptInstance(nullptr)
     , bPlayAnimation(true)
-    ,BonePoseContext(nullptr)
+    , BonePoseContext(nullptr)
 {
     CPURenderData = std::make_unique<FSkeletalMeshRenderData>();
 }
-
 void USkeletalMeshComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 
+    // 애니메이션 초기화(기존 로직)
     InitAnim();
+
 }
 
 UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
@@ -45,6 +50,7 @@ UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
     NewComponent->SetRelativeTransform(GetRelativeTransform());
     NewComponent->SetSkeletalMeshAsset(SkeletalMeshAsset);
     NewComponent->SetAnimationMode(AnimationMode);
+    NewComponent->SocketMap = SocketMap;
     if (AnimationMode == EAnimationMode::AnimationBlueprint)
     {
         NewComponent->SetAnimClass(AnimClass);
@@ -56,6 +62,7 @@ UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
     {
         NewComponent->SetAnimation(GetAnimation());
     }
+
     NewComponent->SetLooping(this->IsLooping());
     NewComponent->SetPlaying(this->IsPlaying());
     return NewComponent;
@@ -73,7 +80,7 @@ void USkeletalMeshComponent::SetProperties(const TMap<FString, FString>& InPrope
             SetSkeletalMeshAsset(SkelMesh);
         }
     }
-    
+
     if (InProperties.Contains("AnimationMode"))
     {
         const EAnimationMode Mode = static_cast<EAnimationMode>(FString::ToInt(InProperties["AnimationMode"]));
@@ -122,6 +129,35 @@ void USkeletalMeshComponent::SetProperties(const TMap<FString, FString>& InPrope
             SetLoopEndFrame(FString::ToFloat(InProperties["LoopEndFrame"]));
         }
     }
+    if (InProperties.Contains("SocketNames"))
+    {
+        TArray<FString> SocketNames;
+        FString SocketListStr = InProperties["SocketNames"];
+        FStringUtils::ParseIntoArray(SocketListStr, SocketNames, ',', true);
+
+        for (const FString& SocketNameStr : SocketNames)
+        {
+            FName SocketName = FName(*SocketNameStr);
+            FString Prefix = FString::Printf(TEXT("Socket_%s_"), *SocketNameStr);
+
+            // 키가 없으면 기본값 처리
+            FString BoneNameStr = InProperties.Contains(Prefix + "BoneName") ? InProperties[Prefix + "BoneName"] : TEXT("");
+            FName BoneName = FName(*BoneNameStr);
+
+            FString LocationStr = InProperties.Contains(Prefix + "Location") ? InProperties[Prefix + "Location"] : TEXT("0,0,0");
+            FString RotationStr = InProperties.Contains(Prefix + "Rotation") ? InProperties[Prefix + "Rotation"] : TEXT("0,0,0");
+            FString ScaleStr = InProperties.Contains(Prefix + "Scale") ? InProperties[Prefix + "Scale"] : TEXT("1,1,1");
+
+            FVector Location, Scale;
+            FRotator Rotation;
+            Location.InitFromString(LocationStr);
+            Rotation.InitFromString(RotationStr);
+            Scale.InitFromString(ScaleStr);
+
+            FTransform LocalTransform(Rotation, Location, Scale);
+            AddSocket(SocketName, BoneName, LocalTransform);
+        }
+    }
 }
 
 void USkeletalMeshComponent::GetProperties(TMap<FString, FString>& OutProperties) const
@@ -155,13 +191,29 @@ void USkeletalMeshComponent::GetProperties(TMap<FString, FString>& OutProperties
         OutProperties.Add(TEXT("LoopStartFrame"), std::to_string(GetLoopStartFrame()));
         OutProperties.Add(TEXT("LoopEndFrame"), std::to_string(GetLoopEndFrame()));
     }
+
+    FString SocketListStr;
+    for (const auto& Pair : SocketMap)
+    {
+        if (!SocketListStr.IsEmpty())
+        {
+            SocketListStr += ",";
+        }
+        SocketListStr += Pair.Key.ToString();
+
+        FString Prefix = FString::Printf(TEXT("Socket_%s_"), *Pair.Key.ToString());
+        OutProperties.Add(Prefix + "BoneName", Pair.Value.BoneName.ToString());
+        OutProperties.Add(Prefix + "Location", Pair.Value.LocalTransform.GetTranslation().ToString());
+        OutProperties.Add(Prefix + "Rotation", Pair.Value.LocalTransform.GetRotation().Rotator().ToString());
+        OutProperties.Add(Prefix + "Scale", Pair.Value.LocalTransform.GetScale3D().ToString());
+    }
+    OutProperties.Add(TEXT("SocketNames"), SocketListStr);
 }
 
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
-
-    if(!bSimulate)
+    if (!bSimulate)
     {
         TickPose(DeltaTime);
     }
@@ -178,27 +230,27 @@ void USkeletalMeshComponent::EndPhysicsTickComponent(float DeltaTime)
             bool bFoundBodyInstance = false;
             for (FBodyInstance* BI : Bodies)
             {
-                 if (BI->BoneIndex == i)
-                 {
+                if (BI->BoneIndex == i)
+                {
                     // 바디 인스턴스가 있는 경우, 또는 첫번째 바디 인스턴스인 경우에는
                     // 바디 인스턴스의 월드 매트릭스를 그대로 사용
-                     BI->BIGameObject->UpdateFromPhysics(GEngine->PhysicsManager->GetScene(GEngine->ActiveWorld));
-                     XMMATRIX DXMatrix = BI->BIGameObject->WorldMatrix;
-                     XMFLOAT4X4 dxMat;
-                     XMStoreFloat4x4(&dxMat, DXMatrix);
+                    BI->BIGameObject->UpdateFromPhysics(GEngine->PhysicsManager->GetScene(GEngine->ActiveWorld));
+                    XMMATRIX DXMatrix = BI->BIGameObject->WorldMatrix;
+                    XMFLOAT4X4 dxMat;
+                    XMStoreFloat4x4(&dxMat, DXMatrix);
 
-                     FMatrix WorldMatrix;
-                     for (int32 Row = 0; Row < 4; ++Row)
-                     {
-                         for (int32 Col = 0; Col < 4; ++Col)
-                         {
-                             WorldMatrix.M[Row][Col] = *(&dxMat._11 + Row * 4 + Col);
-                         }
-                     }
-                     BoneWorldMatrices.Add(WorldMatrix);
-                     bFoundBodyInstance = true;
-                     break;
-                 }
+                    FMatrix WorldMatrix;
+                    for (int32 Row = 0; Row < 4; ++Row)
+                    {
+                        for (int32 Col = 0; Col < 4; ++Col)
+                        {
+                            WorldMatrix.M[Row][Col] = *(&dxMat._11 + Row * 4 + Col);
+                        }
+                    }
+                    BoneWorldMatrices.Add(WorldMatrix);
+                    bFoundBodyInstance = true;
+                    break;
+                }
             }
 
             if (!bFoundBodyInstance)
@@ -235,7 +287,7 @@ void USkeletalMeshComponent::EndPhysicsTickComponent(float DeltaTime)
             const FMatrix CurrentLocalMatrix = CurrentWorldMatrix * FMatrix::Inverse(ParentMatrix);
             BonePoseContext.Pose[i] = FTransform(CurrentLocalMatrix);
         }
-        
+
         //for (FBodyInstance* BI : Bodies)
         //{
         //    if (RigidBodyType != ERigidBodyType::STATIC)
@@ -258,7 +310,7 @@ void USkeletalMeshComponent::EndPhysicsTickComponent(float DeltaTime)
 
         //    }
         //}
-        
+
         CPUSkinning();
     }
 }
@@ -303,7 +355,7 @@ bool USkeletalMeshComponent::ShouldTickAnimation() const
 bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 {
     USkeletalMesh* SkelMesh = GetSkeletalMeshAsset();
-    
+
     if (NeedToSpawnAnimScriptInstance())
     {
         AnimScriptInstance = Cast<UAnimInstance>(FObjectFactory::ConstructObject(AnimClass, this));
@@ -345,7 +397,7 @@ void USkeletalMeshComponent::SetSkeletalMeshAsset(USkeletalMesh* InSkeletalMeshA
     {
         return;
     }
-    
+
     SkeletalMeshAsset = InSkeletalMeshAsset;
 
     InitAnim();
@@ -353,7 +405,7 @@ void USkeletalMeshComponent::SetSkeletalMeshAsset(USkeletalMesh* InSkeletalMeshA
     BonePoseContext.Pose.Empty();
     RefBonePoseTransforms.Empty();
     AABB = FBoundingBox(InSkeletalMeshAsset->GetRenderData()->BoundingBoxMin, SkeletalMeshAsset->GetRenderData()->BoundingBoxMax);
-    
+
     const FReferenceSkeleton& RefSkeleton = SkeletalMeshAsset->GetSkeleton()->GetReferenceSkeleton();
     BonePoseContext.Pose.InitBones(RefSkeleton.RawRefBoneInfo.Num());
     for (int32 i = 0; i < RefSkeleton.RawRefBoneInfo.Num(); ++i)
@@ -361,7 +413,7 @@ void USkeletalMeshComponent::SetSkeletalMeshAsset(USkeletalMesh* InSkeletalMeshA
         BonePoseContext.Pose[i] = RefSkeleton.RawRefBonePose[i];
         RefBonePoseTransforms.Add(RefSkeleton.RawRefBonePose[i]);
     }
-    
+
     CPURenderData->Vertices = InSkeletalMeshAsset->GetRenderData()->Vertices;
     CPURenderData->Indices = InSkeletalMeshAsset->GetRenderData()->Indices;
     CPURenderData->ObjectName = InSkeletalMeshAsset->GetRenderData()->ObjectName;
@@ -370,17 +422,66 @@ void USkeletalMeshComponent::SetSkeletalMeshAsset(USkeletalMesh* InSkeletalMeshA
 
 FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
 {
+    if (const FSocketInfo* SocketInfo = SocketMap.Find(SocketName))
+    {
+        return GetSocketWorldTransform(SocketName, SocketInfo);
+    }
+
+    // 소켓 맵에 없으면 본 이름으로 직접 찾기 (기존 동작)
     FTransform Transform = FTransform::Identity;
 
     if (USkeleton* Skeleton = GetSkeletalMeshAsset()->GetSkeleton())
     {
         int32 BoneIndex = Skeleton->FindBoneIndex(SocketName);
 
-        TArray<FMatrix> GlobalBoneMatrices;
-        GetCurrentGlobalBoneMatrices(GlobalBoneMatrices);
-        Transform = FTransform(GlobalBoneMatrices[BoneIndex]);
+        if (BoneIndex != INDEX_NONE)
+        {
+            TArray<FMatrix> GlobalBoneMatrices;
+            GetCurrentGlobalBoneMatrices(GlobalBoneMatrices);
+
+            if (BoneIndex < GlobalBoneMatrices.Num())
+            {
+                FMatrix BoneWorldMatrix = GlobalBoneMatrices[BoneIndex] * GetComponentTransform().ToMatrixWithScale();
+                Transform = FTransform(BoneWorldMatrix);
+            }
+        }
     }
     return Transform;
+}
+
+FTransform USkeletalMeshComponent::GetSocketWorldTransform(const FName& SocketName, const FSocketInfo* SocketInfo) const
+{
+    if (!SocketInfo || !SkeletalMeshAsset || !SkeletalMeshAsset->GetSkeleton())
+    {
+        return GetComponentTransform();
+    }
+
+    // 1. 본 인덱스 찾기
+    USkeleton* Skeleton = SkeletalMeshAsset->GetSkeleton();
+    int32 BoneIndex = Skeleton->FindBoneIndex(SocketInfo->BoneName);
+
+    if (BoneIndex == INDEX_NONE)
+    {
+        return GetComponentTransform();
+    }
+
+    // 2. 현재 본의 글로벌 매트릭스 가져오기
+    TArray<FMatrix> GlobalBoneMatrices;
+    GetCurrentGlobalBoneMatrices(GlobalBoneMatrices);
+
+    if (BoneIndex >= GlobalBoneMatrices.Num())
+    {
+        return GetComponentTransform();
+    }
+
+    // 3. 본의 월드 트랜스폼 계산
+    FMatrix BoneWorldMatrix = GlobalBoneMatrices[BoneIndex] * GetComponentTransform().ToMatrixWithScale();
+    FTransform BoneWorldTransform(BoneWorldMatrix);
+
+    // 4. 소켓의 로컬 트랜스폼을 본의 월드 트랜스폼에 적용
+    FTransform SocketWorldTransform = SocketInfo->LocalTransform * BoneWorldTransform;
+
+    return SocketWorldTransform;
 }
 
 void USkeletalMeshComponent::GetCurrentGlobalBoneMatrices(TArray<FMatrix>& OutBoneMatrices) const
@@ -396,7 +497,7 @@ void USkeletalMeshComponent::GetCurrentGlobalBoneMatrices(TArray<FMatrix>& OutBo
         // 현재 본의 로컬 변환
         FTransform CurrentLocalTransform = BonePoseContext.Pose[BoneIndex];
         FMatrix LocalMatrix = CurrentLocalTransform.ToMatrixWithScale(); // FTransform -> FMatrix
-        
+
         // 부모 본의 영향을 적용하여 월드 변환 구성
         int32 ParentIndex = RefSkeleton.RawRefBoneInfo[BoneIndex].ParentIndex;
         if (ParentIndex != INDEX_NONE)
@@ -404,7 +505,7 @@ void USkeletalMeshComponent::GetCurrentGlobalBoneMatrices(TArray<FMatrix>& OutBo
             // 로컬 변환에 부모 월드 변환 적용
             LocalMatrix = LocalMatrix * OutBoneMatrices[ParentIndex];
         }
-        
+
         // 결과 행렬 저장
         OutBoneMatrices[BoneIndex] = LocalMatrix;
     }
@@ -413,7 +514,7 @@ void USkeletalMeshComponent::GetCurrentGlobalBoneMatrices(TArray<FMatrix>& OutBo
 void USkeletalMeshComponent::DEBUG_SetAnimationEnabled(bool bEnable)
 {
     bPlayAnimation = bEnable;
-    
+
     if (!bPlayAnimation)
     {
         if (SkeletalMeshAsset && SkeletalMeshAsset->GetSkeleton())
@@ -425,7 +526,7 @@ void USkeletalMeshComponent::DEBUG_SetAnimationEnabled(bool bEnable)
                 BonePoseContext.Pose[i] = RefSkeleton.RawRefBonePose[i];
             }
         }
-        SetElapsedTime(0.f); 
+        SetElapsedTime(0.f);
         CPURenderData->Vertices = SkeletalMeshAsset->GetRenderData()->Vertices;
         CPURenderData->Indices = SkeletalMeshAsset->GetRenderData()->Indices;
         CPURenderData->ObjectName = SkeletalMeshAsset->GetRenderData()->ObjectName;
@@ -439,6 +540,14 @@ void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool 
     Play(bLooping);
 }
 
+void USkeletalMeshComponent::PlayAnimation(UAnimSequence* NewAnimSequence, float BlendTime, bool bLooping)
+{
+    if (ULuaScriptAnimInstance* Instance = Cast<ULuaScriptAnimInstance>(AnimScriptInstance))
+    {
+        Instance->SetAnimation(NewAnimSequence, BlendTime, bLooping);
+    }
+}
+
 int USkeletalMeshComponent::CheckRayIntersection(const FVector& InRayOrigin, const FVector& InRayDirection, float& OutHitDistance) const
 {
     if (!AABB.Intersect(InRayOrigin, InRayDirection, OutHitDistance))
@@ -449,9 +558,9 @@ int USkeletalMeshComponent::CheckRayIntersection(const FVector& InRayOrigin, con
     {
         return 0;
     }
-    
+
     OutHitDistance = FLT_MAX;
-    
+
     int IntersectionNum = 0;
 
     const FSkeletalMeshRenderData* RenderData = SkeletalMeshAsset->GetRenderData();
@@ -462,18 +571,18 @@ int USkeletalMeshComponent::CheckRayIntersection(const FVector& InRayOrigin, con
     {
         return 0;
     }
-    
+
     const TArray<UINT>& Indices = RenderData->Indices;
     const int32 IndexNum = Indices.Num();
     const bool bHasIndices = (IndexNum > 0);
-    
+
     int32 TriangleNum = bHasIndices ? (IndexNum / 3) : (VertexNum / 3);
     for (int32 i = 0; i < TriangleNum; i++)
     {
         int32 Idx0 = i * 3;
         int32 Idx1 = i * 3 + 1;
         int32 Idx2 = i * 3 + 2;
-        
+
         if (bHasIndices)
         {
             Idx0 = Indices[Idx0];
@@ -535,9 +644,9 @@ void USkeletalMeshComponent::InitAnim()
     }
 
     bool bBlueprintMismatch = AnimClass && AnimScriptInstance && AnimScriptInstance->GetClass() != AnimClass;
-    
+
     const USkeleton* AnimSkeleton = AnimScriptInstance ? AnimScriptInstance->GetCurrentSkeleton() : nullptr;
-    
+
     const bool bClearAnimInstance = AnimScriptInstance && !AnimSkeleton;
     const bool bSkeletonMismatch = AnimSkeleton && (AnimScriptInstance->GetCurrentSkeleton() != GetSkeletalMeshAsset()->GetSkeleton());
     const bool bSkeletonsExist = AnimSkeleton && GetSkeletalMeshAsset()->GetSkeleton() && !bSkeletonMismatch;
@@ -703,73 +812,112 @@ void USkeletalMeshComponent::CPUSkinning(bool bForceUpdate)
 {
     if (bIsCPUSkinning || bForceUpdate)
     {
-         QUICK_SCOPE_CYCLE_COUNTER(SkinningPass_CPU)
-         const FReferenceSkeleton& RefSkeleton = SkeletalMeshAsset->GetSkeleton()->GetReferenceSkeleton();
-         TArray<FMatrix> CurrentGlobalBoneMatrices;
-         GetCurrentGlobalBoneMatrices(CurrentGlobalBoneMatrices);
-         const int32 BoneNum = RefSkeleton.RawRefBoneInfo.Num();
-         
-         // 최종 스키닝 행렬 계산
-         TArray<FMatrix> FinalBoneMatrices;
-         FinalBoneMatrices.SetNum(BoneNum);
-    
-         for (int32 BoneIndex = 0; BoneIndex < BoneNum; ++BoneIndex)
-         {
-             FinalBoneMatrices[BoneIndex] = RefSkeleton.InverseBindPoseMatrices[BoneIndex] * CurrentGlobalBoneMatrices[BoneIndex];
-         }
-         
-         const FSkeletalMeshRenderData* RenderData = SkeletalMeshAsset->GetRenderData();
-         
-         for (int i = 0; i < RenderData->Vertices.Num(); i++)
-         {
-             FSkeletalMeshVertex Vertex = RenderData->Vertices[i];
-             // 가중치 합산
-             float TotalWeight = 0.0f;
-    
-             FVector SkinnedPosition = FVector(0.0f, 0.0f, 0.0f);
-             FVector SkinnedNormal = FVector(0.0f, 0.0f, 0.0f);
-             
-             for (int j = 0; j < 4; ++j)
-             {
-                 float Weight = Vertex.BoneWeights[j];
-                 TotalWeight += Weight;
-     
-                 if (Weight > 0.0f)
-                 {
-                     uint32 BoneIdx = Vertex.BoneIndices[j];
-                     
-                     // 본 행렬 적용 (BoneMatrices는 이미 최종 스키닝 행렬)
-                     // FBX SDK에서 가져온 역바인드 포즈 행렬이 이미 포함됨
-                     FVector Pos = FinalBoneMatrices[BoneIdx].TransformPosition(FVector(Vertex.X, Vertex.Y, Vertex.Z));
-                     FVector4 Norm4 = FinalBoneMatrices[BoneIdx].TransformFVector4(FVector4(Vertex.NormalX, Vertex.NormalY, Vertex.NormalZ, 0.0f));
-                     FVector Norm(Norm4.X, Norm4.Y, Norm4.Z);
-                     
-                     SkinnedPosition += Pos * Weight;
-                     SkinnedNormal += Norm * Weight;
-                 }
-             }
-    
-             // 가중치 예외 처리
-             if (TotalWeight < 0.001f)
-             {
-                 SkinnedPosition = FVector(Vertex.X, Vertex.Y, Vertex.Z);
-                 SkinnedNormal = FVector(Vertex.NormalX, Vertex.NormalY, Vertex.NormalZ);
-             }
-             else if (FMath::Abs(TotalWeight - 1.0f) > 0.001f && TotalWeight > 0.001f)
-             {
-                 // 가중치 합이 1이 아닌 경우 정규화
-                 SkinnedPosition /= TotalWeight;
-                 SkinnedNormal /= TotalWeight;
-             }
-    
-             CPURenderData->Vertices[i].X = SkinnedPosition.X;
-             CPURenderData->Vertices[i].Y = SkinnedPosition.Y;
-             CPURenderData->Vertices[i].Z = SkinnedPosition.Z;
-             CPURenderData->Vertices[i].NormalX = SkinnedNormal.X;
-             CPURenderData->Vertices[i].NormalY = SkinnedNormal.Y;
-             CPURenderData->Vertices[i].NormalZ = SkinnedNormal.Z;
-           }
-     }
+        QUICK_SCOPE_CYCLE_COUNTER(SkinningPass_CPU)
+            const FReferenceSkeleton& RefSkeleton = SkeletalMeshAsset->GetSkeleton()->GetReferenceSkeleton();
+        TArray<FMatrix> CurrentGlobalBoneMatrices;
+        GetCurrentGlobalBoneMatrices(CurrentGlobalBoneMatrices);
+        const int32 BoneNum = RefSkeleton.RawRefBoneInfo.Num();
+
+        // 최종 스키닝 행렬 계산
+        TArray<FMatrix> FinalBoneMatrices;
+        FinalBoneMatrices.SetNum(BoneNum);
+
+        for (int32 BoneIndex = 0; BoneIndex < BoneNum; ++BoneIndex)
+        {
+            FinalBoneMatrices[BoneIndex] = RefSkeleton.InverseBindPoseMatrices[BoneIndex] * CurrentGlobalBoneMatrices[BoneIndex];
+        }
+
+        const FSkeletalMeshRenderData* RenderData = SkeletalMeshAsset->GetRenderData();
+
+        for (int i = 0; i < RenderData->Vertices.Num(); i++)
+        {
+            FSkeletalMeshVertex Vertex = RenderData->Vertices[i];
+            // 가중치 합산
+            float TotalWeight = 0.0f;
+
+            FVector SkinnedPosition = FVector(0.0f, 0.0f, 0.0f);
+            FVector SkinnedNormal = FVector(0.0f, 0.0f, 0.0f);
+
+            for (int j = 0; j < 4; ++j)
+            {
+                float Weight = Vertex.BoneWeights[j];
+                TotalWeight += Weight;
+
+                if (Weight > 0.0f)
+                {
+                    uint32 BoneIdx = Vertex.BoneIndices[j];
+
+                    // 본 행렬 적용 (BoneMatrices는 이미 최종 스키닝 행렬)
+                    // FBX SDK에서 가져온 역바인드 포즈 행렬이 이미 포함됨
+                    FVector Pos = FinalBoneMatrices[BoneIdx].TransformPosition(FVector(Vertex.X, Vertex.Y, Vertex.Z));
+                    FVector4 Norm4 = FinalBoneMatrices[BoneIdx].TransformFVector4(FVector4(Vertex.NormalX, Vertex.NormalY, Vertex.NormalZ, 0.0f));
+                    FVector Norm(Norm4.X, Norm4.Y, Norm4.Z);
+
+                    SkinnedPosition += Pos * Weight;
+                    SkinnedNormal += Norm * Weight;
+                }
+            }
+
+            // 가중치 예외 처리
+            if (TotalWeight < 0.001f)
+            {
+                SkinnedPosition = FVector(Vertex.X, Vertex.Y, Vertex.Z);
+                SkinnedNormal = FVector(Vertex.NormalX, Vertex.NormalY, Vertex.NormalZ);
+            }
+            else if (FMath::Abs(TotalWeight - 1.0f) > 0.001f && TotalWeight > 0.001f)
+            {
+                // 가중치 합이 1이 아닌 경우 정규화
+                SkinnedPosition /= TotalWeight;
+                SkinnedNormal /= TotalWeight;
+            }
+
+            CPURenderData->Vertices[i].X = SkinnedPosition.X;
+            CPURenderData->Vertices[i].Y = SkinnedPosition.Y;
+            CPURenderData->Vertices[i].Z = SkinnedPosition.Z;
+            CPURenderData->Vertices[i].NormalX = SkinnedNormal.X;
+            CPURenderData->Vertices[i].NormalY = SkinnedNormal.Y;
+            CPURenderData->Vertices[i].NormalZ = SkinnedNormal.Z;
+        }
+    }
+}
+
+void USkeletalMeshComponent::AddSocket(const FName& InSocketName, const FName& InBoneName, const FTransform& InLocalTransform)
+{
+    if (!SocketMap.Contains(InSocketName))
+    {
+        FSocketInfo NewSocket;
+        NewSocket.SocketName = InSocketName;
+        NewSocket.BoneName = InBoneName;
+        NewSocket.LocalTransform = InLocalTransform;
+        SocketMap.Add(InSocketName, NewSocket);
+    }
+    else
+    {
+        SocketMap[InSocketName].BoneName = InBoneName;
+        SocketMap[InSocketName].LocalTransform = InLocalTransform;
+    }
+}
+
+TMap<FName, FSocketInfo> USkeletalMeshComponent::GetSockets()
+{
+    return SocketMap;
+}
+
+void USkeletalMeshComponent::RemoveSocket(const FName& InSocketName)
+{
+    for (auto Iter : TObjectRange<USceneComponent>())
+    {
+        if (Iter->GetAttachSocketName() == InSocketName)
+        {
+            Iter->SetAttachSocketName(NAME_None);
+        }
+    }
+    SocketMap.Remove(InSocketName);
+}
+
+const FSocketInfo* USkeletalMeshComponent::GetSocketInfo(const FName& InSocketName) const
+{
+    return SocketMap.Find(InSocketName);
 }
 
 UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const

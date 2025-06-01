@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Core/HAL/PlatformType.h"
 
 class FString;
@@ -37,6 +37,7 @@ public:
     bool operator==(ENameNone) const;
     bool operator!=(const FName& Other) const;
     bool operator!=(ENameNone) const;
+    bool IsNone() const;
 };
 
 template<>

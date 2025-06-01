@@ -38,9 +38,16 @@ public:
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 
     void AttachToComponent(USceneComponent* InParent);
+    void AttachToComponent(USceneComponent* InParent, FName SocketName);
+
     void SetupAttachment(USceneComponent* InParent);
     void DetachFromComponent(USceneComponent* Target);
-    
+    FName GetAttachSocketName() const { return AttachSocketName; };
+    void SetAttachSocketName(FName InSocketName) { AttachSocketName = InSocketName; }
+    void UpdateAttachment();
+private:
+    FName AttachSocketName = NAME_None;
+
 public:
     void SetRelativeLocation(const FVector& InLocation) { RelativeLocation = InLocation; }
     void SetRelativeRotation(const FRotator& InRotation);
@@ -76,8 +83,6 @@ public:
     bool MoveComponent(const FVector& Delta, const FQuat& NewRotation, bool bSweep, FHitResult* OutHit = nullptr);
     bool MoveComponent(const FVector& Delta, const FRotator& NewRotation, bool bSweep, FHitResult* OutHit = nullptr);
 
-    FTransform GetComponentToWorld() const { return ComponentToWorld; }
-
 protected:
     /** 부모 컴포넌트로부터 상대적인 위치 */
     UPROPERTY
@@ -110,6 +115,4 @@ protected:
 private:
     // TODO: 캐싱해서 사용하기
     bool bComponentToWorldUpdated = true;
-
-    FTransform ComponentToWorld;
 };

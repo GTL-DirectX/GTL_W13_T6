@@ -2,7 +2,7 @@
 #include <DirectXMath.h>
 #include "Define.h"
 #include "World/World.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "Math/MathUtility.h"
 #include "UnrealEd/EditorViewportClient.h"

@@ -11,70 +11,39 @@ struct FDistributionVector
     UPROPERTY_WITH_FLAGS(EditAnywhere, FVector, MinValue)
     UPROPERTY_WITH_FLAGS(EditAnywhere, FVector, MaxValue)
 
-    //FVector MinValue;
-    //FVector MaxValue;
-
-    std::mt19937 Gen;
-    std::uniform_real_distribution<float> DistX;
-    std::uniform_real_distribution<float> DistY;
-    std::uniform_real_distribution<float> DistZ;
-
 public:
     FDistributionVector()
         : MinValue(FVector::ZeroVector)
         , MaxValue(FVector::ZeroVector)
-        , Gen(std::random_device{}())
-        , DistX(MinValue.X, MaxValue.X)
-        , DistY(MinValue.Y, MaxValue.Y)
-        , DistZ(MinValue.Z, MaxValue.Z)
     {}
 
     // 범위를 지정하는 생성자
     FDistributionVector(const FVector& InMin, const FVector& InMax)
         : MinValue(InMin)
         , MaxValue(InMax)
-        , Gen(std::random_device{}())
-        , DistX(MinValue.X, MaxValue.X)
-        , DistY(MinValue.Y, MaxValue.Y)
-        , DistZ(MinValue.Z, MaxValue.Z)
     {   }
-
-    void GetOutRange(FVector& MinOut, FVector& MaxOut);
-
-    void UpdateDistributionParam()
-    {
-        MaxValue.X = FMath::Max(MinValue.X, MaxValue.X);
-        MaxValue.Y = FMath::Max(MinValue.Y, MaxValue.Y);
-        MaxValue.Z = FMath::Max(MinValue.Z, MaxValue.Z);
-
-        DistX = std::uniform_real_distribution<float>(MinValue.X, MaxValue.X);
-        DistY = std::uniform_real_distribution<float>(MinValue.Y, MaxValue.Y);
-        DistZ = std::uniform_real_distribution<float>(MinValue.Z, MaxValue.Z);
-    }
 
     void UpdateRange(const FVector& InMin, const FVector& InMax)
     {
         MinValue = InMin;
         MaxValue = InMax;
-        
-        UpdateDistributionParam();
     }
 
     FVector GetValue()
     {
-        UpdateDistributionParam();
+        float RandX = FMath::FRandRange(MinValue.X, MaxValue.X);
+        float RandY = FMath::FRandRange(MinValue.Y, MaxValue.Y);
+        float RandZ = FMath::FRandRange(MinValue.Z, MaxValue.Z);
 
-        return FVector(DistX(Gen), DistY(Gen), DistZ(Gen));
+        FVector RandomVector = FVector(RandX, RandY, RandZ);
+        return RandomVector;
     }
+
+    void GetOutRange(FVector& OutMin, FVector& OutMax) const;
 
     friend FArchive& operator<<(FArchive& Ar, FDistributionVector& DV)
     {
         Ar << DV.MinValue << DV.MaxValue;
-
-        if (Ar.IsLoading())
-        {
-            DV.UpdateDistributionParam();
-        }
 
         return Ar;
     }

@@ -389,6 +389,46 @@ enum Type : uint8
 };
 }
 
+// Xbox 컨트롤러 버튼 타입 정의
+namespace EXboxButtons
+{
+enum Type
+{
+    Invalid,
+    A,
+    B,
+    X,
+    Y,
+    LeftBumper,
+    RightBumper,
+    LeftTrigger,
+    RightTrigger,
+    Back,
+    Start,
+    LeftThumbstick,
+    RightThumbstick,
+    DPadUp,
+    DPadDown,
+    DPadLeft,
+    DPadRight
+};
+}
+
+// Xbox 컨트롤러 아날로그 입력 타입
+namespace EXboxAnalog
+{
+enum Type
+{
+    Invalid = -1,
+    LeftStickX = 0,
+    LeftStickY = 1,
+    RightStickX = 2,
+    RightStickY = 3,
+    LeftTriggerAxis = 4,
+    RightTriggerAxis = 5
+};
+}
+
 struct FInputKeyManager // ue FInputKeyManager.cpp, 1530
 {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 #include "SkinnedMeshComponent.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Engine/AssetManager.h"
 #include "Engine/Asset/SkeletalMeshAsset.h"
 #include "Template/SubclassOf.h"
@@ -18,6 +18,13 @@ enum class EAnimationMode : uint8
 {
     AnimationBlueprint,
     AnimationSingleNode,
+};
+
+struct FSocketInfo
+{
+    FName SocketName;
+    FName BoneName;
+    FTransform LocalTransform; // 소켓의 로컬 변환
 };
 
 class USkeletalMeshComponent : public USkinnedMeshComponent
@@ -55,7 +62,7 @@ public:
     void SetSkeletalMeshAsset(USkeletalMesh* InSkeletalMeshAsset);
 
     FTransform GetSocketTransform(FName SocketName) const;
-
+    FTransform GetSocketWorldTransform(const FName& SocketName, const FSocketInfo* SocketInfo) const;
     TArray<FTransform> RefBonePoseTransforms; // 원본 BindPose에서 복사해온 에디팅을 위한 Transform
 
     void GetCurrentGlobalBoneMatrices(TArray<FMatrix>& OutBoneMatrices) const;
@@ -63,6 +70,7 @@ public:
     void DEBUG_SetAnimationEnabled(bool bEnable);
 
     void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
+    void PlayAnimation(UAnimSequence* NewAnimSequence, float BlendTime, bool bLooping);
 
     void SetAnimation(UAnimationAsset* NewAnimToPlay);
 
@@ -73,11 +81,11 @@ public:
     void Stop();
 
     void SetPlaying(bool bPlaying);
-    
+
     bool IsPlaying() const;
 
     void SetReverse(bool bIsReverse);
-    
+
     bool IsReverse() const;
 
     void SetPlayRate(float Rate);
@@ -103,9 +111,9 @@ public:
     int32 GetLoopEndFrame() const;
 
     void SetLoopEndFrame(int32 InLoopEndFrame);
-    
+
     bool bIsAnimationEnabled() const { return bPlayAnimation; }
-    
+
     virtual int CheckRayIntersection(const FVector& InRayOrigin, const FVector& InRayDirection, float& OutHitDistance) const override;
 
     const FSkeletalMeshRenderData* GetCPURenderData() const;
@@ -135,10 +143,10 @@ protected:
     bool NeedToSpawnAnimScriptInstance() const;
 
     EAnimationMode AnimationMode;
-    
+
 private:
     FPoseContext BonePoseContext;
-    
+
     USkeletalMesh* SkeletalMeshAsset;
 
     bool bPlayAnimation;
@@ -154,20 +162,27 @@ private:
     TArray<FConstraintInstance*> Constraints;
 
     void CPUSkinning(bool bForceUpdate = false);
-
+private:
+    TMap<FName, FSocketInfo> SocketMap;
+public:
+    void AddSocket(const FName& InSocketName, const FName& InBoneName, const FTransform& InLocalTransform);
+    TMap<FName, FSocketInfo> GetSockets();
+    void RemoveSocket(const FName& InSocketName);
+    const FSocketInfo* GetSocketInfo(const FName& InSocketName) const;
 public:
     UPROPERTY(EditAnywhere, FString, StateMachineFileName, = "LuaScripts/Animations/DefaultStateMachine.lua");
 
 public:
     TSubclassOf<UAnimInstance> AnimClass;
-    
+
     UAnimInstance* AnimScriptInstance;
 
     UAnimSingleNodeInstance* GetSingleNodeInstance() const;
 
     void SetAnimClass(UClass* NewClass);
-    
+
     UClass* GetAnimClass() const;
-    
+
     void SetAnimInstanceClass(class UClass* NewClass);
+
 };

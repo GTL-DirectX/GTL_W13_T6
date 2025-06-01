@@ -334,6 +334,7 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
         SpriteReplayData->SubImages_Horizontal = CurrentLODLevel->RequiredModule->SubImagesHorizontal;
         SpriteReplayData->SubImages_Vertical = CurrentLODLevel->RequiredModule->SubImagesVertical;
         SpriteReplayData->SubUVDataOffset = SubUVDataOffset;
+        SpriteReplayData->bUseLocalSpace = CurrentLODLevel->RequiredModule->bUseLocalSpace;
     }
 
     return true;

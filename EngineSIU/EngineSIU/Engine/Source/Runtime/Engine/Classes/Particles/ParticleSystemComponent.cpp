@@ -19,7 +19,6 @@ UObject* UParticleSystemComponent::Duplicate(UObject* InOuter)
     NewComponent->SetRelativeTransform(GetRelativeTransform());
 
     NewComponent->SetParticleSystem(GetParticleSystem());
-    
     return NewComponent;
 }
 

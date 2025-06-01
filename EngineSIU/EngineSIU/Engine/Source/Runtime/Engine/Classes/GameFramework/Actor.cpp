@@ -95,6 +95,20 @@ UObject* AActor::Duplicate(UObject* InOuter)
             ChildComp->AttachToComponent(*NewParentComp);
         }
     }
+    for (const auto& [ChildComp, OriginalParentComp] : ParentChildMap)
+    {
+        if (USceneComponent** NewParentComp = OriginalToDuplicateMap.Find(OriginalParentComp))
+        {
+            // 원본에서 부착 소켓 이름도 받아온다.
+            FName SocketName = NAME_None;
+            if (const USceneComponent* OriginalChildSceneComp = Cast<USceneComponent>(ChildComp))
+            {
+                SocketName = OriginalChildSceneComp->GetAttachSocketName();
+            }
+            // 소켓 이름까지 지정하여 부모-자식 관계 복구
+            ChildComp->AttachToComponent(*NewParentComp, SocketName);
+        }
+    }
 
     // LuaScriptComponent는 무조건 하나만 있다고 가정하고 위에서 복사된 컴포넌트를 대입.
     NewActor->LuaScriptComponent = NewActor->GetComponentByClass<ULuaScriptComponent>();
@@ -240,6 +254,11 @@ UActorComponent* AActor::AddComponent(UClass* InClass, FName InName, bool bTryRo
     
     UE_LOG(ELogLevel::Error, TEXT("UActorComponent failed: ComponentClass is null."));
     return nullptr;
+}
+
+void AActor::AddOwnedComponent(UActorComponent* Component)
+{
+    OwnedComponents.Add(Component);
 }
 
 void AActor::RemoveOwnedComponent(UActorComponent* Component)

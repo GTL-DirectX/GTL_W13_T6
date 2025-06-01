@@ -3,6 +3,7 @@
 #include "CameraModifier.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/CameraModifier_CameraShake.h"
+#include "GameFramework/Pawn.h"
 #include "World/World.h"
 
 bool FTViewTarget::Equal(const FTViewTarget& OtherTarget) const
@@ -302,7 +303,6 @@ void APlayerCameraManager::SetViewTarget(class AActor* NewTarget, struct FViewTa
     
 	if (TransitionParams.BlendTime > 0)
 	{
-
 		BlendTimeToGo = TransitionParams.BlendTime;
 
 		AssignViewTarget(PCOwner->GetPossessedActor(), ViewTarget);

@@ -105,6 +105,23 @@ void UActorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
     bHasBegunPlay = false;
 }
 
+void UActorComponent::SetOwner(AActor* NewOwner)
+{
+    if (!NewOwner || NewOwner == OwnerPrivate)
+    {
+        return;
+    }
+    if (OwnerPrivate)
+    {
+        OwnerPrivate->RemoveOwnedComponent(this);
+    }
+    if (OwnerPrivate)
+    {
+        OwnerPrivate->AddOwnedComponent(this);
+    }
+    OwnerPrivate = NewOwner;
+}
+
 void UActorComponent::DestroyComponent(bool bPromoteChildren)
 {
     if (bIsBeingDestroyed)

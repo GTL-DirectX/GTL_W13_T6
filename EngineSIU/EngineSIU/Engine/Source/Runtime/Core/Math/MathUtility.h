@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 #include <cmath>
 #include <concepts>
 #include <numbers>
 #include <random>
+#include <chrono>
 #include <type_traits>
 
 #include "MathFwd.h"
@@ -47,6 +48,11 @@ struct TCustomLerp
 template <typename T>
 concept TCustomLerpable = TCustomLerp<T>::Value;
 
+namespace
+{
+    // 스레드 안전성이 필요하다면 thread_local 또는 다른 동기화 메커니즘 고려
+    static std::mt19937 GSharedRandomEngine(static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+}
 
 struct FMath
 {
@@ -625,5 +631,20 @@ struct FMath
     static FORCEINLINE double Frac(double Value)
     {
         return Value - FloorToDouble(Value);
+    }
+    [[nodiscard]] static FORCEINLINE float FRand()
+    {
+        // std::uniform_real_distribution은 [a, b) 범위의 실수를 생성합니다.
+        std::uniform_real_distribution<float> Dist(0.0f, 1.0f);
+        return Dist(GSharedRandomEngine); // 익명 네임스페이스의 전역 엔진 사용
+    }
+
+    [[nodiscard]] static FORCEINLINE float FRandRange(float InMin, float InMax)
+    {
+        // FRand()의 결과는 [0.0, 1.0) 이므로, InMax는 포함되지 않습니다.
+        // 만약 InMax를 포함하고 싶다면, 미세한 조정이 필요하거나
+        // std::uniform_real_distribution<float> Dist(InMin, std::nextafter(InMax, std::numeric_limits<float>::infinity()));
+        // 와 같은 방식을 고려할 수 있지만, 대부분의 경우 FRand() 기반이면 충분합니다.
+        return InMin + (InMax - InMin) * FRand();
     }
 };

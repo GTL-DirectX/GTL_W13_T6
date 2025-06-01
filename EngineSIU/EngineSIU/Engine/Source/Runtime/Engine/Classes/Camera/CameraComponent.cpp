@@ -1,5 +1,6 @@
 #include "CameraComponent.h"
 #include "Engine/Engine.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UObject/Casts.h"
 #include "World/World.h"
@@ -38,11 +39,11 @@ void UCameraComponent::TickComponent(float DeltaTime)
     */
 }
 
-void UCameraComponent::FollowMainPlayer()
+void UCameraComponent::FollowPlayer(int PlayerIndex)
 {
-    FVector PlayerLocation = GEngine->ActiveWorld->GetMainPlayer()->GetActorLocation();
+    FVector PlayerLocation = GEngine->ActiveWorld->GetPlayer(PlayerIndex)->GetActorLocation();
     
-    FVector PlayerBackward = -GEngine->ActiveWorld->GetMainPlayer()->GetActorForwardVector();
+    FVector PlayerBackward = -GEngine->ActiveWorld->GetPlayer(PlayerIndex)->GetActorForwardVector();
 
     FVector CameraOffset = PlayerBackward * DistanceBehind + FVector(0, 0, CameraHeight);
     

@@ -5,11 +5,15 @@
 #include "UObject/ObjectMacros.h"
 #include "WorldType.h"
 #include "Level.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/EventManager.h"
+#include "GameFramework/Player.h"
 #include "UObject/UObjectIterator.h"
 
+constexpr int MAX_PLAYER = 4;
+
+class ACharacter;
 class UPrimitiveComponent;
 struct FOverlapResult;
 class UCameraComponent;
@@ -69,16 +73,20 @@ public:
     
     FEventManager EventManager;
 
-    void SetMainPlayer(APlayer* InPlayer){ MainPlayer = InPlayer; }
-    APlayer* GetMainPlayer() const;
+    void SetPlayer(int Index, APlayer* InPlayer){ Players[Index] = InPlayer; }
+    APlayer* GetPlayer(int Index) const;
 
-    void SetPlayerController(APlayerController* InPlayerController){ PlayerController = InPlayerController; }
-    APlayerController* GetPlayerController() const;
+    void SetPlayerController(int Index, APlayerController* InPlayerController){ PlayerControllers[Index] = InPlayerController; }
+    APlayerController* GetPlayerController(int Index) const;
 
     AGameMode* GetGameMode() const { return GameMode; }
+
+    bool IsPlayerConnected(int Index) const { return bCurrentlyConnected[Index]; };
     
     void CheckOverlap(const UPrimitiveComponent* Component, TArray<FOverlapResult>& OutOverlaps) const;
 
+    void ConnectedPlayer(int Index);
+    void DisconnectedPlayer(int Index);
 public:
     double TimeSeconds;
 
@@ -94,11 +102,10 @@ private:
 
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TArray<AActor*> PendingBeginPlayActors;
-
-    // TODO: 싱글 플레이어면 상관 없지만, 로컬 멀티 플레이어인 경우를 위해 배열로 관리하는 방법을 고려하기.
-    APlayerController* PlayerController = nullptr;
-
-    APlayer* MainPlayer = nullptr;
+    
+    bool bCurrentlyConnected[MAX_PLAYER] = { false, };
+    APlayerController* PlayerControllers[MAX_PLAYER] = { nullptr, };
+    APlayer* Players[MAX_PLAYER] = { nullptr, };
 
     UTextComponent* MainTextComponent = nullptr;
 
