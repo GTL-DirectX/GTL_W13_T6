@@ -13,6 +13,7 @@ public:
     virtual UObject* Duplicate(UObject* InOuter) override;
     
     virtual void PostSpawnInitialize() override;
+    virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override { }
@@ -32,5 +33,7 @@ public:
     // bool IsFalling() const;
     // bool IsJumping();
     // bool IsAttacking();
+
+    FString Test;
 
 };
