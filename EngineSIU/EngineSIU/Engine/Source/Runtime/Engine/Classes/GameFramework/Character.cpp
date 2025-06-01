@@ -4,10 +4,17 @@
 #include "Components/CapsuleComponent.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 
 UObject* ACharacter::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
+
+    if (NewActor)
+    {
+        NewActor->CapsuleComponent = Cast<UCapsuleComponent>(CapsuleComponent->Duplicate(InOuter));
+        NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
+    }
 
     return NewActor;
 }
@@ -18,16 +25,35 @@ void ACharacter::PostSpawnInitialize()
 
     RootComponent = AddComponent<USceneComponent>();
 
-    if (!SkeletalMeshComponent)
-    {
-        SkeletalMeshComponent = AddComponent<USkeletalMeshComponent>("SkeletalMeshComponent");
-    }
 
     if (!CapsuleComponent)
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
     }
 
+    if (!SkeletalMeshComponent)
+    {
+        SkeletalMeshComponent = AddComponent<USkeletalMeshComponent>("SkeletalMeshComponent");
+        SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Human/Human")));
+        SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+        SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));
+    }
+}
+
+void ACharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (SkeletalMeshComponent)
+    {
+        if (ULuaScriptAnimInstance* AnimInstance = Cast<ULuaScriptAnimInstance>(SkeletalMeshComponent->GetAnimInstance()))
+        {
+            if (auto StateMachine = AnimInstance->GetAnimStateMachine())
+            {
+                StateMachine->BindTargetActor(this);
+            }
+        }
+    }
 }
 
 void ACharacter::Tick(float DeltaTime)
@@ -37,7 +63,10 @@ void ACharacter::Tick(float DeltaTime)
 
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
-    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>())
+    Test = "Test";
+    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
+        "Test", &ACharacter::Test
+        )
 }
 
 bool ACharacter::BindSelfLuaProperties()

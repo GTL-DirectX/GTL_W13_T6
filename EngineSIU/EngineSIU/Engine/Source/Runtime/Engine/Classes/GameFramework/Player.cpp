@@ -8,10 +8,12 @@
 #include "Engine/Contents/Weapons/Weapon.h"
 #include "Engine/Contents/Weapons/WeaponComponent.h"
 
+#include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
+
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
     NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
@@ -37,6 +39,22 @@ void APlayer::Tick(float DeltaTime)
     //     SetActorRotation(SocketTransform.GetRotation().Rotator());
     //     SetActorLocation(SocketTransform.GetTranslation());
     // }
+}
+
+void APlayer::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (SkeletalMeshComponent)
+    {
+        if (ULuaScriptAnimInstance* AnimInstance = Cast<ULuaScriptAnimInstance>(SkeletalMeshComponent->GetAnimInstance()))
+        {
+            if (auto StateMachine = AnimInstance->GetAnimStateMachine())
+            {
+                StateMachine->BindTargetActor(this);
+            }
+        }
+    }
 }
 
 void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
@@ -67,6 +85,25 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index){ PlayerConnected(Index); });
         PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index){ PlayerDisconnected(Index); });
     }
+}
+
+void APlayer::RegisterLuaType(sol::state& Lua)
+{
+    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
+        "Speed", &APlayer::MoveSpeed
+        )
+}
+
+bool APlayer::BindSelfLuaProperties()
+{
+    if (!Super::BindSelfLuaProperties())
+    {
+        return false;
+    }
+
+    
+
+    return true;
 }
 
 void APlayer::MoveForward(float DeltaTime)
