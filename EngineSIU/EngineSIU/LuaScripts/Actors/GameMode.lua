@@ -48,8 +48,8 @@ function ReturnTable:SpawnMonster(DeltaTime)
     print("GameMode Spawn Monster Tick: ", DeltaTime)
     -- 예: 로컬 좌표를 랜덤으로 생성해서 몬스터 스폰 테스트
 
-    local randomX = math.random(-150, 150)
-    local randomY = math.random(-150, 150)
+    local randomX = math.random(-140, 140)
+    local randomY = math.random(-140, 140)
     local randomZ = 50
     local spawnPos = FVector(randomX, randomY, randomZ)
     
@@ -58,7 +58,7 @@ function ReturnTable:SpawnMonster(DeltaTime)
     print("Spawn Rot : ", spawnRot.Pitch, " " , spawnRot.Yaw, " " , spawnRot.Roll)
     print("this: ", self.this)
 
-    self.this:SpawnMonster(spawnPos, spawnRot)
+    -- self.this:SpawnMonster(spawnPos, spawnRot)
 
     -- self.SpawnMonster()
 end

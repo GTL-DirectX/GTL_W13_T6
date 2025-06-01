@@ -27,8 +27,10 @@ public:
     USkeletalMeshComponent* OwningComponent;
     ULuaScriptAnimInstance* OwningAnimInstance;
     
-private:
+public:
     UPROPERTY(EditAnywhere, FString, LuaScriptName, = TEXT(""));
+
+private:
     sol::table LuaTable = {};
 
 };

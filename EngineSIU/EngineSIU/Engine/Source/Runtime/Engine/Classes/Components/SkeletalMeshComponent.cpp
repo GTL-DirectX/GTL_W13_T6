@@ -773,6 +773,16 @@ void USkeletalMeshComponent::CreatePhysXGameObject()
     }
 }
 
+void USkeletalMeshComponent::SetStateMachineFileName(FString& InStateMachineFilename)
+{
+    StateMachineFileName = InStateMachineFilename;
+    if (auto Instance = Cast<ULuaScriptAnimInstance>(AnimScriptInstance))
+    {
+        Instance->GetAnimStateMachine()->LuaScriptName = InStateMachineFilename;
+        Instance->GetAnimStateMachine()->InitLuaStateMachine();
+    }
+}
+
 void USkeletalMeshComponent::AddBodyInstance(FBodyInstance* BodyInstance)
 {
     Bodies.Add(BodyInstance);

@@ -51,6 +51,12 @@ void UAnimStateMachine::InitLuaStateMachine()
     {
         return;
     }
+
+    //if (LuaTable.valid())
+    //{
+    //    FLuaScriptManager::Get().UnRegisterActiveAnimLua(this);
+    //}
+
     LuaTable = FLuaScriptManager::Get().CreateLuaTable(LuaScriptName);
 
     FLuaScriptManager::Get().RegisterActiveAnimLua(this);

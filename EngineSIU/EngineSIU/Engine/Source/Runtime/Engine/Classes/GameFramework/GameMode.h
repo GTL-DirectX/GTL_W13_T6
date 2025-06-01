@@ -52,7 +52,7 @@ public:
 
     FGameInfo GameInfo;
     
-private:
+protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/GameMode.lua")
 
     bool bGameRunning = false; // 내부 
