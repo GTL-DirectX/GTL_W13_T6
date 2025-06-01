@@ -18,7 +18,7 @@ public:
     float NearClip = 0.1f;
     float FarClip = 1000.0f;
 
-    float DistanceBehind = 10.f;
+    float DistanceBehind = 30.f;
     float CameraHeight = 15.f;
     float CurrentCameraZ = 0.f;
     float CameraZ = 0.f; //바닥에 닿을때마다 바닥 Z로 업데이트

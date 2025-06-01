@@ -23,7 +23,7 @@ private:
     void MoveUp(float DeltaTime);
 
     void RotateYaw(float DeltaTime);
-    void RotatePitch(float DeltaTime);
+    void RotatePitch(float DeltaTime) const;
 
     void PlayerConnected(int TargetIndex) const;
     void PlayerDisconnected(int TargetIndex) const;
@@ -35,7 +35,7 @@ private:
     int PlayerIndex = -1;
     
     float MoveSpeed = 100.0f; // 이동 속도
-    float RotationSpeed = 0.1f; // 회전 속도
+    float RotationSpeed = 100.0f; // 회전 속도
 
 public:
     void Attack();
@@ -43,5 +43,4 @@ public:
 
 private:
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
-
 };
