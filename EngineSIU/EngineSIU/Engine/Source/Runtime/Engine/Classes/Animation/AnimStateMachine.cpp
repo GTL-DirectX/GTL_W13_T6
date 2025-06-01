@@ -63,7 +63,7 @@ void UAnimStateMachine::InitLuaStateMachine()
     if (!LuaTable.valid())
         return;
 
-    LuaTable["OwnerCharacter"] = Cast<AActor>(OwningComponent->GetOwner());
+
 }
 
 

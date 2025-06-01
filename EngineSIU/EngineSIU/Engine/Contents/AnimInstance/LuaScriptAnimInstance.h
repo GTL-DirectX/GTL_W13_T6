@@ -15,6 +15,7 @@ public:
 
     virtual void InitializeAnimation() override;
     virtual void NativeInitializeAnimation() override;
+    virtual UObject* Duplicate(UObject* InOuter) override;
 
     virtual void NativeUpdateAnimation(float DeltaSeconds, FPoseContext& OutPose) override;
     
@@ -49,6 +50,9 @@ public:
     }
 
     void SetAnimation(UAnimSequence* NewAnim, float BlendingTime, bool LoopAnim = false, bool ReverseAnim = false);
+
+public:
+    UAnimStateMachine* GetAnimStateMachine() const { return StateMachine; }
 
 private:
     float ElapsedTime;

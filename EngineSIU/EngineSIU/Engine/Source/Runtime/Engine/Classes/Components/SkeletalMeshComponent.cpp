@@ -51,6 +51,7 @@ UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
     NewComponent->SetSkeletalMeshAsset(SkeletalMeshAsset);
     NewComponent->SetAnimationMode(AnimationMode);
     NewComponent->SocketMap = SocketMap;
+
     if (AnimationMode == EAnimationMode::AnimationBlueprint)
     {
         NewComponent->SetAnimClass(AnimClass);
@@ -370,7 +371,7 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
         bool bShouldSpawnSingleNodeInstance = !AnimScriptInstance && SkelMesh && SkelMesh->GetSkeleton();
         if (bShouldSpawnSingleNodeInstance)
         {
-            AnimScriptInstance = FObjectFactory::ConstructObject<ULuaScriptAnimInstance>(this);
+            AnimScriptInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(this);
 
             if (AnimScriptInstance)
             {
@@ -429,6 +430,9 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
 
     // 소켓 맵에 없으면 본 이름으로 직접 찾기 (기존 동작)
     FTransform Transform = FTransform::Identity;
+    
+    if (!GetSkeletalMeshAsset())
+        return Transform;
 
     if (!GetSkeletalMeshAsset())
     {

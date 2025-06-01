@@ -1,6 +1,7 @@
 ﻿#include "Pawn.h"
 #include "PlayerController.h"
 #include "Components/InputComponent.h"
+#include "Lua/LuaUtils/LuaTypeMacros.h"
 
 void APawn::BeginPlay()
 {
@@ -133,4 +134,9 @@ void APawn::DisableInput(APlayerController* PlayerController)
     }
 
     InputComponent = nullptr;
+}
+
+void APawn::RegisterLuaType(sol::state& Lua)
+{
+    DEFINE_LUA_TYPE_WITH_PARENT(APawn, sol::bases<AActor>())
 }

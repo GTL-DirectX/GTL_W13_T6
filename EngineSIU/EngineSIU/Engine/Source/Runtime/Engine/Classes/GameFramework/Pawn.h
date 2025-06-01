@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Actor.h"
 
 //TODO: Controller 부착 필요, 아직 Pawn은 쓰지 말 것
@@ -18,7 +18,7 @@ public:
     virtual void Destroyed() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-    UObject* Duplicate(UObject* InOuter) override;
+    virtual UObject* Duplicate(UObject* InOuter) override;
 
     /** Pawn을 Controller에 의해 점유(Possess)될 때 호출 */
     virtual void PossessedBy(AController* NewController);
@@ -44,6 +44,8 @@ public:
     virtual void DisableInput(APlayerController* PlayerController);
 
     AController* GetController() const { return Controller; }
+
+    virtual void RegisterLuaType(sol::state& Lua) override;
 
 protected:
     UInputComponent* InputComponent;

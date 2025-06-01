@@ -41,6 +41,7 @@
 
 #include "Animation/SkeletalMeshActor.h"
 #include "Engine/Classes/Engine/AssetManager.h"
+#include "Engine/Contents/Weapons/Weapon.h"
 #include "GameFramework/Player.h"
 #include "GameFramework/SequencerPlayer.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -377,6 +378,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { .Label = "SkeletalMeshActor", .OBJ = OBJ_SKELETALMESH },
             { .Label = "SequencerPlayer",   .OBJ = OBJ_SEQUENCERPLAYER },
             { .Label = "Player",   .OBJ = OBJ_PLAYER },
+            { .Label = "Weapon",            .OBJ = OBJ_WEAPON },
         };
 
         for (const auto& primitive : primitives)
@@ -497,13 +499,18 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                 {
                     SpawnedActor = World->SpawnActor<ASequencerPlayer>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_SEQUENCERPLAYER"));
+                    break;
                 }
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:
                 {
                     SpawnedActor = World->SpawnActor<APlayer>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYER"));
+                    break;
                 }
+                case OBJ_WEAPON:
+                    SpawnedActor = World->SpawnActor<AWeapon>();
+                    SpawnedActor->SetActorLabel("OBJ_WEAPON");
                 case OBJ_END:
                     break;
                 }
