@@ -58,7 +58,7 @@ function ReturnTable:SpawnMonster(DeltaTime)
     print("Spawn Rot : ", spawnRot.Pitch, " " , spawnRot.Yaw, " " , spawnRot.Roll)
     print("this: ", self.this)
 
-    -- self.this:SpawnMonster(spawnPos, spawnRot)
+    self.this:SpawnMonster(spawnPos, spawnRot)
 
     -- self.SpawnMonster()
 end

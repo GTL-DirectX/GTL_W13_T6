@@ -77,8 +77,6 @@ private:
     
     bool bIsBlending;
 
-public:
-    UAnimStateMachine* GetAnimStateMachine() const { return StateMachine; }
 private:
     
     UPROPERTY(EditAnywhere, UAnimStateMachine*, StateMachine, = nullptr)

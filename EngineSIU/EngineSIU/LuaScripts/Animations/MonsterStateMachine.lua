@@ -11,17 +11,18 @@ AnimFSM = {
         -- self.current = "Contents/Bowser/Armature|Armature.002|Armature.002|Bowser_Hit"
         self.current = "Contents/Bowser/Armature|Bowser_Land"
         self.current = "Contents/Bowser/Armature|Bowser_Hit3"
-        self.current = "Contents/Bowser/Armature|Bowser_Spin"
-        self.current = "Contents/Bowser/Armature|Bowser_Falling"
         self.current = "Contents/Bowser/Armature|Bowser_Backhit" -- die
+        self.current = "Contents/Bowser/Armature|Bowser_Falling"
+        self.current = "Contents/Bowser/Armature|Bowser_Spin"
         -- self.current = "Contents/Bowser/Armature.002|Bowser_Die"
 
         -- self.OwnerCharacter.IsFalling()
 
-    if (self.OwnerCharacter.IsFalling()) then
-        self.current = "Contents/Bowser/Armature|Bowser_Falling"
-        self.BlendTime = 0.5
-    end
+        -- print("Anim Test before Falling : ", self.OwnerCharacter)
+        -- if (self.OwnerCharacter.IsFalling()) then
+        --     self.current = "Contents/Bowser/Armature|Bowser_Spin"
+        --     self.BlendTime = 0.5
+        -- end
 
         return {
             anim = self.current,

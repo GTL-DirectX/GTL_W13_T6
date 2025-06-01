@@ -59,7 +59,7 @@ local function HandleFalling(self, DeltaTime)
     local this = self.this
     local newLocation = ApplyGravity(this.ActorLocation, DeltaTime)
     this.ActorLocation = newLocation
-    print("Falling... Z = ", newLocation.Z)
+    -- print("Falling... Z = ", newLocation.Z)
 end
 
 local function HandleLanding(self)
@@ -69,7 +69,7 @@ local function HandleLanding(self)
         loc.Z = GroundZ
         this.ActorLocation = loc
     end
-    print("Landed at Z = ", this.ActorLocation.Z)
+    -- print("Landed at Z = ", this.ActorLocation.Z)
 end
 
 local function HandleChasing(self, DeltaTime)
@@ -79,7 +79,7 @@ local function HandleChasing(self, DeltaTime)
     if followTimer >= followDuration then
         followTimer = 0.0
         targetPosition = this:GetTargetPosition()
-        print("New Target Acquired: ", targetPosition.X, targetPosition.Y, targetPosition.Z)
+        -- print("New Target Acquired: ", targetPosition.X, targetPosition.Y, targetPosition.Z)
     end
 
     local currentPos = this.ActorLocation
@@ -99,6 +99,7 @@ end
 function ReturnTable:Tick(DeltaTime)
     local currentLocation = self.this.ActorLocation
 
+    -- print("Height  chasing ", currentLocation.Z, isChasing)
     if not isChasing then
         if IsFalling(currentLocation) then
             HandleFalling(self, DeltaTime)
@@ -113,7 +114,7 @@ function ReturnTable:Tick(DeltaTime)
 
     
 
-    print("Monster Tick  ", DeltaTime)
+    -- print("Monster Tick  ", DeltaTime)
     -- 기본적으로 Table로 등록된 변수는 self, Class usertype으로 선언된 변수는 self.this로 불러오도록 설정됨.
     -- sol::property로 등록된 변수는 변수 사용으로 getter, setter 등록이 되어 .(dot) 으로 접근가능하고
     -- 바로 등록된 경우에는 PropertyName() 과 같이 함수 형태로 호출되어야 함.

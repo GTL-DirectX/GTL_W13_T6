@@ -6,7 +6,7 @@ class USkeletalMeshComponent;
 
 class AMonster : public ACharacter
 {
-    DECLARE_CLASS(AMonster, APawn)
+    DECLARE_CLASS(AMonster, ACharacter)
 public:
     AMonster() = default;
     virtual UObject* Duplicate(UObject* InOuter) override;
@@ -17,12 +17,13 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    bool IsFalling() const;
 
     FVector GetTargetPosition();
 
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Monster.lua")
-    UPROPERTY(EditAnywhere, FString, StateMachineFileName, = "LuaScripts/Animations/MonsterStateMachine.lua");
+    UPROPERTY(EditAnywhere, FString, StateMachineFileName, = "LuaScripts/Animations/MonsterStateMachine.lua")
 
     FDistributionVector TargetPos;
 };
