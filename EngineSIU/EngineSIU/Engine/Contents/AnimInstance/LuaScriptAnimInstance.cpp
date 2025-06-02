@@ -102,7 +102,7 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
 
     PlayAnim->EvaluateAnimNotifies(
         PlayAnim->Notifies,
-        ElapsedTime,
+        ElapsedTime/ static_cast<float>(FrameRate),
         PreviousTime,
         DeltaPlayTime,
         SkeletalMeshComp,
