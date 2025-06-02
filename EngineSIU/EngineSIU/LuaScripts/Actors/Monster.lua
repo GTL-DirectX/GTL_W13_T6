@@ -86,7 +86,7 @@ local function HandleChasing(self, DeltaTime)
         this:UpdateTargetPosition()
         targetPos = this:GetTargetPosition()
     end
-        print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
+        -- print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
 
     -- print("New Target Acquired: ", this.TargetPosition.X, this.TargetPosition.Y, this.TargetPosition.Z)
     this.ActorLocation = MoveTowards(this.ActorLocation, this.TargetPosition, DeltaTime, chaseSpeed)

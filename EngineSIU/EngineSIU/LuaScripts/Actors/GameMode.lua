@@ -21,6 +21,7 @@ end
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
+    -- this.IsAllPlayerDead
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
     if ElapsedTimeSinceLastSpawn >= SpawnRate then
         self:SpawnMonster(DeltaTime)
