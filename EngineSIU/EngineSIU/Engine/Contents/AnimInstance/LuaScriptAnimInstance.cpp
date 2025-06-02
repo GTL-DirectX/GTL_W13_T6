@@ -43,6 +43,20 @@ void ULuaScriptAnimInstance::NativeInitializeAnimation()
 {
 }
 
+UObject* ULuaScriptAnimInstance::Duplicate(UObject* InOuter)
+{
+    ULuaScriptAnimInstance* NewInstance = Cast<ULuaScriptAnimInstance>(Super::Duplicate(InOuter));
+    if (NewInstance)
+    {
+        if (StateMachine)
+        {
+            NewInstance->StateMachine = Cast<UAnimStateMachine>(StateMachine->Duplicate(InOuter)); 
+            NewInstance->StateMachine->Initialize(Cast<USkeletalMeshComponent>(InOuter), NewInstance);
+        }
+    }
+    return NewInstance;
+}
+
 void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseContext& OutPose)
 {
     UAnimInstance::NativeUpdateAnimation(DeltaSeconds, OutPose);

@@ -7,6 +7,7 @@
 #include "Define.h"
 #include "EngineLoop.h"
 #include "WindowsCursor.h"
+#include "Engine/Engine.h"
 #include "Math/Vector.h"
 #include "World/World.h"
 
@@ -800,6 +801,7 @@ void FSlateAppMessageHandler::OnXboxControllerAnalogInput(uint32 ControllerId, E
 void FSlateAppMessageHandler::OnXboxControllerConnected(uint32 ControllerId)
 {
     UE_LOG(ELogLevel::Display, "Xbox Controller %d connected", ControllerId);
+    GEngine->ActiveWorld->ConnectedPlayer(ControllerId);
     OnXboxControllerConnectedDelegate.Broadcast(ControllerId);
 }
 

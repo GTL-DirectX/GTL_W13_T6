@@ -8,11 +8,15 @@
 #include "Engine/Contents/Weapons/Weapon.h"
 #include "Engine/Contents/Weapons/WeaponComponent.h"
 
+#include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
+
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-
     NewActor->Socket = Socket;
+    NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
     
     return NewActor;
 }
@@ -23,23 +27,33 @@ void APlayer::PostSpawnInitialize()
 
     CameraComponent = AddComponent<UCameraComponent>();
     CameraComponent->SetupAttachment(RootComponent);
-
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
+    // if (SkeletalMeshComponent)
+    // {
+    //     const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
+    //     SetActorRotation(SocketTransform.GetRotation().Rotator());
+    //     SetActorLocation(SocketTransform.GetTranslation());
+    // }
+}
+
+void APlayer::BeginPlay()
+{
+    Super::BeginPlay();
+
     if (SkeletalMeshComponent)
     {
-        const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
-        SetActorRotation(SocketTransform.GetRotation().Rotator());
-        SetActorLocation(SocketTransform.GetTranslation());
-    }
-
-    if (CameraComponent)
-    {
-        CameraComponent->FollowPlayer(PlayerIndex);
+        if (ULuaScriptAnimInstance* AnimInstance = Cast<ULuaScriptAnimInstance>(SkeletalMeshComponent->GetAnimInstance()))
+        {
+            if (auto StateMachine = AnimInstance->GetAnimStateMachine())
+            {
+                StateMachine->BindTargetActor(this);
+            }
+        }
     }
 }
 
@@ -56,8 +70,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
         PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
 
-        // PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime); });
-        // PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
+        PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime); });
+        PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { MoveUp(DeltaTime); });
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { MoveUp(-DeltaTime); });
@@ -65,12 +79,31 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
 
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime * 1000); });
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(-DeltaTime * 1000); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index){ PlayerConnected(Index); });
         PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index){ PlayerDisconnected(Index); });
     }
+}
+
+void APlayer::RegisterLuaType(sol::state& Lua)
+{
+    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
+        "Speed", &APlayer::MoveSpeed
+        )
+}
+
+bool APlayer::BindSelfLuaProperties()
+{
+    if (!Super::BindSelfLuaProperties())
+    {
+        return false;
+    }
+
+    
+
+    return true;
 }
 
 void APlayer::MoveForward(float DeltaTime)
@@ -98,11 +131,14 @@ void APlayer::RotateYaw(float DeltaTime)
     SetActorRotation(NewRotation);
 }
 
-void APlayer::RotatePitch(float DeltaTime)
+void APlayer::RotatePitch(float DeltaTime) const
 {
-    FRotator NewRotation = GetActorRotation();
-    NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch - DeltaTime*RotationSpeed, -89.0f, 89.0f);
-    SetActorRotation(NewRotation);
+    if (CameraComponent)
+    {
+        FRotator NewRotation = CameraComponent->GetRelativeRotation();
+        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + DeltaTime * RotationSpeed, -89.0f, 89.0f);
+        CameraComponent->SetRelativeRotation(NewRotation);
+    }
 }
 
 void APlayer::PlayerConnected(int TargetIndex) const

@@ -29,7 +29,6 @@ UWorld* UWorld::CreateWorld(UObject* InOuter, const EWorldType InWorldType, cons
     NewWorld->WorldName = InWorldName;
     NewWorld->WorldType = InWorldType;
     NewWorld->InitializeNewWorld();
-
     
     return NewWorld;
 }
@@ -48,6 +47,10 @@ UObject* UWorld::Duplicate(UObject* InOuter)
     UWorld* NewWorld = Cast<UWorld>(Super::Duplicate(InOuter));
     NewWorld->ActiveLevel = Cast<ULevel>(ActiveLevel->Duplicate(NewWorld));
     NewWorld->ActiveLevel->InitLevel(NewWorld);
+    for (int i = 0; i < MAX_PLAYER; i++)
+    {
+        NewWorld->bCurrentlyConnected[i] = bCurrentlyConnected[i];
+    }
     
     NewWorld->CollisionManager = new FCollisionManager();
     

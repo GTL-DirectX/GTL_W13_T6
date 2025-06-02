@@ -15,6 +15,11 @@ AnimFSM = {
         self.current = "Contents/Bowser/Armature|Bowser_Hit3"
         -- self.current = "Contents/Bowser/Armature.002|Bowser_Die"
 
+        self.current = "Contents/Human/NarutoRun"
+
+        print(self.OwnerCharacter.Speed)
+        
+
         return {
             anim = self.current,
             blend = 0.5
