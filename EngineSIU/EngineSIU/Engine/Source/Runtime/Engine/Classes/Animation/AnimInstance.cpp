@@ -20,6 +20,7 @@ void UAnimInstance::InitializeAnimation()
 UObject* UAnimInstance::Duplicate(UObject* InOuter)
 {
     UAnimInstance* NewInstance = Cast<UAnimInstance>(Super::Duplicate(InOuter));
+
     if (NewInstance)
     {
         NewInstance->CurrentSkeleton = CurrentSkeleton;
