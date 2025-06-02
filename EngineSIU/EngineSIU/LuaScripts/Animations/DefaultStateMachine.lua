@@ -17,7 +17,7 @@ AnimFSM = {
 
         self.current = "Contents/Human/NarutoRun"
 
-        print(self.OwnerCharacter.Speed)
+        -- print(self.OwnerCharacter.Speed)
         
 
         return {
