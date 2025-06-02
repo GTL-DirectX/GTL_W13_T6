@@ -15,7 +15,7 @@ UObject* AMonster::Duplicate(UObject* InOuter)
 
 void AMonster::PostSpawnInitialize()
 {
-    TargetPos = FDistributionVector(FVector(-140.0f, -140.0f, 0.0f), FVector(140.0f, 140.0f, 0.f));
+    TargetDistributionVector = FDistributionVector(FVector(-140.0f, -140.0f, 0.0f), FVector(140.0f, 140.0f, 0.f));
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
     
@@ -28,8 +28,16 @@ void AMonster::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(AMonster,
         sol::bases<AActor, ACharacter, APawn>(),
-        "GetTargetPosition", &ThisClass::GetTargetPosition,
-        "IsFalling", &ThisClass::IsFalling
+        "GetTargetPosition", &ThisClass::UpdateTargetPosition,
+        "UpdateTargetPosition", &ThisClass::UpdateTargetPosition,
+        "FollowTimer", sol::property(&ThisClass::GetFollowTimer, &ThisClass::SetFollowTimer),
+        "TargetPosition", sol::property(&ThisClass::GetTargetPosition, &ThisClass::SetTargetPosition),
+
+        "IsHit", sol::property(&ThisClass::IsHit, &ThisClass::SetHit),
+        "IsDead", sol::property(&ThisClass::IsDead, &ThisClass::SetDead),
+        "IsChasing", sol::property(&ThisClass::GetIsChasing, &ThisClass::SetIsChasing),
+        "IsFalling", sol::property(&ThisClass::IsFalling, &ThisClass::SetFalling),
+        "IsFallingToDeath", sol::property(&ThisClass::IsFallingToDeath, &ThisClass::SetFallingToDeath)
     )
     /*DEFINE_LUA_TYPE_NO_PARENT(AMonster,
         "GetTargetPosition", &ThisClass::GetTargetPosition
@@ -52,12 +60,12 @@ bool AMonster::BindSelfLuaProperties()
     LuaTable["this"] = this;
     LuaTable["Name"] = *GetName();
 
-    return true;
+    return true;    
 }
 
-FVector AMonster::GetTargetPosition()
+void AMonster::UpdateTargetPosition()
 {
-    return TargetPos.GetValue();
+    TargetPos = TargetDistributionVector.GetValue();
 }
 
 
@@ -84,6 +92,6 @@ void AMonster::Tick(float DeltaTime)
 
 bool AMonster::IsFalling() const
 {
-    return true;
+    return GetActorLocation().Z > 0.2f;
 }
 

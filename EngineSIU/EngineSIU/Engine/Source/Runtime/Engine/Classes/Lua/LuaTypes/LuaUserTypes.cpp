@@ -76,6 +76,11 @@ void LuaTypes::FBindLua<FVector>::Bind(sol::table& Table)
         FVector(float)
         >(),
 
+        "Normalize", [](FVector& Vec, sol::optional<float> Tolerance) {
+            float Tol = Tolerance.value_or(1e-6f);
+            return Vec.Normalize(Tol);
+        },
+
         // Member variables
         LUA_BIND_MEMBER(&FVector::X),
         LUA_BIND_MEMBER(&FVector::Y),
@@ -97,7 +102,7 @@ void LuaTypes::FBindLua<FVector>::Bind(sol::table& Table)
         // Utility functions
         LUA_BIND_MEMBER(&FVector::Length),
         LUA_BIND_MEMBER(&FVector::SquaredLength),
-        LUA_BIND_MEMBER(&FVector::Normalize),
+        //LUA_BIND_MEMBER(&FVector::Normalize),
         LUA_BIND_MEMBER(&FVector::IsNormalized),
         LUA_BIND_MEMBER(&FVector::DotProduct),
         LUA_BIND_MEMBER(&FVector::CrossProduct),

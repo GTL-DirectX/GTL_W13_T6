@@ -53,7 +53,8 @@ void AGameMode::RegisterLuaType(sol::state& Lua)
     Super::RegisterLuaType(Lua);
 
     DEFINE_LUA_TYPE_NO_PARENT(AGameMode,
-		"SpawnMonster", &ThisClass::SpawnMonster
+		"SpawnMonster", &ThisClass::SpawnMonster,
+        "IsAllPlayerDead", sol::property(&ThisClass::SetIsAllPlayerDead, &ThisClass::GetIsAllPlayerDead)
     )
 }
 
