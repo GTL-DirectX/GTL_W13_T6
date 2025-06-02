@@ -1,4 +1,4 @@
-﻿#include "AnimSingleNodeInstance.h"
+#include "AnimSingleNodeInstance.h"
 
 #include "Components/SkeletalMeshComponent.h"
 #include "AnimationAsset.h"

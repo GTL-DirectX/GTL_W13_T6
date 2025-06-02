@@ -272,7 +272,8 @@ void SkeletalMeshViewerPanel::RenderAnimationSequence(const FReferenceSkeleton& 
 
     if (RefSkeletalMeshComponent)
     {
-        if (RefSkeletalMeshComponent->GetAnimation() && RefSkeletalMeshComponent->GetAnimationMode() == EAnimationMode::AnimationSingleNode)
+        bool T = RefSkeletalMeshComponent->GetAnimationMode() == EAnimationMode::AnimationSingleNode;
+        if (RefSkeletalMeshComponent->GetAnimation() && T)
         {
             AnimSeq = Cast<UAnimSequence>(RefSkeletalMeshComponent->GetAnimation());
         }
@@ -652,6 +653,7 @@ void SkeletalMeshViewerPanel::RenderAnimationPanel(float PanelPosX, float PanelP
             {
                 RefSkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationSingleNode);
                 CurrentAnimationMode = EAnimationMode::AnimationSingleNode;
+                RefSkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("UAnimSingleNodeInstance")));
             }
             ImGui::EndCombo();
         }

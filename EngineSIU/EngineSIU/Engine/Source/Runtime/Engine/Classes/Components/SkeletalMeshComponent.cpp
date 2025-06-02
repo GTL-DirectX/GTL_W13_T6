@@ -25,7 +25,7 @@
 bool USkeletalMeshComponent::bIsCPUSkinning = false;
 
 USkeletalMeshComponent::USkeletalMeshComponent()
-    : AnimationMode(EAnimationMode::AnimationBlueprint)
+    : AnimationMode(EAnimationMode::AnimationSingleNode)
     , SkeletalMeshAsset(nullptr)
     , AnimClass(nullptr)
     , AnimScriptInstance(nullptr)
@@ -352,36 +352,70 @@ bool USkeletalMeshComponent::ShouldTickAnimation() const
     }
     return GetAnimInstance() && SkeletalMeshAsset && SkeletalMeshAsset->GetSkeleton();
 }
-
 bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 {
     USkeletalMesh* SkelMesh = GetSkeletalMeshAsset();
+    USkeleton* AnimSkeleton = SkelMesh ? SkelMesh->GetSkeleton() : nullptr;
 
-    if (NeedToSpawnAnimScriptInstance())
+    // 1) AnimationBlueprint 모드인 경우
+    if (AnimationMode == EAnimationMode::AnimationBlueprint && AnimSkeleton && AnimClass)
     {
-        AnimScriptInstance = Cast<UAnimInstance>(FObjectFactory::ConstructObject(AnimClass, this));
-
-        if (AnimScriptInstance)
+        // 인스턴스가 없거나 클래스가 다르면 생성 필요
+        if (AnimScriptInstance == nullptr
+            || AnimScriptInstance->GetClass() != AnimClass
+            || AnimScriptInstance->GetOuter() != this)
         {
-            AnimScriptInstance->InitializeAnimation();
-        }
-    }
-    else
-    {
-        bool bShouldSpawnSingleNodeInstance = !AnimScriptInstance && SkelMesh && SkelMesh->GetSkeleton();
-        if (bShouldSpawnSingleNodeInstance)
-        {
-            AnimScriptInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(this);
-
+            // 기존 인스턴스가 있으면 제거
+            if (AnimScriptInstance)
+            {
+                GUObjectArray.MarkRemoveObject(AnimScriptInstance);
+                AnimScriptInstance = nullptr;
+            }
+            // AnimClass 기반 애니메이션 인스턴스 생성
+            AnimScriptInstance = Cast<UAnimInstance>(FObjectFactory::ConstructObject(AnimClass, this));
             if (AnimScriptInstance)
             {
                 AnimScriptInstance->InitializeAnimation();
             }
         }
     }
+    // 2) AnimationSingleNode 모드인 경우
+    else if (AnimationMode == EAnimationMode::AnimationSingleNode && AnimSkeleton)
+    {
+        // 인스턴스가 없거나 타입이 다르면 생성 필요
+        if (AnimScriptInstance == nullptr
+            || Cast<UAnimSingleNodeInstance>(AnimScriptInstance) == nullptr
+            || AnimScriptInstance->GetOuter() != this)
+        {
+            AnimScriptInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(this);
+
+            // 기존 인스턴스가 있으면 제거
+            if (AnimScriptInstance)
+            {
+                GUObjectArray.MarkRemoveObject(AnimScriptInstance);
+                AnimScriptInstance = nullptr;
+            }
+            // 싱글 노드 인스턴스 생성
+            AnimScriptInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(this);
+            if (AnimScriptInstance)
+            {
+                AnimScriptInstance->InitializeAnimation();
+            }
+        }
+    }
+    // 3) 그 외의 모드는 인스턴스가 필요 없으므로 파괴만 수행
+    else
+    {
+        if (AnimScriptInstance)
+        {
+            GUObjectArray.MarkRemoveObject(AnimScriptInstance);
+            AnimScriptInstance = nullptr;
+        }
+    }
 
     return true;
 }
+
 
 void USkeletalMeshComponent::ClearAnimScriptInstance()
 {
@@ -438,6 +472,7 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
     {
         return Transform; 
     }
+
 
     if (USkeleton* Skeleton = GetSkeletalMeshAsset()->GetSkeleton())
     {
@@ -635,11 +670,15 @@ void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode)
     const bool bNeedsChange = AnimationMode != InAnimationMode;
     if (bNeedsChange)
     {
-        AnimationMode = InAnimationMode;
+        // (1) 현재 인스턴스 전부 지움
         ClearAnimScriptInstance();
+
+        // (2) 모드 값 갱신
+        AnimationMode = InAnimationMode;
     }
 
-    if (GetSkeletalMeshAsset() && (bNeedsChange || AnimationMode == EAnimationMode::AnimationBlueprint))
+    // (3) 스켈레탈 메시가 있으면 새 인스턴스 생성
+    if (GetSkeletalMeshAsset())
     {
         InitializeAnimScriptInstance();
     }
@@ -817,7 +856,7 @@ bool USkeletalMeshComponent::NeedToSpawnAnimScriptInstance() const
 {
     USkeletalMesh* MeshAsset = GetSkeletalMeshAsset();
     USkeleton* AnimSkeleton = MeshAsset ? MeshAsset->GetSkeleton() : nullptr;
-    if (AnimationMode == EAnimationMode::AnimationBlueprint && AnimClass && AnimSkeleton)
+    if (AnimClass && AnimSkeleton)
     {
         if (AnimScriptInstance == nullptr || AnimScriptInstance->GetClass() != AnimClass || AnimScriptInstance->GetOuter() != this)
         {
@@ -960,9 +999,9 @@ void USkeletalMeshComponent::SetAnimInstanceClass(class UClass* NewClass)
     {
         // set the animation mode
         const bool bWasUsingBlueprintMode = AnimationMode == EAnimationMode::AnimationBlueprint;
-        AnimationMode = EAnimationMode::AnimationBlueprint;
+        //AnimationMode = EAnimationMode::AnimationBlueprint;
 
-        if (NewClass != AnimClass || !bWasUsingBlueprintMode)
+        if (NewClass != AnimClass)
         {
             // Only need to initialize if it hasn't already been set or we weren't previously using a blueprint instance
             AnimClass = NewClass;
