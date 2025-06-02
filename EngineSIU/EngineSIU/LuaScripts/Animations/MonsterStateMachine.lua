@@ -1,6 +1,7 @@
 AnimFSM = {
     current = "Idle",
     BlendTime = 0.5,
+    land = false,
     Update = function(self, dt)
         -- self.current = "Contents/Fbx/Capoeira.fbx"
 
@@ -18,20 +19,33 @@ AnimFSM = {
 
         -- self.OwnerCharacter.IsFalling()
 
-        -- print("Anim Test before Falling : ", self.OwnerCharacter)
-        if (self.OwnerCharacter.IsFalling) then
-            self.current = "Contents/Bowser/Armature|Bowser_Falling"
-            self.BlendTime = 0.5
-        elseif (self.OwnerCharacter.IsChasing) then
-            self.current = "Contents/Bowser/Armature|Bowser_Spin"
-            self.BlendTime = 0.5
-        else -- Landing은 Notify로 처리 필요
+        -- and self.land == false
+        if (self.OwnerCharacter.IsLanding == true ) then
+            print("Anim : Landing")
+            -- print("OwnerCharacter: ", self.OwnerCharacter)
             self.current = "Contents/Bowser/Armature|Bowser_Land"
             self.BlendTime = 0.5
+            self.land = true
+        -- elseif (self.OwnerCharacter.IsRoaring) then
+        --     -- print("Is Roaring")
+        --     self.current = "Contents/Bowser/Armature|Bowser_Roar"
+        --     self.BlendTime = 0.5
+        elseif (self.OwnerCharacter.IsChasing == true ) then
+            print("Anim : Chasing")
+            self.current = "Contents/Bowser/Armature|Bowser_Spin"
+            self.BlendTime = 0.5
+        elseif (self.OwnerCharacter.IsFalling == true ) then
+            print("Anim : Falling")
+            self.current = "Contents/Bowser/Armature|Bowser_Falling"
+            self.BlendTime = 0.5
+        -- else
+            print("Landing / Chasing / Falling : ", self.OwnerCharacter.IsLanding, self.OwnerCharacter.IsChasing, self.OwnerCharacter.IsFalling)
         end
-    
-
-        
+        if self == nil then
+            print("Self is nill!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        end
+            -- print(self.OwnerCharacter:GetIsLanding())
+        print("Current Anim : ", self.current)
 
         return {
             anim = self.current,

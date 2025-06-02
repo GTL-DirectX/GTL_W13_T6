@@ -241,7 +241,12 @@ void UAnimSequenceBase::EvaluateAnimNotifies(
 {
     for (FAnimNotifyEvent& NotifyEvent : const_cast<TArray<FAnimNotifyEvent>&>(Notifies))
     {
-        const float StartTime = NotifyEvent.Time;
+        float StartTime = NotifyEvent.Time;
+        if (StartTime > 1.0f)
+        {
+            float AnimLength = static_cast<float>(AnimAsset->GetPlayLength());
+            StartTime = FMath::Clamp(StartTime / AnimLength, 0.0f, 1.0f); // Normalize to [0,1]
+        }
         const float EndTime = NotifyEvent.GetEndTime();
         const bool bReversed = DeltaTime < 0.0f;
 
@@ -339,3 +344,28 @@ void UAnimSequenceBase::SerializeAsset(FArchive& Ar)
     }
 }
 
+/**
+ * AnimSequenceBase에 Notify 트랙이 하나도 없으면 새 트랙을 추가하고,
+ * 기존에 트랙이 있으면 첫 번째(인덱스 0)를 반환하는 헬퍼 함수.
+ */
+int32 UAnimSequenceBase::EnsureNotifyTrack(UAnimSequenceBase* AnimSeq, const FName& TrackName)
+{
+    if (!AnimSeq)
+    {
+        return INDEX_NONE;
+    }
+
+    // 트랙이 하나도 없으면 새 트랙 추가
+    if (AnimSeq->AnimNotifyTracks.Num() == 0)
+    {
+        int32 NewIdx = INDEX_NONE;
+        if (AnimSeq->AddNotifyTrack(TrackName, NewIdx))
+        {
+            return NewIdx;
+        }
+        return INDEX_NONE;
+    }
+
+    // 트랙이 이미 있으면 첫 번째(0번) 반환
+    return 0;
+}

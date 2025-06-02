@@ -2,15 +2,18 @@
 #include "Character.h"
 #include "Distribution/DistributionVector.h"
 
+class UAnimSequenceBase;
 class USkeletalMeshComponent;
 
 class AMonster : public ACharacter
 {
     DECLARE_CLASS(AMonster, ACharacter)
 public:
-    AMonster() = default;
+    AMonster();
     virtual UObject* Duplicate(UObject* InOuter) override;
     virtual void PostSpawnInitialize() override;
+    virtual void AddMonsterAnimSequenceCache();
+    virtual void AddAnimNotifies();
 
     virtual void RegisterLuaType(sol::state& Lua) override;
     virtual bool BindSelfLuaProperties() override;
@@ -21,6 +24,9 @@ public:
 public:
     // -- State Management -- //
     bool IsFalling() const;
+    bool TestToggleVariable() const;
+    void OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void SetFalling(bool bInFalling) { bFalling = bInFalling; }
 
     bool GetIsChasing() const { return bIsChasing; }
@@ -35,6 +41,12 @@ public:
     bool IsHit() const { return bHit; }
     void SetHit(bool b) { bHit = b; }
 
+    void SetIsLanding(bool bInLanding) { bIsLanding = bInLanding; }
+    bool IsLanding();
+
+    void SetIsRoaring(bool bInRoaring) { bIsRoaring = bInRoaring; }
+    bool IsRoaring() const { return bIsRoaring; }
+
     // ---------------------- //
     float GetFollowTimer() const { return FollowTimer; }
     void SetFollowTimer(float Value) { FollowTimer = Value; }
@@ -46,6 +58,11 @@ public:
 
 
 protected:
+    TMap<FString, FString> StateToAnimName;
+    TMap<FString, UAnimSequenceBase*> StateToAnimSequence;
+    static inline bool bNotifyInitialized = false;
+
+    UPROPERTY(EditAnywhere, FString, AnimPath, = "Contents/Bowser")
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Monster.lua")
     UPROPERTY(EditAnywhere, FString, StateMachineFileName, = "LuaScripts/Animations/MonsterStateMachine.lua")
 
@@ -54,9 +71,14 @@ protected:
     // -- State -- //
     UPROPERTY(EditAnywhere, bool, bHit, = false)
     UPROPERTY(EditAnywhere, bool, bDead, = false)
-    UPROPERTY(EditAnywhere, bool, bFalling, = false)
+    UPROPERTY(EditAnywhere, bool, bFalling, = true)
+    UPROPERTY(EditAnywhere, bool, bIsLanding, = false)
     UPROPERTY(EditAnywhere, bool, bIsChasing, = false)
+    UPROPERTY(EditAnywhere, bool, bIsRoaring, = false)
     UPROPERTY(EditAnywhere, bool, bFallingToDeath, = false)
+
+    UPROPERTY(EditAnywhere, bool, bLandEnded, = false)
+    UPROPERTY(EditAnywhere, bool, bRoarEnded, = false)
 
     FDistributionVector TargetDistributionVector;
     FVector TargetPos;

@@ -16,7 +16,10 @@ local Threshold = 0.1
 local chaseSpeed = 40.0             -- 유닛당 초속도
 local followDuration = 3.0           -- 타겟 갱신 주기
 local targetUpdateDistance = 10.0  -- 거리 기준. 이 값 이내면 타겟 갱신
+local waitForChaseTime = 0.01
 
+ReturnTable.landingTimer       = 0.0
+ReturnTable.waitingForChase    = false
 
 
 
@@ -45,7 +48,7 @@ local function MoveTowards(currentPos, targetPos, DeltaTime, speed)
 
     local normalizedDir = FVector(direction.X, direction.Y, direction.Z)
     normalizedDir:Normalize()
-    print("Dist : ", normalizedDir.X, " " , normalizedDir.Y, normalizedDir.Z)
+    -- print("Dist : ", normalizedDir.X, " " , normalizedDir.Y, normalizedDir.Z)
     
     -- print("Move : " , currentPos + direction * step)
     return currentPos + normalizedDir * step
@@ -55,15 +58,20 @@ end
 -- 동작 처리 함수
 -- ======================
 
-local function HandleFalling(self, DeltaTime)
+local function ProcessFalling(self, DeltaTime)
     local this = self.this
     this.ActorLocation = ApplyGravity(this.ActorLocation, DeltaTime)
     
+    -- 아직 추격 시작 전이므로 카운터 리셋
+    self.watingForChase = false
+    self.landingTimer = 0.0
     -- print("Falling... Z = ", newLocation.Z)
 end
 
-local function HandleLanding(self)
+local function ProcessLanding(self, DeltaTime)
     local this = self.this
+
+    -- 땅 위에 고정
     local loc = this.ActorLocation
     if not IsNearGround(loc) then
         loc.Z = GroundZ
@@ -72,7 +80,7 @@ local function HandleLanding(self)
     -- print("Landed at Z = ", this.ActorLocation.Z)
 end
 
-local function HandleChasing(self, DeltaTime)
+local function ProcessChasing(self, DeltaTime)
     local this = self.this
     this.FollowTimer = this.FollowTimer + DeltaTime
 
@@ -84,7 +92,8 @@ local function HandleChasing(self, DeltaTime)
     if this.FollowTimer >= followDuration or distanceToTarget < targetUpdateDistance then
         this.FollowTimer = 0.0
         this:UpdateTargetPosition()
-        targetPos = this:GetTargetPosition()
+        this.TargetPosition.Z = 0
+        -- targetPos.Z = 0
     end
         -- print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
 
@@ -105,20 +114,18 @@ function ReturnTable:Tick(DeltaTime)
     local this = self.this
     local currentLocation = this.ActorLocation
 
-    if not this.IsChasing then
-        if IsFalling(currentLocation) then
-            HandleFalling(self, DeltaTime)
-        else
-            print("Height  chasing ", currentLocation.Z, this.IsChasing)
-            HandleLanding(self)
-            this.IsChasing = true
-            this:UpdateTargetPosition()
-            -- targetPosition = self.this:GetTargetPosition()
-        end
-    else
-        HandleChasing(self, DeltaTime)
+    
+    
+    if this.IsLanding then
+        ProcessLanding(self, DeltaTime)
+        -- print("this.Landing ", this.IsLanding)
+    elseif this.IsFalling then
+        ProcessFalling(self, DeltaTime)
+        -- print("this.Falling ", this.IsFalling)
+    elseif this.IsChasing then
+        print("this.Chasing ", this.IsChasing)
+        ProcessChasing(self, DeltaTime)
     end
-
     
 
     -- print("Monster Tick  ", DeltaTime)
