@@ -19,10 +19,19 @@ AnimFSM = {
         -- self.OwnerCharacter.IsFalling()
 
         -- print("Anim Test before Falling : ", self.OwnerCharacter)
-        -- if (self.OwnerCharacter.IsFalling()) then
-        --     self.current = "Contents/Bowser/Armature|Bowser_Spin"
-        --     self.BlendTime = 0.5
-        -- end
+        if (self.OwnerCharacter.IsFalling) then
+            self.current = "Contents/Bowser/Armature|Bowser_Falling"
+            self.BlendTime = 0.5
+        elseif (self.OwnerCharacter.IsChasing) then
+            self.current = "Contents/Bowser/Armature|Bowser_Spin"
+            self.BlendTime = 0.5
+        else -- Landing은 Notify로 처리 필요
+            self.current = "Contents/Bowser/Armature|Bowser_Land"
+            self.BlendTime = 0.5
+        end
+    
+
+        
 
         return {
             anim = self.current,

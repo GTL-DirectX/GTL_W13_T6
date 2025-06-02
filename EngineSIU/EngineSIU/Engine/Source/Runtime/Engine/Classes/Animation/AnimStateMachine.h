@@ -48,6 +48,6 @@ inline void UAnimStateMachine::BindTargetActor(T* TargetActor)
 
     if constexpr (std::is_base_of<APawn, T>::value)
     {
-        LuaTable["OwnerCharacter"] = Cast<T>(TargetActor);
+        LuaTable["OwnerCharacter"] = TargetActor;
     }
 }

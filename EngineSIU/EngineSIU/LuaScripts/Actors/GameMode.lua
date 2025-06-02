@@ -21,6 +21,7 @@ end
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
+    -- this.IsAllPlayerDead
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
     if ElapsedTimeSinceLastSpawn >= SpawnRate then
         self:SpawnMonster(DeltaTime)
@@ -45,7 +46,7 @@ function ReturnTable:Attack(AttackDamage)
 end
 
 function ReturnTable:SpawnMonster(DeltaTime)
-    print("GameMode Spawn Monster Tick: ", DeltaTime)
+    -- print("GameMode Spawn Monster Tick: ", DeltaTime)
     -- 예: 로컬 좌표를 랜덤으로 생성해서 몬스터 스폰 테스트
 
     local randomX = math.random(-140, 140)
@@ -53,10 +54,11 @@ function ReturnTable:SpawnMonster(DeltaTime)
     local randomZ = 50
     local spawnPos = FVector(randomX, randomY, randomZ)
     
-    local spawnRot = FRotator(0, 0, 0)
-    print("Spawn Pos : ", spawnPos.X, " " , spawnPos.Y, " " , spawnPos.Z)
-    print("Spawn Rot : ", spawnRot.Pitch, " " , spawnRot.Yaw, " " , spawnRot.Roll)
-    print("this: ", self.this)
+    local randYaw = math.random(130, 170)
+    local spawnRot = FRotator(0, randYaw, 0)
+    -- print("Spawn Pos : ", spawnPos.X, " " , spawnPos.Y, " " , spawnPos.Z)
+    -- print("Spawn Rot : ", spawnRot.Pitch, " " , spawnRot.Yaw, " " , spawnRot.Roll)
+    -- print("this: ", self.this)
 
     self.this:SpawnMonster(spawnPos, spawnRot)
 

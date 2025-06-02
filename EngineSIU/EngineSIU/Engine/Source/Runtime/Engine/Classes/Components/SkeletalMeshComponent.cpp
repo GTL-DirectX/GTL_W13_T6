@@ -523,7 +523,7 @@ FTransform USkeletalMeshComponent::GetSocketWorldTransform(const FName& SocketNa
     FTransform BoneWorldTransform(BoneWorldMatrix);
 
     // 4. 소켓의 로컬 트랜스폼을 본의 월드 트랜스폼에 적용
-    FTransform SocketWorldTransform = SocketInfo->LocalTransform * BoneWorldTransform;
+    FTransform SocketWorldTransform = BoneWorldTransform * SocketInfo->LocalTransform;
 
     return SocketWorldTransform;
 }

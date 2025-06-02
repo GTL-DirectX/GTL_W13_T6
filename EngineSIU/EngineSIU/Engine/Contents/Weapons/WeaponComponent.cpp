@@ -12,6 +12,16 @@ void UWeaponComponent::InitializeComponent()
     
 }
 
+UObject* UWeaponComponent::Duplicate(UObject* InOuter)
+{
+    UWeaponComponent* NewComponent = Cast<UWeaponComponent>(Super::Duplicate(InOuter));
+    if (NewComponent)
+    {
+        NewComponent->AttackDamage = AttackDamage;
+    }
+    return NewComponent;
+}
+
 void UWeaponComponent::Attack()
 {
     

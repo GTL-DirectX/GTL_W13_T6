@@ -13,13 +13,12 @@ local Threshold = 0.1
 
 
 -- 추격 관련 매개 변수
-local chaseSpeed = 300.0             -- 유닛당 초속도
+local chaseSpeed = 40.0             -- 유닛당 초속도
 local followDuration = 3.0           -- 타겟 갱신 주기
+local targetUpdateDistance = 10.0  -- 거리 기준. 이 값 이내면 타겟 갱신
 
--- 상태 변수
-local followTimer = 0.0              -- 추격 타이머
-local targetPosition = FVector.ZeroVector
-local isChasing = false              -- 추락 후 추격 시작 여부
+
+
 
 
 -- ======================
@@ -40,15 +39,16 @@ end
 
 local function MoveTowards(currentPos, targetPos, DeltaTime, speed)
     local direction = targetPos - currentPos
-    local distance = direction:Length() -- FVector의 Legnth 함수 호출
+    local distance = direction:Length()
+    if distance < 1e-3 then return currentPos end
+    local step = math.min(speed * DeltaTime, distance)
 
-    if distance < 1e-3 then
-        return currentPos
-    end
-
-    local maxStep = speed * DeltaTime
-    local move = direction:Normalize() * math.min(maxStep, distance)
-    return currentPos + move
+    local normalizedDir = FVector(direction.X, direction.Y, direction.Z)
+    normalizedDir:Normalize()
+    print("Dist : ", normalizedDir.X, " " , normalizedDir.Y, normalizedDir.Z)
+    
+    -- print("Move : " , currentPos + direction * step)
+    return currentPos + normalizedDir * step
 end
 
 -- ======================
@@ -57,8 +57,8 @@ end
 
 local function HandleFalling(self, DeltaTime)
     local this = self.this
-    local newLocation = ApplyGravity(this.ActorLocation, DeltaTime)
-    this.ActorLocation = newLocation
+    this.ActorLocation = ApplyGravity(this.ActorLocation, DeltaTime)
+    
     -- print("Falling... Z = ", newLocation.Z)
 end
 
@@ -74,17 +74,22 @@ end
 
 local function HandleChasing(self, DeltaTime)
     local this = self.this
-    followTimer = followTimer + DeltaTime
+    this.FollowTimer = this.FollowTimer + DeltaTime
 
-    if followTimer >= followDuration then
-        followTimer = 0.0
-        targetPosition = this:GetTargetPosition()
-        -- print("New Target Acquired: ", targetPosition.X, targetPosition.Y, targetPosition.Z)
+    -- print("FollowTimer: ", this.FollowTimer)
+    local curPos = this.ActorLocation
+    local targetPos = this.TargetPosition
+    local distanceToTarget = (targetPos - curPos):Length()
+
+    if this.FollowTimer >= followDuration or distanceToTarget < targetUpdateDistance then
+        this.FollowTimer = 0.0
+        this:UpdateTargetPosition()
+        targetPos = this:GetTargetPosition()
     end
+        -- print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
 
-    local currentPos = this.ActorLocation
-    local newPos = MoveTowards(currentPos, targetPosition, DeltaTime, chaseSpeed)
-    this.ActorLocation = newPos
+    -- print("New Target Acquired: ", this.TargetPosition.X, this.TargetPosition.Y, this.TargetPosition.Z)
+    this.ActorLocation = MoveTowards(this.ActorLocation, this.TargetPosition, DeltaTime, chaseSpeed)
 end
 
 
@@ -97,16 +102,18 @@ end
 
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
-    local currentLocation = self.this.ActorLocation
+    local this = self.this
+    local currentLocation = this.ActorLocation
 
-    -- print("Height  chasing ", currentLocation.Z, isChasing)
-    if not isChasing then
+    if not this.IsChasing then
         if IsFalling(currentLocation) then
             HandleFalling(self, DeltaTime)
         else
+            print("Height  chasing ", currentLocation.Z, this.IsChasing)
             HandleLanding(self)
-            isChasing = true
-            targetPosition = self.this:GetTargetPosition()
+            this.IsChasing = true
+            this:UpdateTargetPosition()
+            -- targetPosition = self.this:GetTargetPosition()
         end
     else
         HandleChasing(self, DeltaTime)

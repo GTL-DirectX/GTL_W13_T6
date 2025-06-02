@@ -279,6 +279,30 @@ void UPrimitiveComponent::GetProperties(TMap<FString, FString>& OutProperties) c
     OutProperties.Add(TEXT("bSimulate"), bSimulate ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("bApplyGravity"), bApplyGravity ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("RigidBodyType"), FString::FromInt(static_cast<uint8>(RigidBodyType)));
+    
+    
+    for (const AggregateGeomAttributes& GeomAttr : GeomAttributes)
+    {
+        FString GeomTypeStr;
+        switch (GeomAttr.GeomType)
+        {
+        case EGeomType::EBox:
+            GeomTypeStr = TEXT("Box");
+            break;
+        case EGeomType::ECapsule:
+            GeomTypeStr = TEXT("Capsule");
+            break;
+        case EGeomType::ESphere:
+            GeomTypeStr = TEXT("Sphere");
+            break;
+        default:
+            GeomTypeStr = TEXT("Unknown");
+            break;
+        }
+        OutProperties.Add(FString::Printf(TEXT("Geom_%s_Offset"), *GeomTypeStr), GeomAttr.Offset.ToString());
+        OutProperties.Add(FString::Printf(TEXT("Geom_%s_Extent"), *GeomTypeStr), GeomAttr.Extent.ToString());
+        OutProperties.Add(FString::Printf(TEXT("Geom_%s_Rotation"), *GeomTypeStr), GeomAttr.Rotation.ToString());
+    }
 }
 
 void UPrimitiveComponent::SetProperties(const TMap<FString, FString>& InProperties)
@@ -322,6 +346,36 @@ void UPrimitiveComponent::SetProperties(const TMap<FString, FString>& InProperti
     if (InProperties.Contains(TEXT("RigidBodyType")))
     {
         RigidBodyType = static_cast<ERigidBodyType>(FString::ToInt(InProperties[TEXT("RigidBodyType")]));
+    }
+
+
+    // --- GeomAttributes 복원 ---
+    GeomAttributes.Empty();
+    // 지원하는 지오메트리 타입
+    TArray<FString> GeomTypes = { TEXT("Box"), TEXT("Capsule"), TEXT("Sphere") };
+
+    for (const FString& GeomTypeStr : GeomTypes)
+    {
+        FString OffsetKey = FString::Printf(TEXT("Geom_%s_Offset"), *GeomTypeStr);
+        FString ExtentKey = FString::Printf(TEXT("Geom_%s_Extent"), *GeomTypeStr);
+        FString RotationKey = FString::Printf(TEXT("Geom_%s_Rotation"), *GeomTypeStr);
+
+        // 세 키가 모두 있어야만 등록
+        if (InProperties.Contains(OffsetKey) && InProperties.Contains(ExtentKey) && InProperties.Contains(RotationKey))
+        {
+            EGeomType GeomType = EGeomType::EBox;
+            if (GeomTypeStr == TEXT("Box"))      GeomType = EGeomType::EBox;
+            else if (GeomTypeStr == TEXT("Capsule")) GeomType = EGeomType::ECapsule;
+            else if (GeomTypeStr == TEXT("Sphere"))  GeomType = EGeomType::ESphere;
+
+            AggregateGeomAttributes NewAttr;
+            NewAttr.GeomType = GeomType;
+            NewAttr.Offset.InitFromString(InProperties[OffsetKey]);
+            NewAttr.Extent.InitFromString(InProperties[ExtentKey]);
+            NewAttr.Rotation.InitFromString(InProperties[RotationKey]);
+
+            GeomAttributes.Add(NewAttr);
+        }
     }
 }
 

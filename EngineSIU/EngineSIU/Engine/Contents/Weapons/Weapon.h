@@ -14,7 +14,7 @@ public:
     AWeapon() = default;
 
 public:
-    UWeaponComponent* GetWeaponMesh() const { return WeaponMesh; }
+    UWeaponComponent* GetWeaponMesh() const { return WeaponMeshComponent; }
 
     virtual void BeginPlay() override;
     virtual void PostSpawnInitialize() override;
@@ -24,7 +24,7 @@ private:
     void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*  OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 
 private:
-    UPROPERTY(EditAnywhere, UWeaponComponent*, WeaponMesh, = nullptr)
+    UPROPERTY(EditAnywhere | EditInline, UWeaponComponent*, WeaponMeshComponent, = nullptr)
 
     USphereComponent* CollisionSphere = nullptr;
 

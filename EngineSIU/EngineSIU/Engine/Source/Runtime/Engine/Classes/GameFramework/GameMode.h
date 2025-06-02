@@ -45,6 +45,9 @@ public:
 
     void SpawnMonster(const FVector& Location, const FRotator& Rotation);
 
+    void SetIsAllPlayerDead(bool bInIsAllPlayerDead) { bIsAllPlayerDead = bInIsAllPlayerDead; }
+    bool GetIsAllPlayerDead() const { return bIsAllPlayerDead; }
+
 
     FOnGameInit OnGameInit;
     FOnGameStart OnGameStart;
@@ -57,6 +60,8 @@ protected:
 
     bool bGameRunning = false; // 내부 
     bool bGameEnded = true;
+
+    bool bIsAllPlayerDead = false;
 
     float LogTimer = 0.f;
     float LogInterval = 1.f;  // 1초마다 로그

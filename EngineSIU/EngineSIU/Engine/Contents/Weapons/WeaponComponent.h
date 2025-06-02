@@ -13,21 +13,19 @@ class ACharacter;
 
 class UWeaponComponent : public UStaticMeshComponent
 {
-    DECLARE_CLASS(UWeaponComponent, USceneComponent)
+    DECLARE_CLASS(UWeaponComponent, UStaticMeshComponent)
 
 public:
     UWeaponComponent() = default;
 
     virtual void InitializeComponent() override;
+    virtual UObject* Duplicate(UObject* InOuter) override;
 
 public:
     virtual void Attack();
 
 protected:
     ACharacter* OwnerCharacter = nullptr;
-
-private:
-    UStaticMesh* WeaponMesh = nullptr;
 
 public:
     float GetAttackDamage() const { return AttackDamage; }
