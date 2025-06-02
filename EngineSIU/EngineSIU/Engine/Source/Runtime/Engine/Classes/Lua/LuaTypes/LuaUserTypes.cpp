@@ -10,7 +10,7 @@ void LuaTypes::FBindLua<FColor>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FColor,
-
+        sol::call_constructor,
         // 생성자
         sol::constructors<FColor(), FColor(uint8, uint8, uint8, uint8)>(),
 
@@ -38,7 +38,7 @@ void LuaTypes::FBindLua<FLinearColor>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FLinearColor,
-
+        sol::call_constructor,
         // Constructors
         sol::constructors<FLinearColor(), FLinearColor(float, float, float, float)>(),
 
@@ -121,7 +121,7 @@ void LuaTypes::FBindLua<FVector2D>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FVector2D,
-
+        sol::call_constructor,
         // Constructors
         sol::constructors<FVector2D(), FVector2D(float, float)>(),
 
@@ -153,7 +153,7 @@ void LuaTypes::FBindLua<FVector4>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FVector4,
-
+        sol::call_constructor,
         // Constructors
         sol::constructors<FVector4(), FVector4(float, float, float, float)>(),
 
@@ -169,6 +169,7 @@ void LuaTypes::FBindLua<FRotator>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FRotator,
+        sol::call_constructor,
 
         // Constructors
         sol::constructors<FRotator(), FRotator(float, float, float)>(),
@@ -198,7 +199,7 @@ void LuaTypes::FBindLua<FQuat>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FQuat,
-
+        sol::call_constructor,
         // Constructors
         sol::constructors<FQuat(), FQuat(float, float, float, float)>(),
 
@@ -226,7 +227,7 @@ void LuaTypes::FBindLua<FMatrix>::Bind(sol::table& Table)
 {
     Table.Lua_NewUserType(
         FMatrix,
-
+        sol::call_constructor,
         // Constructors
         sol::constructors<FMatrix()>(),
 

@@ -23,7 +23,10 @@ public:
     AGameMode() = default;
     virtual ~AGameMode() override = default;
 
+    // 1. Lua에 클래스 등록 / 2. 멤버 변수 등록
     virtual void PostSpawnInitialize() override;
+    virtual void RegisterLuaType(sol::state& Lua) override; 
+    virtual bool BindSelfLuaProperties() override;
     
     void InitializeComponent();
     virtual UObject* Duplicate(UObject* InOuter) override;
@@ -31,18 +34,17 @@ public:
     //virtual void BeginPlay() override;
     //virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-    // 게임 모드 초기화
+    // 1. 게임 모드 초기화 / 2. 시작 / 3. 종료
     virtual void InitGame();
-
-    // 게임 시작
     virtual void StartMatch();
-
-    // 게임 종료
     virtual void EndMatch(bool bIsWin);
+    virtual void Reset();
 
+    virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
-    void Reset();
+    void SpawnMonster(const FVector& Location, const FRotator& Rotation);
+
 
     FOnGameInit OnGameInit;
     FOnGameStart OnGameStart;
@@ -50,7 +52,9 @@ public:
 
     FGameInfo GameInfo;
     
-private:
+protected:
+    UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/GameMode.lua")
+
     bool bGameRunning = false; // 내부 
     bool bGameEnded = true;
 
