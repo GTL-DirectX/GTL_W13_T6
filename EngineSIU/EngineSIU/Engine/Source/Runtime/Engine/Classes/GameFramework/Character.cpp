@@ -7,6 +7,8 @@
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 
+#include "Engine/EditorEngine.h"
+
 UObject* ACharacter::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
@@ -86,7 +88,10 @@ void ACharacter::Tick(float DeltaTime)
 
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
-    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>())
+    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
+        "State", sol::property(&APlayer::GetState, &APlayer::SetState),
+        "IsGrounded", sol::property(&ACharacter::CheckGrounded, nullptr) // CheckGrounded는 bool 반환
+        )
 }
 
 bool ACharacter::BindSelfLuaProperties()
@@ -106,3 +111,44 @@ bool ACharacter::BindSelfLuaProperties()
     
     return true;
 }
+
+void ACharacter::SetState(int State)
+{
+    PlayerState = static_cast<EPlayerState>(State);
+}
+
+int ACharacter::GetState()
+{
+    return static_cast<int>(PlayerState);
+}
+
+void ACharacter::Jump()
+{
+    if (!bIsGrounded || PlayerState == EPlayerState::Jumping)
+    {
+        return;
+    }
+
+    FVector JumpImpulse = FVector(0.0f, 0.0f, 300.0f);
+    //CapsuleComponent->BodyInstance->AddImpulse();
+
+
+    bIsGrounded = false;
+    PlayerState = EPlayerState::Jumping;
+}
+
+bool ACharacter::CheckGrounded()
+{
+    float GroundCheckDistance = CapsuleComponent->GetHalfHeight() + 1.0f;
+    FVector Start = CapsuleComponent->GetComponentLocation();
+    FVector End = Start - FVector(0.0f, 0.0f, GroundCheckDistance);
+
+    PxRaycastBuffer Hit;
+    PxQueryFilterData Filter;
+    Filter.flags = PxQueryFlag::eSTATIC;
+
+    bool bHit = GEngine->PhysicsManager->GetScene(GetWorld())->raycast(PxVec3(Start.X, Start.Y, Start.Z), PxVec3(End.X, End.Y, End.Z) - PxVec3(Start.X, Start.Y, Start.Z), GroundCheckDistance, Hit, PxHitFlag::eDEFAULT, Filter);
+
+    return bHit && Hit.block.distance <= GroundCheckDistance;
+}
+

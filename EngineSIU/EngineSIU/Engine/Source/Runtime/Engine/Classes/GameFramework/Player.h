@@ -6,17 +6,6 @@ class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
 
-enum class EPlayerState : uint8
-{
-    Idle = 0,
-    Walking,
-    Jumping,
-    Attacking,
-    Stun,
-    MuJuck, // 무적 영어로 뭐임?
-    Dead,
-    Max
-};
 
 class APlayer : public ACharacter
 {
@@ -57,8 +46,7 @@ public:
     void KnockBack(FVector KnockBackDir) const;
     void Dead() const;
     void Attack() const;
-    void SetState(int State);
-    int GetState();
+
     void EquipWeapon(UWeaponComponent* WeaponComponent);
 
 protected:
@@ -67,7 +55,6 @@ protected:
 
 
 private:
-    EPlayerState PlayerState = EPlayerState::Idle;
     
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
     

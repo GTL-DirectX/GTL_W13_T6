@@ -46,9 +46,8 @@ void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     MoveSpeed = Velocity.Length();
-    PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
-    CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
-
+    CapsuleComponent->BodyInstance->AddForce(Velocity);
+    
     // if (SkeletalMeshComponent)
     // {
     //     const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
@@ -263,16 +262,6 @@ void APlayer::Attack() const
     }
 
     EquippedWeapon->Attack();
-}
-
-void APlayer::SetState(int State)
-{
-    PlayerState = static_cast<EPlayerState>(State);
-}
-
-int APlayer::GetState()
-{
-    return static_cast<int>(PlayerState);
 }
 
 void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
