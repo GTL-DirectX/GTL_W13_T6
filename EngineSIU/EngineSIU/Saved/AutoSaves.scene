@@ -29,6 +29,19 @@
                     }
                 },
                 {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "ADirectionalLight_405",
+                        "ComponentOwnerClass": "ADirectionalLight",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "UBillboardComponent",
                     "ComponentID": "UBillboardComponent_0",
                     "Properties": {
@@ -53,19 +66,6 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": "UBillboardComponent"
-                    }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
-                        "ComponentOwner": "ADirectionalLight_405",
-                        "ComponentOwnerClass": "ADirectionalLight",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
                     }
                 },
                 {
@@ -103,7 +103,7 @@
                         "ComponentOwner": "ACube_364",
                         "ComponentOwnerClass": "ACube",
                         "Geom_0_Extent": "X=10000.000 Y=10000.000 Z=1.500",
-                        "Geom_0_Offset": "X=0.000 Y=0.000 Z=-20.000",
+                        "Geom_0_Offset": "X=0.000 Y=0.000 Z=0.000",
                         "Geom_0_Rotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "Geom_0_Type": "Box",
                         "Geom_Count": "1",

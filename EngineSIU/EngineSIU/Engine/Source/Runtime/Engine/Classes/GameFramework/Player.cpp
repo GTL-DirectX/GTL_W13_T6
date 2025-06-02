@@ -38,7 +38,7 @@ void APlayer::PostSpawnInitialize()
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
     
-    SetActorLocation(FVector(10, 10, 0) * PlayerIndex);
+    SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0,0,30));
     SetActorScale(FVector(0.05));
 }
 
@@ -48,8 +48,6 @@ void APlayer::Tick(float DeltaTime)
     MoveSpeed = Velocity.Length();
     PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
     CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
-    
-    Velocity *= 0.8f;
 
     // if (SkeletalMeshComponent)
     // {
@@ -91,7 +89,7 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime); });
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
-        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(10); });
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });
 
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
@@ -107,6 +105,11 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 
 void APlayer::MoveForward(float DeltaTime)
 {
+    if (PlayerState >= EPlayerState::Attacking)
+    {
+        return;
+    }
+    
     Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
     
     if (MoveSpeed > MaxSpeed)
@@ -118,6 +121,11 @@ void APlayer::MoveForward(float DeltaTime)
 
 void APlayer::MoveRight(float DeltaTime)
 {
+    if (PlayerState >= EPlayerState::Attacking)
+    {
+        return;
+    }
+    
     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
     
     if (MoveSpeed > MaxSpeed)
@@ -201,7 +209,8 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
     "StunGauge", &APlayer::StunGauge,
-    "Attack", &APlayer::Attack,
+    "MaxStunGauge", &APlayer::MaxStunGauge,
+    "KnockBackPower", &APlayer::KnockBackPower,
     "State", sol::property(&APlayer::GetState, &APlayer::SetState)
     )
 }
@@ -224,9 +233,9 @@ bool APlayer::BindSelfLuaProperties()
     return true;
 }
 
-void APlayer::OnDamaged(float Damaged) const
+void APlayer::OnDamaged(FVector KnockBackDir) const
 {
-    LuaScriptComponent->ActivateFunction("OnDamaged", Damaged);
+    LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 
 void APlayer::Stun() const
@@ -234,9 +243,9 @@ void APlayer::Stun() const
     LuaScriptComponent->ActivateFunction("Stun");
 }
 
-void APlayer::KnockBack(float Damaged) const
+void APlayer::KnockBack(FVector KnockBackDir) const
 {
-    LuaScriptComponent->ActivateFunction("KnockBack");
+    LuaScriptComponent->ActivateFunction("KnockBack", KnockBackDir);
     
 }
 

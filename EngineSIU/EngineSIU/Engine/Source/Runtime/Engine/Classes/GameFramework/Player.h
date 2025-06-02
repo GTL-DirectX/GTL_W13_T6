@@ -52,9 +52,9 @@ private:
     int PlayerIndex = -1;
 
 public:
-    void OnDamaged(float Damaged) const;
+    void OnDamaged(FVector KnockBackDir) const;
     void Stun() const;
-    void KnockBack(float Damaged) const;
+    void KnockBack(FVector KnockBackDir) const;
     void Dead() const;
     void Attack() const;
     void SetState(int State);
@@ -79,4 +79,6 @@ private:
     
     float StunGauge = 0.0f;
     float MaxStunGauge = 100.0f;
+
+    float KnockBackPower = 100000;
 };

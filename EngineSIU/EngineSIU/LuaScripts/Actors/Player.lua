@@ -20,6 +20,8 @@ function ReturnTable:BeginPlay()
     this.MaxSpeed = 100000
     this.RawSpeed = 100
     this.PitchSpeed = 100
+    this.MaxStunGauge = 20
+    this.KnockBackPower = 40000
     
     self.CurrentTime = 0
 
@@ -33,7 +35,10 @@ function ReturnTable:Tick(DeltaTime)
     elseif this.State == 1 and this.MoveSpeed < 90 then
         this.State = 0
     end
+    
     --print(this.State, this.MoveSpeed)
+    
+    this.Velocity = this.Velocity * 0.5;
     
     self.CurrentTime = (self.CurrentTime or 0) + DeltaTime
     
@@ -87,21 +92,21 @@ function ReturnTable:Attack()
     end)
 end
 
-function ReturnTable:OnDamaged(Damage)
+function ReturnTable:OnDamaged(KnockBackDir)
     this = self.this
     if this.State >= 5 then return end
     
-    this.StunGauge = this.StunGauge + Damage
+    this.StunGauge = this.StunGauge + 10
     this.State = 5
     
-    print("OnDamaged 실행, Damage: ", Damage)
+    print("OnDamaged 실행")
     print("누적 Damage: ", this.StunGauge)
     
-    self:KnockBack(Damage)
+    self:KnockBack(KnockBackDir)
 end
 
 function ReturnTable:Stun()
-    this = self.this
+    local this = self.this
     if this.State >= 4 then return end
     
     print("Stun 시작")
@@ -117,13 +122,16 @@ function ReturnTable:Stun()
     
 end
 
-function ReturnTable:KnockBack(Damage)
+function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this  -- local 추가
     print("KnockBack 시작")
     
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower, KnockBackDir.Z * this.KnockBackPower)
+    
+    print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
+    
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작
-        this.MoveSpeed = -1000 * Damage
         
         -- 1초 대기
         self:Wait(1.0)
@@ -131,16 +139,14 @@ function ReturnTable:KnockBack(Damage)
         -- 넉백 종료 (코루틴 안에서 처리)
         print("KnockBack 종료")
         this.MoveSpeed = 0
-        print("qwer")
         
         -- 스턴 체크도 코루틴 안에서
         if this.StunGauge >= this.MaxStunGauge then
+            this.State = 0
             self:Stun()
         else
-            print("스턴 이후 아이들 복원")
             this.State = 0
         end
-        print("asfd")
     end)
 end
 
