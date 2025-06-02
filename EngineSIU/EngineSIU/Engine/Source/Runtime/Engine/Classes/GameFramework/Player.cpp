@@ -46,8 +46,7 @@ void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     MoveSpeed = Velocity.Length();
-    PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
-    CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
+    CapsuleComponent->BodyInstance->AddForce(Velocity);
     
     Velocity *= 0.8f;
 
@@ -201,8 +200,7 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
     "StunGauge", &APlayer::StunGauge,
-    "Attack", &APlayer::Attack,
-    "State", sol::property(&APlayer::GetState, &APlayer::SetState)
+    "Attack", &APlayer::Attack
     )
 }
 
@@ -254,16 +252,6 @@ void APlayer::Attack() const
     }
 
     EquippedWeapon->Attack();
-}
-
-void APlayer::SetState(int State)
-{
-    PlayerState = static_cast<EPlayerState>(State);
-}
-
-int APlayer::GetState()
-{
-    return static_cast<int>(PlayerState);
 }
 
 void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)

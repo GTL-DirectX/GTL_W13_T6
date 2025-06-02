@@ -121,4 +121,7 @@ struct FBodyInstance
     UPrimitiveComponent* OwnerComponent;
     
     int32 BoneIndex;
+
+
+    void AddForce(const FVector& Force, bool bAccelChange = false) const;
 };

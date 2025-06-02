@@ -5,6 +5,18 @@
 class USkeletalMeshComponent;
 class UCapsuleComponent;
 
+enum class EPlayerState : uint8
+{
+    Idle = 0,
+    Walking,
+    Jumping,
+    Attacking,
+    Stun,
+    MuJuck, // 무적 영어로 뭐임?
+    Dead,
+    Max
+};
+
 class ACharacter : public APawn
 {
     DECLARE_CLASS(ACharacter, APawn)
@@ -30,9 +42,20 @@ public:
     virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
 
 public:
+    void SetState(int State);
+    int GetState();
     // bool IsFalling() const;
     // bool IsJumping();
     // bool IsAttacking();
 
+protected:
+    EPlayerState PlayerState = EPlayerState::Idle;
+
+protected:
+    void Jump();
+    bool CheckGrounded();
+
+private:
+    bool bIsGrounded;
 
 };
