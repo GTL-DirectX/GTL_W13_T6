@@ -18,8 +18,7 @@ public:
     
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override;
     void SetPlayerIndex(int InPlayerIndex) { PlayerIndex = InPlayerIndex; }
-
-public:
+    
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
     virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
     
@@ -39,7 +38,8 @@ private:
     UCameraComponent* CameraComponent = nullptr;
 
     int PlayerIndex = -1;
-    
+
+public:
     FVector GetVelocity() const { return Velocity; }
     float GetAcceleration() const { return Acceleration; }
     void SetAcceleration(float NewAcceleration) { Acceleration = NewAcceleration; }
@@ -47,15 +47,18 @@ private:
     void SetMaxSpeed(float NewMaxSpeed) { MaxSpeed = NewMaxSpeed; }
     float GetRotationSpeed() const { return RotationSpeed; }
     void SetRotationSpeed(float NewRotationSpeed) { RotationSpeed = NewRotationSpeed; }
+    bool IsAttacking() const { return bIsAttacking; }
+    void SetIsAttacking(bool IsAttack) { bIsAttacking = IsAttack; }
+
 public:
-    virtual void RegisterLuaType(sol::state& Lua) override;
-    virtual bool BindSelfLuaProperties() override;
     
     void Attack();
     void EquipWeapon(UWeaponComponent* WeaponComponent);
 
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Player.lua")
+    UPROPERTY(EditAnywhere, FString, StateMachineFileName, = "LuaScripts/Animations/PlayerStateMachine.lua")
+
 
 private:
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
@@ -64,4 +67,6 @@ private:
     float Acceleration = 10.0f;
     float MaxSpeed = 100.0f;
     float RotationSpeed = 100.0f; // 회전 속도
+    
+    bool bIsAttacking = false;
 };

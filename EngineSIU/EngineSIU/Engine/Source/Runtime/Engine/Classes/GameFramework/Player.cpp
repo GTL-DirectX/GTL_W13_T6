@@ -18,7 +18,7 @@ UObject* APlayer::Duplicate(UObject* InOuter)
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(3,0,9));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     
     return NewActor;
@@ -30,11 +30,11 @@ void APlayer::PostSpawnInitialize()
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(2,0,0));
+    CameraComponent->SetRelativeLocation(FVector(3,0,9));
     CameraComponent->SetupAttachment(RootComponent);
 
-    USkeletalMesh* SkeletalMeshAsset = UAssetManager::Get().GetSkeletalMesh("Contents/Human/Human");
-    SkeletalMeshComponent->SetSkeletalMeshAsset(SkeletalMeshAsset);
+    SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
+    SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
     
     SetActorLocation(FVector(10, 10, 0) * PlayerIndex);
     SetActorScale(FVector(0.05));
@@ -43,7 +43,6 @@ void APlayer::PostSpawnInitialize()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
     MoveSpeed = Velocity.Length();
     SetActorLocation(GetActorLocation() + Velocity);
     Velocity *= 0.8f;
@@ -89,7 +88,7 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { MoveUp(DeltaTime); });
-        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { MoveUp(-DeltaTime); });
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });
 
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
@@ -104,6 +103,7 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 
 void APlayer::MoveForward(float DeltaTime)
 {
+    bIsAttacking = false;
     Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
     
     if (MoveSpeed > MaxSpeed)
@@ -115,6 +115,7 @@ void APlayer::MoveForward(float DeltaTime)
 
 void APlayer::MoveRight(float DeltaTime)
 {
+    bIsAttacking = false;
     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
     
     if (MoveSpeed > MaxSpeed)
@@ -170,8 +171,11 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "Velocity", &APlayer::Velocity,
     "Acceleration", &APlayer::Acceleration,
     "MaxSpeed", &APlayer::MaxSpeed,
-    "RotationSpeed", &APlayer::RotationSpeed
+    "RotationSpeed", &APlayer::RotationSpeed,
+    "IsAttacking", sol::property(&ThisClass::IsAttacking, &ThisClass::SetIsAttacking)
     )
+    
+    
     
    //  DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
    //      "Velocity", sol::property(&ThisClass::GetVelocity),
@@ -206,7 +210,8 @@ bool APlayer::BindSelfLuaProperties()
 
 void APlayer::Attack()
 {
-    if (!EquippedWeapon)
+    bIsAttacking = true;
+    if (!EquippedWeapon || bIsAttacking)
     {
         return;
     }
