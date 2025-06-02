@@ -132,6 +132,8 @@ public:
 
     virtual void CreatePhysXGameObject() override;
 
+	virtual void SetStateMachineFileName(FString& InStateMachineFilename);
+
     TArray<FBodyInstance*>& GetBodies() { return Bodies; }
     TArray<FConstraintInstance*>& GetConstraints() { return Constraints; }
     void AddBodyInstance(FBodyInstance* BodyInstance);

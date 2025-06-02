@@ -25,6 +25,7 @@ void APlayer::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
 
+    SkeletalMeshComponent->SetRelativeLocation(FVector(0, 0, -10000));
     CameraComponent = AddComponent<UCameraComponent>();
     CameraComponent->SetupAttachment(RootComponent);
 }

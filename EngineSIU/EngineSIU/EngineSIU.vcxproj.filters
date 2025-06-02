@@ -1619,6 +1619,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\ConstraintInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsAsset.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\World\PhysicsViewerWorld.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Monster.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\Weapon.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\WeaponComponent.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\MeleeWeaponComponent.cpp" />
@@ -1750,6 +1751,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\ConstraintInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsAsset.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\World\PhysicsViewerWorld.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Monster.h" />
     <ClInclude Include="Engine\Contents\Weapons\Weapon.h" />
     <ClInclude Include="Engine\Contents\Weapons\WeaponComponent.h" />
     <ClInclude Include="Engine\Contents\Weapons\MeleeWeaponComponent.h" />

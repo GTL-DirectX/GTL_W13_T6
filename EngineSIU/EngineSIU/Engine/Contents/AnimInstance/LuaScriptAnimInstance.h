@@ -76,6 +76,8 @@ private:
     float BlendDuration;
     
     bool bIsBlending;
+
+private:
     
     UPROPERTY(EditAnywhere, UAnimStateMachine*, StateMachine, = nullptr)
     

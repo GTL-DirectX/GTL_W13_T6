@@ -469,7 +469,10 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
         return Transform;
 
     if (!GetSkeletalMeshAsset())
-        return Transform;
+    {
+        return Transform; 
+    }
+
 
     if (USkeleton* Skeleton = GetSkeletalMeshAsset()->GetSkeleton())
     {
@@ -810,6 +813,16 @@ void USkeletalMeshComponent::CreatePhysXGameObject()
         }
 
         Constraints.Add(NewConstraintInstance);
+    }
+}
+
+void USkeletalMeshComponent::SetStateMachineFileName(FString& InStateMachineFilename)
+{
+    StateMachineFileName = InStateMachineFilename;
+    if (auto Instance = Cast<ULuaScriptAnimInstance>(AnimScriptInstance))
+    {
+        Instance->GetAnimStateMachine()->LuaScriptName = InStateMachineFilename;
+        Instance->GetAnimStateMachine()->InitLuaStateMachine();
     }
 }
 

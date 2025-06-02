@@ -30,8 +30,10 @@ public:
     template<typename T>
     void BindTargetActor(T* TargetActor);
     
-private:
+public:
     UPROPERTY(EditAnywhere, FString, LuaScriptName, = TEXT(""));
+
+private:
     sol::table LuaTable = {};
 
 };
