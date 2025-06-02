@@ -13,7 +13,8 @@ UObject* ACharacter::Duplicate(UObject* InOuter)
     if (NewActor)
     {
         NewActor->CapsuleComponent = Cast<UCapsuleComponent>(CapsuleComponent->Duplicate(InOuter));
-        NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
+        if(SkeletalMeshComponent)
+            NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
     }
 
     return NewActor;
