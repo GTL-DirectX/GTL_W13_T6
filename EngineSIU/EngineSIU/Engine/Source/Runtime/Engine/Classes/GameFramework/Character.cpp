@@ -1,5 +1,6 @@
 #include "Character.h"
 
+#include "PhysicsManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Lua/LuaScriptComponent.h"
@@ -40,7 +41,7 @@ void ACharacter::PostSpawnInitialize()
         CapsuleGeomAttributes.GeomType = EGeomType::ECapsule;
         CapsuleGeomAttributes.Offset = FVector::ZeroVector;
         CapsuleGeomAttributes.Extent = FVector(1.0f, 1.0f, 1.0f); // Half Extent
-        CapsuleGeomAttributes.Rotation = FRotator(0.0f, 0.0f, 90.0f);
+        CapsuleGeomAttributes.Rotation = FRotator(90.0f, 0.0f, 00.0f);
         CapsuleComponent->GeomAttributes.Add(CapsuleGeomAttributes);
     }
 
@@ -61,6 +62,9 @@ void ACharacter::BeginPlay()
     if (CapsuleComponent)
     {
         CapsuleComponent->CreatePhysXGameObject();
+        CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->
+        setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X
+            | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y); // X, Y축 회전 잠금
     }
 
     if (SkeletalMeshComponent)

@@ -1,7 +1,9 @@
 #include "Player.h"
 
+#include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "World/World.h"
@@ -44,7 +46,9 @@ void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     MoveSpeed = Velocity.Length();
-    SetActorLocation(GetActorLocation() + Velocity);
+    PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
+    CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
+    
     Velocity *= 0.8f;
 
     // if (SkeletalMeshComponent)

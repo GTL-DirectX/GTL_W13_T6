@@ -26,8 +26,8 @@ function ReturnTable:Tick(DeltaTime)
 --     if ElapsedTimeSinceLastSpawn >= SpawnRate then
 --         self:SpawnMonster(DeltaTime)
 --         ElapsedTimeSinceLastSpawn = 0.0
-    this.Acceleration = 10
-    this.MaxSpeed = 100
+    this.Acceleration = 100000
+    this.MaxSpeed = 100000
     this.ActorLocation = this.ActorLocation + FVector(1.0, 0.0, 0.0) * DeltaTime
     
     -- 기본적으로 Table로 등록된 변수는 self, Class usertype으로 선언된 변수는 self.this로 불러오도록 설정됨.
