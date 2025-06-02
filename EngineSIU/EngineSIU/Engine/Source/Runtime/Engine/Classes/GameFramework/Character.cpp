@@ -26,17 +26,25 @@ void ACharacter::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
 
-    RootComponent = AddComponent<USceneComponent>("Root");
-
-
     if (!CapsuleComponent)
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
         CapsuleComponent->SetupAttachment(RootComponent);
         CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
-        CapsuleComponent->AddLocation({ 0.0f, 0.0f, 3.0f });
-        
+        CapsuleComponent->AddLocation({ 0.0f, 0.0f, 0.0f });
+        CapsuleComponent->bSimulate = true;
+        CapsuleComponent->bApplyGravity = true;
+        CapsuleComponent->RigidBodyType = ERigidBodyType::DYNAMIC;
+
+        AggregateGeomAttributes CapsuleGeomAttributes;
+        CapsuleGeomAttributes.GeomType = EGeomType::ECapsule;
+        CapsuleGeomAttributes.Offset = FVector::ZeroVector;
+        CapsuleGeomAttributes.Extent = FVector(1.0f, 1.0f, 1.0f); // Half Extent
+        CapsuleGeomAttributes.Rotation = FRotator(0.0f, 0.0f, 90.0f);
+        CapsuleComponent->GeomAttributes.Add(CapsuleGeomAttributes);
     }
+
+    //RootComponent = AddComponent<USceneComponent>("Root");
 
     if (!SkeletalMeshComponent)
     {
@@ -51,6 +59,11 @@ void ACharacter::PostSpawnInitialize()
 void ACharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (CapsuleComponent)
+    {
+        CapsuleComponent->CreatePhysXGameObject();
+    }
 
     if (SkeletalMeshComponent)
     {
