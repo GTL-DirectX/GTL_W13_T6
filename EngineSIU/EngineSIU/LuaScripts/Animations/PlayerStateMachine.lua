@@ -1,13 +1,9 @@
 AnimFSM = {
     current = "Idle",
     Update = function(self, dt)
-        print(self.OwnerCharacter.IsAttacking)
-        
         if (self.OwnerCharacter.IsAttacking) then
-            print("Attacking 실행 중")
             self.current = "Contents/Player_3TTook/Armature|Left_Hook"
         else
-            print("Running 실행 중")
             self.current = "Contents/Player_3TTook/Armature|Player_Running"
         end
         

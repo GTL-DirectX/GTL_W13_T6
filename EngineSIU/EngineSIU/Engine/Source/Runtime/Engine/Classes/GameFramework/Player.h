@@ -6,6 +6,18 @@ class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
 
+enum class EPlayerState : uint8
+{
+    Idle = 0,
+    Walking,
+    Jumping,
+    Attacking,
+    Stun,
+    MuJuck, // 무적 영어로 뭐임?
+    Dead,
+    Max
+};
+
 class APlayer : public ACharacter
 {
     DECLARE_CLASS(APlayer, ACharacter)
@@ -40,19 +52,13 @@ private:
     int PlayerIndex = -1;
 
 public:
-    FVector GetVelocity() const { return Velocity; }
-    float GetAcceleration() const { return Acceleration; }
-    void SetAcceleration(float NewAcceleration) { Acceleration = NewAcceleration; }
-    float GetMaxSpeed() const { return MaxSpeed; }
-    void SetMaxSpeed(float NewMaxSpeed) { MaxSpeed = NewMaxSpeed; }
-    float GetRotationSpeed() const { return RotationSpeed; }
-    void SetRotationSpeed(float NewRotationSpeed) { RotationSpeed = NewRotationSpeed; }
-    bool IsAttacking() const { return bIsAttacking; }
-    void SetIsAttacking(bool IsAttack) { bIsAttacking = IsAttack; }
-
-public:
-    
-    void Attack();
+    void OnDamaged(float Damaged) const;
+    void Stun() const;
+    void KnockBack(float Damaged) const;
+    void Dead() const;
+    void Attack() const;
+    void SetState(int State);
+    int GetState();
     void EquipWeapon(UWeaponComponent* WeaponComponent);
 
 protected:
@@ -61,12 +67,16 @@ protected:
 
 
 private:
+    EPlayerState PlayerState = EPlayerState::Idle;
+    
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
     
     FVector Velocity = FVector(); // 이동 속도
     float Acceleration = 100000.0f;
     float MaxSpeed = 100000.0f;
-    float RotationSpeed = 100.0f; // 회전 속도
+    float RawSpeed = 100.0f; // 좌우 회전 속도
+    float PitchSpeed = 100.0f;
     
-    bool bIsAttacking = false;
+    float StunGauge = 0.0f;
+    float MaxStunGauge = 100.0f;
 };
