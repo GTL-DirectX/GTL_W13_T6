@@ -40,7 +40,7 @@ void USkeletalMeshComponent::InitializeComponent()
 
     // 애니메이션 초기화(기존 로직)
     InitAnim();
-
+     
 }
 
 UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
@@ -49,15 +49,15 @@ UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
 
     NewComponent->SetRelativeTransform(GetRelativeTransform());
     NewComponent->SetSkeletalMeshAsset(SkeletalMeshAsset);
-    NewComponent->SetAnimationMode(AnimationMode);
+    //NewComponent->SetAnimationMode(AnimationMode);
+    NewComponent->AnimationMode = AnimationMode;
+    NewComponent->AnimClass = AnimClass;
+    NewComponent->AnimScriptInstance = Cast<UAnimInstance>(AnimScriptInstance->Duplicate(this));
     NewComponent->SocketMap = SocketMap;
+    NewComponent->SetStateMachineFileName(StateMachineFileName);
 
     if (AnimationMode == EAnimationMode::AnimationBlueprint)
     {
-        NewComponent->SetAnimClass(AnimClass);
-        // TODO: 애님 인스턴스 세팅하기
-        //UMyAnimInstance* AnimInstance = Cast<UMyAnimInstance>(NewComponent->GetAnimInstance());
-        //AnimInstance->SetPlaying(Cast<UMyAnimInstance>(AnimScriptInstance)->IsPlaying());
     }
     else
     {
@@ -81,19 +81,12 @@ void USkeletalMeshComponent::SetProperties(const TMap<FString, FString>& InPrope
             SetSkeletalMeshAsset(SkelMesh);
         }
     }
-
-    if (InProperties.Contains("AnimationMode"))
+    if (InProperties.Contains("StateMachineFileName"))
     {
-        const EAnimationMode Mode = static_cast<EAnimationMode>(FString::ToInt(InProperties["AnimationMode"]));
-        SetAnimationMode(Mode);
+        FString StateMachineFilePath = InProperties["StateMachineFileName"];
+        SetStateMachineFileName(StateMachineFilePath);
     }
-
-    if (InProperties.Contains("AnimClass") && AnimationMode == EAnimationMode::AnimationBlueprint)
-    {
-        UClass* InAnimClass = UClass::FindClass(InProperties["AnimClass"]);
-        SetAnimClass(InAnimClass);
-    }
-
+   
     if (AnimationMode == EAnimationMode::AnimationSingleNode)
     {
         if (InProperties.Contains("AnimToPlay"))
@@ -130,6 +123,18 @@ void USkeletalMeshComponent::SetProperties(const TMap<FString, FString>& InPrope
             SetLoopEndFrame(FString::ToFloat(InProperties["LoopEndFrame"]));
         }
     }
+    if (InProperties.Contains("AnimClass"))
+    {
+        UClass* InAnimClass = UClass::FindClass(InProperties["AnimClass"]);
+        SetAnimClass(InAnimClass);
+    }
+
+    if (InProperties.Contains("AnimationMode"))
+    {
+        const EAnimationMode Mode = static_cast<EAnimationMode>(FString::ToInt(InProperties["AnimationMode"]));
+        SetAnimationMode(Mode);
+    }
+
     if (InProperties.Contains("SocketNames"))
     {
         TArray<FString> SocketNames;
@@ -169,6 +174,8 @@ void USkeletalMeshComponent::GetProperties(TMap<FString, FString>& OutProperties
     OutProperties.Add(TEXT("SkeletalMeshKey"), SkelMeshKey.ToString());
 
     OutProperties.Add(TEXT("AnimationMode"), FString::FromInt(static_cast<uint8>(AnimationMode)));
+    OutProperties.Add(TEXT("StateMachineFileName"), StateMachineFileName);
+  
 
     FString AnimClassStr = FName().ToString();
     if (AnimationMode == EAnimationMode::AnimationBlueprint)
@@ -464,13 +471,13 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
 
     // 소켓 맵에 없으면 본 이름으로 직접 찾기 (기존 동작)
     FTransform Transform = FTransform::Identity;
-    
+
     if (!GetSkeletalMeshAsset())
         return Transform;
 
     if (!GetSkeletalMeshAsset())
     {
-        return Transform; 
+        return Transform;
     }
 
 
@@ -997,24 +1004,24 @@ void USkeletalMeshComponent::SetAnimInstanceClass(class UClass* NewClass)
 {
     if (NewClass != nullptr)
     {
-        // set the animation mode
-        const bool bWasUsingBlueprintMode = AnimationMode == EAnimationMode::AnimationBlueprint;
-        //AnimationMode = EAnimationMode::AnimationBlueprint;
+        AnimClass = NewClass;
+        //// set the animation mode
+        //const bool bWasUsingBlueprintMode = AnimationMode == EAnimationMode::AnimationBlueprint;
+        ////AnimationMode = EAnimationMode::AnimationBlueprint;
 
-        if (NewClass != AnimClass)
-        {
-            // Only need to initialize if it hasn't already been set or we weren't previously using a blueprint instance
-            AnimClass = NewClass;
-            ClearAnimScriptInstance();
-            InitAnim();
-        }
+        //if (NewClass != AnimClass)
+        //{
+        //    // Only need to initialize if it hasn't already been set or we weren't previously using a blueprint instance
+        //    ClearAnimScriptInstance();
+        //    InitAnim();
+        //}
     }
     else
     {
-        // Need to clear the instance as well as the blueprint.
-        // @todo is this it?
-        AnimClass = nullptr;
-        ClearAnimScriptInstance();
+        //// Need to clear the instance as well as the blueprint.
+        //// @todo is this it?
+        //AnimClass = nullptr;
+        //ClearAnimScriptInstance();
     }
 }
 

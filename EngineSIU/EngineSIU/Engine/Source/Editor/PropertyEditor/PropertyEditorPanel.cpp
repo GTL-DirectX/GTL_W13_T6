@@ -520,14 +520,14 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
         {
             if (ImGui::Selectable("Animation Instance", CurrentAnimationMode == EAnimationMode::AnimationBlueprint))
             {
+                SkeletalMeshComp->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));
                 SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
                 CurrentAnimationMode = EAnimationMode::AnimationBlueprint;
-                SkeletalMeshComp->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));
             }
             if (ImGui::Selectable("Animation Asset", CurrentAnimationMode == EAnimationMode::AnimationSingleNode))
             {
-                SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
                 SkeletalMeshComp->SetAnimClass(UClass::FindClass(FName("UAnimSingleNodeInstance")));
+                SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
                 CurrentAnimationMode = EAnimationMode::AnimationSingleNode;
             }
             ImGui::EndCombo();
