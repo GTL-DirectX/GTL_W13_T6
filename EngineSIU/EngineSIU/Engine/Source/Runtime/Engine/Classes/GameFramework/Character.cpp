@@ -29,11 +29,16 @@ void ACharacter::PostSpawnInitialize()
     if (!CapsuleComponent)
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
+        CapsuleComponent->SetupAttachment(RootComponent);
+        CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
+        CapsuleComponent->AddLocation({ 0.0f, 0.0f, 3.0f });
+        
     }
 
     if (!SkeletalMeshComponent)
     {
         SkeletalMeshComponent = AddComponent<USkeletalMeshComponent>("SkeletalMeshComponent");
+        SkeletalMeshComponent->SetupAttachment(RootComponent);
         SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Human/Human")));
         SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
         SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));
@@ -63,10 +68,7 @@ void ACharacter::Tick(float DeltaTime)
 
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
-    Test = "Test";
-    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
-        "Test", &ACharacter::Test
-        )
+    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>())
 }
 
 bool ACharacter::BindSelfLuaProperties()

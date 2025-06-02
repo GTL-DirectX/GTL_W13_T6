@@ -46,6 +46,6 @@ public:
     }
 
 protected:
-    UStaticMesh* StaticMesh = nullptr;
+    UPROPERTY(EditAnywhere | EditInline, UStaticMesh*, StaticMesh, = nullptr)
     int SelectedSubMeshIndex = -1;
 };

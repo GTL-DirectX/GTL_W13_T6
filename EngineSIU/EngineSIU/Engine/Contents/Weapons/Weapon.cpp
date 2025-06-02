@@ -7,6 +7,8 @@
 
 #include "GameFramework/Player.h"
 
+#include "Engine/FObjLoader.h"
+
 void AWeapon::BeginPlay()
 {
     Super::BeginPlay();
@@ -16,16 +18,22 @@ void AWeapon::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
     
-    if (!WeaponMesh)
-    {
-        WeaponMesh = FObjectFactory::ConstructObject<UWeaponComponent>(this);
-    }
-
-    CollisionSphere = FObjectFactory::ConstructObject<USphereComponent>(this);
+    CollisionSphere = AddComponent<USphereComponent>("SphereCollision");
     if (CollisionSphere)
     {
+        SetRootComponent(CollisionSphere);
+        CollisionSphere->SetRadius(5.0f);
         CollisionSphere->OnComponentBeginOverlap.AddUObject(this, &AWeapon::OnComponentBeginOverlap);
+        
     }
+
+    if (!WeaponMeshComponent)
+    {
+        WeaponMeshComponent = AddComponent<UWeaponComponent>("WeaponMesh");
+        WeaponMeshComponent->SetupAttachment(RootComponent);
+        WeaponMeshComponent->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/Glov/Glov_L.obj"));
+    }
+
 }
 
 UObject* AWeapon::Duplicate(UObject* InOuter)
@@ -34,7 +42,7 @@ UObject* AWeapon::Duplicate(UObject* InOuter)
 
     if (NewWeapon)
     {
-        NewWeapon->WeaponMesh = WeaponMesh;
+        NewWeapon->WeaponMeshComponent = Cast<UWeaponComponent>(WeaponMeshComponent->Duplicate(InOuter));
         NewWeapon->CollisionSphere = Cast<USphereComponent>(CollisionSphere->Duplicate(InOuter));
     }
 
