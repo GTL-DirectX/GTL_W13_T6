@@ -19,6 +19,7 @@ public:
     UAnimInstance() = default;
 
     virtual void InitializeAnimation();
+    virtual UObject* Duplicate(UObject* InOuter) override;
 
     void UpdateAnimation(float DeltaSeconds, FPoseContext& OutPose);
 

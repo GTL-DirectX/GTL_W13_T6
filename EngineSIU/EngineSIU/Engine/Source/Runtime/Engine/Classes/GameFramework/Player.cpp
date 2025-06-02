@@ -2,12 +2,13 @@
 
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/ProjectileMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "World/World.h"
 
 #include "Engine/Contents/Weapons/Weapon.h"
 #include "Engine/Contents/Weapons/WeaponComponent.h"
+
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "sol/sol.hpp"
@@ -15,9 +16,9 @@
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     
     return NewActor;
@@ -53,6 +54,22 @@ void APlayer::Tick(float DeltaTime)
     //     SetActorRotation(SocketTransform.GetRotation().Rotator());
     //     SetActorLocation(SocketTransform.GetTranslation());
     // }
+}
+
+void APlayer::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (SkeletalMeshComponent)
+    {
+        if (ULuaScriptAnimInstance* AnimInstance = Cast<ULuaScriptAnimInstance>(SkeletalMeshComponent->GetAnimInstance()))
+        {
+            if (auto StateMachine = AnimInstance->GetAnimStateMachine())
+            {
+                StateMachine->BindTargetActor(this);
+            }
+        }
+    }
 }
 
 void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
@@ -148,12 +165,20 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
 
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
-    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
-        "Velocity", sol::property(&ThisClass::GetVelocity),
-        "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
-        "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
-        "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
-   )
+    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
+    "Speed", &APlayer::MoveSpeed,
+    "Velocity", &APlayer::Velocity,
+    "Acceleration", &APlayer::Acceleration,
+    "MaxSpeed", &APlayer::MaxSpeed,
+    "RotationSpeed", &APlayer::RotationSpeed
+    )
+    
+   //  DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
+   //      "Velocity", sol::property(&ThisClass::GetVelocity),
+   //      "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
+   //      "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
+   //      "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
+   // )
    // "Destroy", &ThisClass::Destroy
 }
 

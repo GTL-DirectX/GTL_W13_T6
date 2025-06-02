@@ -14,9 +14,14 @@ public:
     virtual UObject* Duplicate(UObject* InOuter) override;
     virtual void PostSpawnInitialize() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
     
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override;
     void SetPlayerIndex(int InPlayerIndex) { PlayerIndex = InPlayerIndex; }
+
+public:
+    virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
+    virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
     
 private:
     void MoveForward(float DeltaTime);

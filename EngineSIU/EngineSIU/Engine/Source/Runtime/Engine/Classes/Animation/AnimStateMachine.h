@@ -26,9 +26,28 @@ public:
 
     USkeletalMeshComponent* OwningComponent;
     ULuaScriptAnimInstance* OwningAnimInstance;
+
+    template<typename T>
+    void BindTargetActor(T* TargetActor);
     
-private:
+public:
     UPROPERTY(EditAnywhere, FString, LuaScriptName, = TEXT(""));
+
+private:
     sol::table LuaTable = {};
 
 };
+
+template<typename T>
+inline void UAnimStateMachine::BindTargetActor(T* TargetActor)
+{
+    if (!LuaTable.valid() || !TargetActor)
+    {
+        return;
+    }
+
+    if constexpr (std::is_base_of<APawn, T>::value)
+    {
+        LuaTable["OwnerCharacter"] = Cast<T>(TargetActor);
+    }
+}

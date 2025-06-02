@@ -527,6 +527,7 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
             if (ImGui::Selectable("Animation Asset", CurrentAnimationMode == EAnimationMode::AnimationSingleNode))
             {
                 SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+                SkeletalMeshComp->SetAnimClass(UClass::FindClass(FName("UAnimSingleNodeInstance")));
                 CurrentAnimationMode = EAnimationMode::AnimationSingleNode;
             }
             ImGui::EndCombo();
