@@ -450,6 +450,7 @@ xcopy /y /d "$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\FBX\lib\x64\$
     <None Include="Shaders\FullScreenQuadVertexShader.hlsl" />
     <ClCompile Include="Engine\Contents\Weapons\MeleeWeaponComponent.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\RangeWeaponComponent.cpp" />
+    <ClCompile Include="Engine\Contents\Objects\Collider.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <None Include="Shaders\CompositingShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -865,6 +866,7 @@ xcopy /y /d "$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\FBX\lib\x64\$
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Acceleration\ParticleModuleAccelerationBase.h" />
     <ClInclude Include="Engine\Contents\Weapons\MeleeWeaponComponent.h" />
     <ClInclude Include="Engine\Contents\Weapons\RangeWeaponComponent.h" />
+    <ClInclude Include="Engine\Contents\Objects\Collider.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="Engine\Contents\Weapons\WeaponComponent.h" />
     <None Include="Shaders\EditorShaderConstants.hlsli">

@@ -799,12 +799,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\LightActor.h">
       <Filter>Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp">
-      <Filter>Engine\Source\Runtime\Engine\Classes\Actors</Filter>
-    </ClCompile>
-    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\Player.h">
-      <Filter>Engine\Source\Runtime\Engine\Classes\Actors</Filter>
-    </ClInclude>
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\PointLightActor.cpp">
       <Filter>Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClCompile>
@@ -1623,6 +1617,11 @@
     <ClCompile Include="Engine\Contents\Weapons\WeaponComponent.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\MeleeWeaponComponent.cpp" />
     <ClCompile Include="Engine\Contents\Weapons\RangeWeaponComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Player.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\SequencerPlayer.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\UParticleModuleSizeOverLife.cpp" />
+    <ClCompile Include="Engine\Contents\Objects\Collider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU.natvis" />
@@ -1754,6 +1753,12 @@
     <ClInclude Include="Engine\Contents\Weapons\WeaponComponent.h" />
     <ClInclude Include="Engine\Contents\Weapons\MeleeWeaponComponent.h" />
     <ClInclude Include="Engine\Contents\Weapons\RangeWeaponComponent.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Container\StringUtils.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Player.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\SequencerPlayer.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\UParticleModuleSizeOverLife.h" />
+    <ClInclude Include="Engine\Contents\Objects\Collider.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\CompositingShader.hlsl" />
