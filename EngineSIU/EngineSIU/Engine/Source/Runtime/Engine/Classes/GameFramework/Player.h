@@ -2,6 +2,7 @@
 #include "Character.h"
 #include "UObject/ObjectMacros.h"
 
+class USpringArmComponent;
 class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
@@ -42,6 +43,7 @@ private:
     FName Socket = "jx_c_camera";
     
     UCameraComponent* CameraComponent = nullptr;
+    USpringArmComponent* SpringArmComponent = nullptr;
 
     int PlayerIndex = -1;
     int TargetViewPlayer = -1;

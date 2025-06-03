@@ -17,6 +17,7 @@
 #include "sol/sol.hpp"
 
 #include "Animation/AnimSequence.h"
+#include "SpringArmComponent.h"
 
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
@@ -33,10 +34,19 @@ void APlayer::PostSpawnInitialize()
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
 
+    SpringArmComponent = AddComponent<USpringArmComponent>("SpringArmComponent");
+    SpringArmComponent->SetTargetArmLength(37.8f);
+    SpringArmComponent->SetSocketOffset(FVector(0, 14, 25.3));
+    SpringArmComponent->SetupAttachment(RootComponent);
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
+    CameraComponent->SetupAttachment(SpringArmComponent);
+
+
+
+    /*CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
     CameraComponent->SetRelativeLocation(FVector(-20,0,20));
     CameraComponent->SetRelativeRotation(FRotator(-40,0,0));
-    CameraComponent->SetupAttachment(RootComponent);
+    CameraComponent->SetupAttachment(RootComponent);*/
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
