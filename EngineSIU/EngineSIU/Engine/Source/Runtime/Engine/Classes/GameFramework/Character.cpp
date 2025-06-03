@@ -104,7 +104,8 @@ void ACharacter::RegisterLuaType(sol::state& Lua)
         "StunGauge", &ACharacter::StunGauge,
         "MaxStunGauge", &ACharacter::MaxStunGauge,
         "KnockBackPower", &ACharacter::KnockBackPower,
-        "IsGrounded", &ACharacter::CheckGrounded// CheckGrounded는 bool 반환
+        "IsGrounded", &ACharacter::CheckGrounded, // CheckGrounded는 bool 반환
+        "KnockBackExp", &ACharacter::KnockBackExp
         )
 }
 

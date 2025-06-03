@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include "GameMode.h"
 #include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
@@ -44,17 +45,20 @@ void APlayer::PostSpawnInitialize()
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
 
-
-    SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0, 0, 30));
     AttachSocket();
-
-
+    
     BindAnimNotifys();
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (PlayerState != EPlayerState::Dead)
+    {
+        Score = GetWorld()->GetGameMode()->GetGameInfo().ElapsedGameTime;
+    }
+    
     FBodyInstance* BodyInstance = CollisionComponent->BodyInstance;
     if (!BodyInstance)
     {
@@ -89,7 +93,6 @@ void APlayer::BeginPlay()
         }
     }
 }
-
 
 void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -203,7 +206,7 @@ void APlayer::RotatePitch(float DeltaTime) const
     if (CameraComponent)
     {
         FRotator NewRotation = CameraComponent->GetRelativeRotation();
-        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + DeltaTime * PitchSpeed, -89.0f, 89.0f);
+        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + DeltaTime * PitchSpeed, -30.0f, 15.0f);
         CameraComponent->SetRelativeRotation(NewRotation);
     }
 }
@@ -241,23 +244,40 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
     }
 }
 
+void APlayer::SetControllerVibration(float LeftMotor, float RightMotor) const
+{
+    // XINPUT_VIBRATION 구조체 설정
+    XINPUT_VIBRATION vibration;
+    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+    
+    // 진동 강도 설정 (0.0f ~ 1.0f를 0 ~ 65535로 변환)
+    vibration.wLeftMotorSpeed = (WORD)(LeftMotor * 65535.0f);   // 저주파 모터 (왼쪽)
+    vibration.wRightMotorSpeed = (WORD)(RightMotor * 65535.0f); // 고주파 모터 (오른쪽)
+    
+    // 진동 설정 적용
+    XInputSetState(PlayerIndex, &vibration);
+}
+
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-        "Acceleration", &APlayer::Acceleration,
-        "MaxSpeed", &APlayer::MaxSpeed,
-        "RawSpeed", &APlayer::RawSpeed,
-        "PitchSpeed", &APlayer::PitchSpeed,
-        "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
-        "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
+    "Acceleration", &APlayer::Acceleration,
+    "MaxSpeed", &APlayer::MaxSpeed,
+    "RawSpeed", &APlayer::RawSpeed,
+    "PitchSpeed", &APlayer::PitchSpeed,
+    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
+    "SetControllerVibration", &APlayer::SetControllerVibration,
+    "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
     )
 }
+
 void APlayer::OnDamaged(FVector KnockBackDir)
 {
     Super::OnDamaged(KnockBackDir);
     UWorld* World = GetWorld();
     World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UDamageCameraShake::StaticClass());
 }
+
 
 void APlayer::StartGame()
 {
@@ -292,13 +312,12 @@ void APlayer::Stun() const
 
 void APlayer::KnockBack(FVector KnockBackDir) const
 {
-    
     LuaScriptComponent->ActivateFunction("KnockBack", KnockBackDir);
 }
 
-void APlayer::Dead() const
+void APlayer::OnDead() const
 {
-    LuaScriptComponent->ActivateFunction("Dead");
+    LuaScriptComponent->ActivateFunction("OnDead");
 }
 
 void APlayer::Attack() const
