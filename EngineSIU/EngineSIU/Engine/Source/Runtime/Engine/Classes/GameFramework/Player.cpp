@@ -86,6 +86,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
         PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); }); 
 
+        PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
+
         PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
@@ -261,12 +263,6 @@ bool APlayer::BindSelfLuaProperties()
     LuaTable["this"] = this;
     
     return true;
-}
-
-void APlayer::OnDamaged(FVector KnockBackDir) const
-{
-    LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
-    
 }
 
 void APlayer::Stun() const
