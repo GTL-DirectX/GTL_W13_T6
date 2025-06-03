@@ -41,11 +41,7 @@ void APlayer::PostSpawnInitialize()
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
 
-   
-    SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0, 0, 30));
     AttachSocket();
-    
-   
     BindAnimNotifys();
 }
 
@@ -185,7 +181,7 @@ void APlayer::RotatePitch(float DeltaTime) const
     if (CameraComponent)
     {
         FRotator NewRotation = CameraComponent->GetRelativeRotation();
-        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + DeltaTime * PitchSpeed, -89.0f, 89.0f);
+        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + DeltaTime * PitchSpeed, -30.0f, 15.0f);
         CameraComponent->SetRelativeRotation(NewRotation);
     }
 }
@@ -267,9 +263,9 @@ void APlayer::KnockBack(FVector KnockBackDir) const
     LuaScriptComponent->ActivateFunction("KnockBack", KnockBackDir);
 }
 
-void APlayer::Dead() const
+void APlayer::OnDead() const
 {
-    LuaScriptComponent->ActivateFunction("Dead");
+    LuaScriptComponent->ActivateFunction("OnDead");
 }
 
 void APlayer::Attack() const

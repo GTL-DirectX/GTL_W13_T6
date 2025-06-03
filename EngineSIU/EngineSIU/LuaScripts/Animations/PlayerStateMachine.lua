@@ -11,6 +11,8 @@ AnimFSM = {
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Player_Jumping"
         elseif State == 3 then
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Left_Hook"
+        elseif State == 5 then
+            self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Head_Hit"
         end
         
         return {

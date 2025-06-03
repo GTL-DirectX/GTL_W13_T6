@@ -18,7 +18,7 @@ function ReturnTable:BeginPlay()
     local this = self.this
     this.Acceleration = 100000
     this.MaxSpeed = 100000
-    this.RawSpeed = 100
+    this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 20
     this.KnockBackPower = 40000
@@ -38,10 +38,10 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.05;
+    this.Velocity = this.Velocity * 0.01;
     
-    if(this.ActorLocation.Z < -10) then
-        self:Dead()
+    if(this.ActorLocation.Z < -100) then
+        self:OnDead()
     end
     
     self.CurrentTime = (self.CurrentTime or 0) + DeltaTime
@@ -155,7 +155,7 @@ function ReturnTable:KnockBack(KnockBackDir)
     end)
 end
 
-function ReturnTable:Dead()
+function ReturnTable:OnDead()
     local this = self.this
     
     if (this.State >= 6) then return end

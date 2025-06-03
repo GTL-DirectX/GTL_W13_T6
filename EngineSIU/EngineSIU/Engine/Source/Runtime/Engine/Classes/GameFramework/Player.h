@@ -50,7 +50,7 @@ public:
     void OnDamaged(FVector KnockBackDir) const;
     void Stun() const;
     void KnockBack(FVector KnockBackDir) const;
-    void Dead() const;
+    void OnDead() const;
     void Attack() const;
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);
