@@ -271,7 +271,7 @@ void AMonster::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (bFalling && GetActorLocation().Z <= 3.7f && (bIsLanding == false && bLandEnded == false))
+    if (bFalling && GetActorLocation().Z <= 11.7f && (bIsLanding == false && bLandEnded == false))
     {
         // 착지 순간: bIsLanding을 한 번 true로 바꿔 준다.
         bIsLanding = true;
