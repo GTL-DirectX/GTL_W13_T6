@@ -3,7 +3,7 @@
 #include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "World/World.h"
@@ -54,7 +54,7 @@ void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     MoveSpeed = Velocity.Length();
-    CapsuleComponent->BodyInstance->AddForce(Velocity);
+    CollisionComponent->BodyInstance->AddForce(Velocity);
     
     // if (SkeletalMeshComponent)
     // {
@@ -150,12 +150,12 @@ void APlayer::MoveUp(float DeltaTime)
 
 void APlayer::RotateYaw(float DeltaTime)
 {
-    if (!CapsuleComponent)
+    if (!CollisionComponent)
     {
         return;
     }
 
-    FBodyInstance* BodyInstance = CapsuleComponent->BodyInstance;
+    FBodyInstance* BodyInstance = CollisionComponent->BodyInstance;
     if (!BodyInstance)
     {
         return;

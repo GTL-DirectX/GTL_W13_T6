@@ -2,7 +2,7 @@
 
 #include "PhysicsManager.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
@@ -16,7 +16,7 @@ UObject* ACharacter::Duplicate(UObject* InOuter)
     if (NewActor)
     {
 
-        NewActor->CapsuleComponent = GetComponentByClass<UCapsuleComponent>();
+        NewActor->CollisionComponent = GetComponentByClass<UBoxComponent>();
         //NewActor->CapsuleComponent = Cast<UCapsuleComponent>(CapsuleComponent->Duplicate(InOuter));
         NewActor->SkeletalMeshComponent = GetComponentByClass<USkeletalMeshComponent>();
         //NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
@@ -29,28 +29,29 @@ void ACharacter::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
 
-    if (!CapsuleComponent)
+    if (!CollisionComponent)
     {
-        CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
-        CapsuleComponent->SetupAttachment(RootComponent);
-        //CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
-        CapsuleComponent->AddLocation({ 0.0f, 0.0f, 0.0f });
-        CapsuleComponent->bSimulate = true;
-        CapsuleComponent->bApplyGravity = true;
-        CapsuleComponent->RigidBodyType = ERigidBodyType::DYNAMIC;
+        CollisionComponent = AddComponent<UBoxComponent>("CollisionComponent");
+        CollisionComponent->SetupAttachment(RootComponent);
+        CollisionComponent->AddLocation({ 0.0f, 0.0f, 0.0f });
+        CollisionComponent->bSimulate = true;
+        CollisionComponent->bApplyGravity = true;
+        CollisionComponent->RigidBodyType = ERigidBodyType::DYNAMIC;
+        CollisionComponent->SetBoxExtent(FVector(3.0f, 3.0f, 9.0f)); // Half Extent
 
         AggregateGeomAttributes CapsuleGeomAttributes;
         CapsuleGeomAttributes.GeomType = EGeomType::ECapsule;
         CapsuleGeomAttributes.Offset = FVector::ZeroVector;
         CapsuleGeomAttributes.Extent = FVector(1.0f, 1.0f, 1.0f); // Half Extent
         CapsuleGeomAttributes.Rotation = FRotator(90.0f, 0.0f, 00.0f);
-        CapsuleComponent->GeomAttributes.Add(CapsuleGeomAttributes);
+        CollisionComponent->GeomAttributes.Add(CapsuleGeomAttributes);
     }
 
     if (!SkeletalMeshComponent)
     {
         SkeletalMeshComponent = AddComponent<USkeletalMeshComponent>("SkeletalMeshComponent");
         SkeletalMeshComponent->SetupAttachment(RootComponent);
+        SkeletalMeshComponent->AddLocation({ 0.0f, 0.0f, -10.0f });
         SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Human/Human")));
         SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
         SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));
@@ -61,10 +62,10 @@ void ACharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (CapsuleComponent)
+    if (CollisionComponent)
     {
-        CapsuleComponent->CreatePhysXGameObject();
-        CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->
+        CollisionComponent->CreatePhysXGameObject();
+        CollisionComponent->BodyInstance->BIGameObject->DynamicRigidBody->
         setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X
             | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y); // X, Y축 회전 잠금
     }
@@ -139,8 +140,8 @@ void ACharacter::Jump()
 
 bool ACharacter::CheckGrounded()
 {
-    float GroundCheckDistance = CapsuleComponent->GetHalfHeight() + 1.0f;
-    FVector Start = CapsuleComponent->GetComponentLocation();
+    float GroundCheckDistance = CollisionComponent->GetBoxExtent().Z + 1.0f;
+    FVector Start = CollisionComponent->GetComponentLocation();
     FVector End = Start - FVector(0.0f, 0.0f, GroundCheckDistance);
 
     PxRaycastBuffer Hit;
