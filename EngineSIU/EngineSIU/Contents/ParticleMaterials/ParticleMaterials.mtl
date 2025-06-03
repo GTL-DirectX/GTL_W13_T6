@@ -16,3 +16,6 @@ map_Kd T_Fire.png
 
 newmtl T_Fire_SubUV
 map_Kd T_Fire_SubUV.png
+
+newmtl T_Smoke_SubUV
+map_Kd T_Smoke_SubUV.png

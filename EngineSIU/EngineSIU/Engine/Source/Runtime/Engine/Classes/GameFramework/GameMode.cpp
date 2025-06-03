@@ -107,7 +107,7 @@ void AGameMode::StartMatch()
     bGameEnded = false;
     GameInfo.ElapsedGameTime = 0.0f;
     GameInfo.TotalGameTime = 0.0f;
-
+  
     /*LuaScriptComponent->GetLuaSelfTable()["ElapsedTime"] = GameInfo.ElapsedGameTime;
     LuaScriptComponent->ActivateFunction("StartMatch");*/
     
@@ -123,6 +123,8 @@ void AGameMode::BeginPlay()
         LuaScriptComponent->InitializeComponent();
         LuaScriptComponent->ActivateFunction("OnGameStart");
     }
+    FSoundManager::GetInstance().StopAllSounds();
+    FSoundManager::GetInstance().PlaySound("BGM");
 }
 
 void AGameMode::Tick(float DeltaTime)
@@ -134,6 +136,11 @@ void AGameMode::Tick(float DeltaTime)
         // TODO: 아래 코드에서 DeltaTime을 2로 나누는 이유가?
         GameInfo.ElapsedGameTime += DeltaTime / 2.0f;
     }
+}
+
+void AGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    FSoundManager::GetInstance().StopAllSounds();
 }
 
 void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
@@ -182,5 +189,6 @@ void AGameMode::Reset()
 {
     bGameRunning = false;
     bGameEnded = true;
+    FSoundManager::GetInstance().StopAllSounds();
 }
 

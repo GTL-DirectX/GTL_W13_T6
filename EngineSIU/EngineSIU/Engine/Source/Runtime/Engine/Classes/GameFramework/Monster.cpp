@@ -1,6 +1,7 @@
 #include "Monster.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
+#include "SoundManager.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 
@@ -23,6 +24,7 @@ void AMonster::PostSpawnInitialize()
     /*SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
     SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));*/
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
+
 }
 void AMonster::RegisterLuaType(sol::state& Lua)
 {
@@ -83,6 +85,8 @@ void AMonster::BeginPlay()
             }
         }
     }
+    FSoundManager::GetInstance().PlaySound("SpawnKoopa");
+
 
 }
 void AMonster::Tick(float DeltaTime)

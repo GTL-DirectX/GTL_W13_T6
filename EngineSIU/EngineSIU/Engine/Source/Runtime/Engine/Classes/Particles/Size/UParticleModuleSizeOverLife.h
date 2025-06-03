@@ -17,6 +17,7 @@ public:
     {
         Super::Serialize(Ar);
         Ar << EndSize;
+        Ar << ChangeScale;
     }
 };
 

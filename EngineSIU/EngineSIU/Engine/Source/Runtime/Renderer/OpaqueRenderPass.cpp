@@ -56,7 +56,7 @@ void FOpaqueRenderPass::CreateResource()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesLambert[] =
     {
         { LAMBERT, "1" },
@@ -67,7 +67,7 @@ void FOpaqueRenderPass::CreateResource()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesBlinnPhong[] =
     {
         { PHONG, "1" },
@@ -78,7 +78,7 @@ void FOpaqueRenderPass::CreateResource()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesPBR[] =
     {
         { PBR, "1" },
@@ -167,7 +167,7 @@ void FOpaqueRenderPass::PrepareRender(const std::shared_ptr<FEditorViewportClien
     BufferManager->BindConstantBuffer(TEXT("FCPUSkinningConstants"), 2, EShaderStage::Vertex);
     BufferManager->BindConstantBuffer(TEXT("FObjectConstantBuffer"), 12, EShaderStage::Vertex);
     BufferManager->BindStructuredBufferSRV(TEXT("BoneBuffer"), 1, EShaderStage::Vertex);
-    
+
     Graphics->DeviceContext->RSSetViewports(1, &Viewport->GetViewportResource()->GetD3DViewport());
 
     const EResourceType ResourceType = EResourceType::ERT_Scene;
@@ -185,7 +185,7 @@ void FOpaqueRenderPass::CleanUpRender(const std::shared_ptr<FEditorViewportClien
 {
     // 렌더 타겟 해제
     Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-    
+
     ID3D11ShaderResourceView* NullSRV[1] = { nullptr };
     Graphics->DeviceContext->PSSetShaderResources(static_cast<int>(EShaderSRVSlot::SRV_PointLight), 1, NullSRV); // t51 슬롯을 NULL로 설정
     Graphics->DeviceContext->PSSetShaderResources(static_cast<int>(EShaderSRVSlot::SRV_DirectionalLight), 1, NullSRV); // t51 슬롯을 NULL로 설정
@@ -193,16 +193,16 @@ void FOpaqueRenderPass::CleanUpRender(const std::shared_ptr<FEditorViewportClien
 
     // 머티리얼 리소스 해제
     constexpr UINT NumViews = static_cast<UINT>(EMaterialTextureSlots::MTS_MAX);
-    
+
     ID3D11ShaderResourceView* NullSRVs[NumViews] = { nullptr };
-    
+
     Graphics->DeviceContext->PSSetShaderResources(0, NumViews, NullSRVs);
 
     // for Gouraud shading
-    ID3D11SamplerState* NullSampler[1] = { nullptr};
+    ID3D11SamplerState* NullSampler[1] = { nullptr };
     Graphics->DeviceContext->VSSetShaderResources(0, 1, NullSRV);
     Graphics->DeviceContext->VSSetSamplers(0, 1, NullSampler);
-    
+
     // SRV 해제
     ID3D11ShaderResourceView* NullSRVs2[14] = { nullptr };
     Graphics->DeviceContext->PSSetShaderResources(0, 14, NullSRVs2);
@@ -234,7 +234,11 @@ void FOpaqueRenderPass::RenderStaticMesh(const std::shared_ptr<FEditorViewportCl
         {
             continue;
         }
+        if (RenderData->ObjectName == L"Contents/SkySphere/SKY.obj")
+        {
 
+            ChangeViewMode(EViewModeIndex::VMI_Unlit);
+        }
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
 
         USceneComponent* SelectedComponent = Engine->GetSelectedComponent();
@@ -263,6 +267,8 @@ void FOpaqueRenderPass::RenderStaticMesh(const std::shared_ptr<FEditorViewportCl
         {
             FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(Comp->GetBoundingBox(), Comp->GetComponentLocation(), WorldMatrix);
         }
+        const EViewModeIndex ViewMode = Viewport->GetViewMode();
+        ChangeViewMode(ViewMode);
     }
 }
 
@@ -349,7 +355,7 @@ void FOpaqueRenderPass::PrepareRenderArr()
                 continue;
             }
 
-            StaticMeshComponents.Add(StaticMeshComp);       
+            StaticMeshComponents.Add(StaticMeshComp);
         }
     }
 }
@@ -369,7 +375,7 @@ void FOpaqueRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
 
     PrepareSkeletalMesh();
     RenderSkeletalMesh(Viewport);
-    
+
     CleanUpRender(Viewport);
 }
 
