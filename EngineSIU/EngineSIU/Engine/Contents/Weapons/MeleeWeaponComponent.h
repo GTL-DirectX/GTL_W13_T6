@@ -3,13 +3,14 @@
 #include "WeaponComponent.h"
 
 class UAnimSequence;
+class USphereComponent;
 
-class MeleeWeaponComponent : public UWeaponComponent
+class UMeleeWeaponComponent : public UWeaponComponent
 {
-    DECLARE_CLASS(MeleeWeaponComponent, UWeaponComponent)
+    DECLARE_CLASS(UMeleeWeaponComponent, UWeaponComponent)
 
 public:
-    MeleeWeaponComponent() = default;
+    UMeleeWeaponComponent() = default;
 
     virtual void Attack() override;
     virtual void InitializeComponent() override;
@@ -23,6 +24,8 @@ protected:
     float AttackSpeed = 1.0f; // 공격 속도
     float AttackRange = 100.0f; // 공격 범위
     float AttackRadius = 50.0f; // 공격 반경
+
+    USphereComponent* AttackCollision; // 공격 충돌 컴포넌트
 
 };
 

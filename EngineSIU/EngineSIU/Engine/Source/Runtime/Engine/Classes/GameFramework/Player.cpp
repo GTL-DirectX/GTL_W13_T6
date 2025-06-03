@@ -9,7 +9,7 @@
 #include "World/World.h"
 
 #include "Engine/Contents/Weapons/Weapon.h"
-#include "Engine/Contents/Weapons/WeaponComponent.h"
+#include "Engine/Contents/Weapons/MeleeWeaponComponent.h"
 
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
@@ -300,7 +300,7 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 */
 void APlayer::AttachSocket()
 {
-    if (EquippedWeapon = AddComponent<UWeaponComponent>())
+    if (EquippedWeapon = AddComponent<UMeleeWeaponComponent>())
     {
         FVector Pos = FVector(2.4f, -5.1, 40.3);
         FRotator Rot = FRotator(178, -178, 13);

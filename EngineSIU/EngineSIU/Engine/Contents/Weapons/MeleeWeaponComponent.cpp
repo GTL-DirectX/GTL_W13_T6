@@ -1,29 +1,40 @@
 #include "MeleeWeaponComponent.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Player.h"
 
 #include "GameFramework/Monster.h"
 
 
-void MeleeWeaponComponent::Attack()
+void UMeleeWeaponComponent::Attack()
 {
+    Super::Attack();
     if (!OwnerCharacter)
     {
         return;
     }
 }
 
-void MeleeWeaponComponent::InitializeComponent()
+void UMeleeWeaponComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 
-    OnComponentBeginOverlap.AddUObject(this, &MeleeWeaponComponent::ComponentBeginOverlap);
+    OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
+
+    if (!AttackCollision && GetOwner())
+    {
+        AttackCollision = GetOwner()->AddComponent<USphereComponent>("AttackCollision");
+        AttackCollision->SetupAttachment(this);
+        AttackCollision->SetRadius(1.0f);
+        AttackCollision->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
+    }
 
 }
 
-void MeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
+void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
+    UE_LOG(ELogLevel::Warning, TEXT("MeleeWeapon BeginOverlap"));
     if (bIsAttacking)
     {
         if (AMonster* Monster = Cast<AMonster>(OtherActor))
