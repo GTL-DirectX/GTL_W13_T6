@@ -106,6 +106,8 @@ end
 function ReturnTable:BeginPlay()
 
     print("BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
+    
+    self.CurrentTime = 0
 
 end
 
@@ -114,6 +116,7 @@ function ReturnTable:Tick(DeltaTime)
     local this = self.this
     local currentLocation = this.ActorLocation
 
+    self.CurrentTime = (self.CurrentTime or 0) + DeltaTime
     
     if this.IsRoaring then
         -- print("Process Roaring")
@@ -124,10 +127,21 @@ function ReturnTable:Tick(DeltaTime)
         ProcessFalling(self, DeltaTime)
         -- print("this.Falling ", this.IsFalling)
     elseif this.IsChasing then
-        print("this.Chasing ", this.IsChasing)
+        -- print("this.Chasing ", this.IsChasing)
         ProcessChasing(self, DeltaTime)
     end
     
+    if self.StunCoroutine and coroutine.status(self.StunCoroutine) == "suspended" then
+        coroutine.resume(self.StunCoroutine)
+    elseif self.StunCoroutine and coroutine.status(self.StunCoroutine) == "dead" then
+        self.StunCoroutine = nil
+    end
+    
+    if self.KnockBackCoroutine and coroutine.status(self.KnockBackCoroutine) == "suspended" then
+        coroutine.resume(self.KnockBackCoroutine)
+    elseif self.KnockBackCoroutine and coroutine.status(self.KnockBackCoroutine) == "dead" then
+        self.KnockBackCoroutine = nil
+    end
 
     -- print("Monster Tick  ", DeltaTime)
     -- 기본적으로 Table로 등록된 변수는 self, Class usertype으로 선언된 변수는 self.this로 불러오도록 설정됨.
@@ -144,9 +158,78 @@ function ReturnTable:EndPlay(EndPlayReason)
 
 end
 
+
+
+function ReturnTable:OnDamaged(KnockBackDir)
+    local this = self.this
+    if this.State >= 5 then return end
+    
+    this.StunGauge = this.StunGauge + 10
+    this.State = 5
+    
+    print("OnDamaged 실행", KnockBackDir.X, KnockBackDir.Y, KnockBackDir.Z)
+    print("누적 Damage: ", this.StunGauge)
+    
+    self:KnockBack(KnockBackDir)
+end
+
+function ReturnTable:Stun()
+    local this = self.this
+    if this.State >= 4 then return end
+    
+    print("Stun 시작")
+    
+    this.State = 4
+    self.StunCoroutine = coroutine.create(function()
+        self:Wait(5.0)
+        print("Stun 끝")
+    
+        this.StunGauge = 0;
+        this.State = 0
+    end)
+    
+end
+
+function ReturnTable:KnockBack(KnockBackDir)
+    local this = self.this -- local 추가
+    print("KnockBack 시작")
+
+    print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
+        KnockBackDir.Z * this.KnockBackPower)
+
+
+    self.KnockBackCoroutine = coroutine.create(function()
+        -- 넉백 시작
+
+        -- 1초 대기
+        self:Wait(1.0)
+
+        -- 넉백 종료 (코루틴 안에서 처리)
+        print("KnockBack 종료")
+        this.MoveSpeed = 0
+
+        -- 스턴 체크도 코루틴 안에서
+        if this.StunGauge >= this.MaxStunGauge then
+            this.State = 0
+            self:Stun()
+        else
+            this.State = 0
+        end
+    end)
+end
+
 function ReturnTable:Attack(AttackDamage)
     self.GetDamate(AttackDamage)
 
 end
+
+function ReturnTable:Wait(duration)
+    local startTime = self.CurrentTime or 0
+    while (self.CurrentTime or 0) - startTime < duration do
+        coroutine.yield()
+    end
+end
+
 
 return ReturnTable

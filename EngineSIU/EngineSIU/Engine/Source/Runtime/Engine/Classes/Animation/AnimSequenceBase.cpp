@@ -266,6 +266,7 @@ void UAnimSequenceBase::EvaluateAnimNotifies(
             || (PreviousTime >= CurrentTime && CurrentTime >= StartTime)
             || (CurrentTime <= PreviousTime && PreviousTime <= StartTime);
 
+
         const bool bInside = CurrentTime >= StartTime && CurrentTime < EndTime;
 
         if (!NotifyEvent.IsState()) 

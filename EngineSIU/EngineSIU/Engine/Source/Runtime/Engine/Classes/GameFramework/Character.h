@@ -3,6 +3,7 @@
 #include "Pawn.h"
 
 class USkeletalMeshComponent;
+class UBoxComponent;
 class UCapsuleComponent;
 class UParticleSystemComponent;
 
@@ -32,10 +33,11 @@ public:
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override { }
 
     USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
-    UCapsuleComponent* GetCapsuleComponent() const { return CapsuleComponent; }
+    UBoxComponent* GetCapsuleComponent() const { return CollisionComponent; }
     
 protected:
     USkeletalMeshComponent* SkeletalMeshComponent = nullptr;
+    UBoxComponent* CollisionComponent = nullptr;
     TMap<FString, UParticleSystemComponent*> ParticleSystemComponentMap;
     UCapsuleComponent* CapsuleComponent = nullptr;
 
@@ -50,6 +52,9 @@ public:
     // bool IsJumping();
     // bool IsAttacking();
 
+    virtual void OnDamaged(FVector KnockBackDir);
+
+
 protected:
     EPlayerState PlayerState = EPlayerState::Idle;
 
@@ -57,7 +62,14 @@ protected:
     void Jump();
     bool CheckGrounded();
 
-private:
+protected:
     bool bIsGrounded;
+
+    FVector Velocity = FVector(); // 이동 속도
+
+    float StunGauge = 0.0f;
+    float MaxStunGauge = 100.0f;
+
+    float KnockBackPower = 100000;
 
 };

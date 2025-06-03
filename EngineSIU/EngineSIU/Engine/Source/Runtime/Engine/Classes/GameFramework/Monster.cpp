@@ -187,7 +187,6 @@ void AMonster::RegisterLuaType(sol::state& Lua)
         "UpdateTargetPosition", &ThisClass::UpdateTargetPosition,
         "FollowTimer", sol::property(&ThisClass::GetFollowTimer, &ThisClass::SetFollowTimer),
         "TargetPosition", sol::property(&ThisClass::GetTargetPosition, &ThisClass::SetTargetPosition),
-
         "IsHit", sol::property(&ThisClass::IsHit, &ThisClass::SetHit),
         "IsDead", sol::property(&ThisClass::IsDead, &ThisClass::SetDead),
         "IsChasing", sol::property(&ThisClass::GetIsChasing, &ThisClass::SetIsChasing),
@@ -219,6 +218,12 @@ bool AMonster::BindSelfLuaProperties()
     LuaTable["Name"] = *GetName();
 
     return true;
+}
+
+void AMonster::OnDamaged(FVector KnockBackDir)
+{
+    Super::OnDamaged(KnockBackDir);
+    SetFallingToDeath(true);
 }
 
 void AMonster::UpdateTargetPosition()

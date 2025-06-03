@@ -1,18 +1,51 @@
 #include "MeleeWeaponComponent.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Player.h"
 
-void MeleeWeaponComponent::Attack()
+#include "GameFramework/Monster.h"
+
+
+void UMeleeWeaponComponent::Attack()
 {
+    Super::Attack();
     if (!OwnerCharacter)
     {
         return;
     }
+}
 
-    // OwnerActor에 Animation 넣어서 재생해주기.
-    if (USkeletalMeshComponent* SkelComp = OwnerCharacter->GetSkeletalMeshComponent())
+void UMeleeWeaponComponent::InitializeComponent()
+{
+    Super::InitializeComponent();
+
+    OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
+
+    if (!AttackCollision && GetOwner())
     {
-        SkelComp->PlayAnimation(AttackAnimation,  1.0f, false);
+        AttackCollision = GetOwner()->AddComponent<USphereComponent>("AttackCollision");
+        AttackCollision->SetupAttachment(this);
+        AttackCollision->SetRadius(0.7f);
+        AttackCollision->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
+    }
+
+}
+
+void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
+{
+    UE_LOG(ELogLevel::Warning, TEXT("MeleeWeapon BeginOverlap"));
+    if (bIsAttacking)
+    {
+        if (AMonster* Monster = Cast<AMonster>(OtherActor))
+        {
+            FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
+            Monster->OnDamaged(DamageDir);
+        }
+        else if (APlayer* OtherPlayer = Cast<APlayer>(OtherActor))
+        {
+            FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
+            OtherPlayer->OnDamaged(DamageDir);
+        }
     }
 }

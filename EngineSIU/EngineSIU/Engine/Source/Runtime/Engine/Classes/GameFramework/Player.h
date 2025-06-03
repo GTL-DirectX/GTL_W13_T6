@@ -5,8 +5,7 @@
 class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
-class UStaticMeshComponent;
-
+class UAnimSequenceBase;
 
 class APlayer : public ACharacter
 {
@@ -48,7 +47,6 @@ private:
     int TargetViewPlayer = -1;
 
 public:
-    void OnDamaged(FVector KnockBackDir) const;
     void Stun() const;
     void KnockBack(FVector KnockBackDir) const;
     void Dead() const;
@@ -56,6 +54,12 @@ public:
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);
     void AttachSocket();
+
+private:
+    void BindAnimNotifys();
+
+    void OnStartAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnFinishAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
 
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Player.lua")
@@ -65,16 +69,10 @@ protected:
 private:
     
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
-    UStaticMeshComponent* StaticMeshComp = nullptr; //소캣 테스트용
     
-    FVector Velocity = FVector(); // 이동 속도
     float Acceleration = 100000.0f;
     float MaxSpeed = 100000.0f;
     float RawSpeed = 100.0f; // 좌우 회전 속도
     float PitchSpeed = 100.0f;
-    
-    float StunGauge = 0.0f;
-    float MaxStunGauge = 100.0f;
 
-    float KnockBackPower = 100000;
 };

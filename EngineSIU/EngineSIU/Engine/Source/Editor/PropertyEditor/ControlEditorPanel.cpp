@@ -47,6 +47,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Engine/Contents/Objects/Collider.h"
+#include "GameFramework/Monster.h"
 
 
 ControlEditorPanel::ControlEditorPanel()
@@ -381,7 +382,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { .Label = "SequencerPlayer",   .OBJ = OBJ_SEQUENCERPLAYER },
             { .Label = "Player",   .OBJ = OBJ_PLAYER },
             { .Label = "Weapon",            .OBJ = OBJ_WEAPON },
-            {.Label = "Collider",            .OBJ = OBJ_COLLIDER },
+            { .Label = "Collider",            .OBJ = OBJ_COLLIDER },
+            {.Label = "Monster",            .OBJ = OBJ_MONSTER },
         };
 
         for (const auto& primitive : primitives)
@@ -518,7 +520,11 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     break;
 
                 case OBJ_COLLIDER:
-
+                    break;
+                case OBJ_MONSTER:
+                    SpawnedActor = World->SpawnActor<AMonster>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_MONSTER"));
+                    break;
                 case OBJ_END:
                     SpawnedActor = World->SpawnActor<ACollider>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_COLLIDER"));
