@@ -33,6 +33,10 @@ void FParticleEmitterInstance::Initialize()
     ParticleIndices = new uint16[MaxActiveParticles];
     InstanceData = new uint8[InstancePayloadSize];
 
+    bIsPlaying = true;
+    PlayStartTime = 0.0f;
+    ElapsedSincePlay = 0.0f;
+
     ActiveParticles = 0;
     ParticleCounter = 0;
     AccumulatedTime = 0.0f;
@@ -43,44 +47,81 @@ void FParticleEmitterInstance::Initialize()
 
 void FParticleEmitterInstance::Tick(float DeltaTime)
 {
+    // (1) 엔진 전체 경과 시간 누적 (기존)
     AccumulatedTime += DeltaTime;
-    CurrentTimeForBurst += DeltaTime;
 
-    // 초당 생성속도에 따른 현재 프레임에 생성할 파티클 수 계산
-    int32 SpawnCount = CalculateSpawnCount(DeltaTime);
-    
+    // (2) 재생 중인 경우에만 재생 전용 타이머 갱신
+    if (bIsPlaying)
+    {
+        ElapsedSincePlay += DeltaTime;
+    }
+
+    // (3) 파티클 생성 여부 판단: 
+    //     - bIsPlaying == false 이면 절대 생성하지 않음
+    //     - bIsPlaying == true 이고, 재생 경과 시간이 EmitterDuration 미만인 경우만 생성
     UParticleModuleRequired* ReqModule = CurrentLODLevel->RequiredModule;
-
     if (!ReqModule)
     {
         return;
     }
-    bool bIsFiniteDuration = (ReqModule->EmitterDuration > 0.0f);
-    
+
+    bool bFiniteDuration = (ReqModule->EmitterDuration > 0.0f);
     bool bAllowSpawningThisTick = false;
-    if (!bIsFiniteDuration) // EmitterDuration <= 0.0f, so consider it infinite for this cycle
+
+    if (bIsPlaying)
     {
-        bAllowSpawningThisTick = true;
-    }
-    else // bIsFiniteDuration is true
-    {
-        if (AccumulatedTime < ReqModule->EmitterDuration) // Check if we are still within the active duration
+        if (!bFiniteDuration)
         {
+            // Duration이 0 이하(무한)로 설정된 경우, 재생 상태인 한 계속 생성
             bAllowSpawningThisTick = true;
         }
-        // Else, AccumulatedTime >= ReqModule->EmitterDuration, so spawning for this cycle should stop.
+        else
+        {
+            // 재생 경과 시간이 EmitterDuration 미만일 때만 생성 허용
+            if (ElapsedSincePlay < ReqModule->EmitterDuration)
+            {
+                bAllowSpawningThisTick = true;
+            }
+            else
+            {
+                // Duration이 경과하면 자동 중단
+                bIsPlaying = false;
+                bAllowSpawningThisTick = false;
+            }
+        }
+    }
+    // else: bIsPlaying == false -> 생성 금지
+
+    // (4) Burst용 타이머 갱신 (사용자는 재생 중일 때만 Burst가 누적·발생하게 됨)
+    if (bIsPlaying)
+    {
+        CurrentTimeForBurst += DeltaTime;
     }
 
-    if (SpawnCount > 0 && bAllowSpawningThisTick)
+    // (5) 이번 프레임에 생성할 파티클 개수 계산
+    int32 SpawnCount = 0;
+    if (bAllowSpawningThisTick)
     {
+        SpawnCount = CalculateSpawnCount(DeltaTime);
+    }
+
+    // (6) 파티클 스폰
+    if (SpawnCount > 0)
+    {
+        // SpawnTime 계산 시 ElapsedSincePlay를 기준으로 하거나, 
+        // 단순히 재생 기준(ElapsedSincePlay 이전값)을 사용한다.
+        float PrevElapsed = ElapsedSincePlay - DeltaTime;
         float Increment = (SpawnCount > 1) ? DeltaTime / (float)(SpawnCount - 1) : 0.0f;
-        float StartTimeForParticles = AccumulatedTime - DeltaTime;
+        float StartTimeForParticles = PrevElapsed;
+
         SpawnParticles(SpawnCount, StartTimeForParticles, Increment, FVector::ZeroVector, FVector::ZeroVector);
     }
 
+    // (7) 모듈 및 파티클 업데이트는 생성 여부와 관계없이 항상 수행
     UpdateModules(DeltaTime);
     UpdateParticles(DeltaTime);
 }
+
 
 void FParticleEmitterInstance::SpawnParticles(
     int32 Count, float StartTime, float Increment,
@@ -140,6 +181,19 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
         }
     }
     ActiveParticles--;
+}
+
+void FParticleEmitterInstance::StartEmission()
+{
+    bIsPlaying = true;
+    PlayStartTime = 0.0f;
+    ElapsedSincePlay = 0.0f;
+}
+
+void FParticleEmitterInstance::StopEmission()
+{
+    bIsPlaying = false;
+
 }
 
 int32 FParticleEmitterInstance::CalculateSpawnCount(float DeltaTime)

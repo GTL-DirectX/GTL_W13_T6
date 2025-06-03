@@ -49,7 +49,7 @@ void UEditorEngine::Init()
     ActiveWorld = EditorWorld;
 
     EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>(this);
-    
+
     LoadLevel("Saved/AutoSaves.scene");
 }
 
@@ -71,16 +71,16 @@ void UEditorEngine::Release()
     {
         EndPhysicsAssetViewer();
     }
-    
+
     SaveLevel("Saved/AutoSaves.scene");
-    
+
     for (FWorldContext* WorldContext : WorldList)
     {
         WorldContext->World()->Release();
     }
     WorldList.Empty();
     PhysicsManager->ShutdownPhysX();
-    
+
     Super::Release();
 }
 
@@ -168,7 +168,7 @@ void UEditorEngine::Tick(float DeltaTime)
                             }
                         }
                     }
-                    
+
                 }
             }
         }
@@ -228,6 +228,8 @@ void UEditorEngine::Tick(float DeltaTime)
                             // 물리기반 시뮬레이션을 위한 TickGroup 처리
                             for (auto* Comp : Actor->GetComponents())
                             {
+                                UParticleSystemComponent* PCM = Cast<UParticleSystemComponent>(Comp);
+                                if (PCM) PCM->StartEmissions();
                                 Comp->TickComponent(DeltaTime);
                             }
                         }
@@ -258,10 +260,10 @@ void UEditorEngine::StartPIE()
     }
 
     ViewerType = EViewerType::EVT_PIE;
-    
+
     ClearActorSelection(); // Editor World 기준 Select Actor 해제
     ClearComponentSelection();
-    
+
     FSlateAppMessageHandler* Handler = GEngineLoop.GetAppMessageHandler();
 
     Handler->OnPIEModeStart();
@@ -275,9 +277,9 @@ void UEditorEngine::StartPIE()
     ActiveWorld = PIEWorld;
 
     SetPhysXScene(PIEWorld);
-    
+
     BindEssentialObjects();
-    
+
     PIEWorld->BeginPlay();
     // 여기서 Actor들의 BeginPlay를 해줄지 안에서 해줄 지 고민.
     // WorldList.Add(GetWorldContextFromWorld(PIEWorld));
@@ -296,9 +298,9 @@ void UEditorEngine::StartSkeletalMeshViewer(FName SkeletalMeshName, UAnimationAs
     }
 
     ViewerType = EViewerType::EVT_SkeletalMeshViewer;
-    
+
     FWorldContext& WorldContext = CreateNewWorldContext(EWorldType::SkeletalViewer);
-    
+
     SkeletalMeshViewerWorld = USkeletalViewerWorld::CreateWorld(this, EWorldType::SkeletalViewer, FString("SkeletalMeshViewerWorld"));
 
     WorldContext.SetCurrentWorld(SkeletalMeshViewerWorld);
@@ -308,7 +310,7 @@ void UEditorEngine::StartSkeletalMeshViewer(FName SkeletalMeshName, UAnimationAs
     // 스켈레탈 액터 스폰
     ASkeletalMeshActor* SkeletalActor = SkeletalMeshViewerWorld->SpawnActor<ASkeletalMeshActor>();
     SkeletalActor->SetActorTickInEditor(true);
-    
+
     USkeletalMeshComponent* MeshComp = SkeletalActor->AddComponent<USkeletalMeshComponent>();
     SkeletalActor->SetRootComponent(MeshComp);
     SkeletalActor->SetActorLabel(TEXT("OBJ_SKELETALMESH"));
@@ -319,7 +321,7 @@ void UEditorEngine::StartSkeletalMeshViewer(FName SkeletalMeshName, UAnimationAs
     MeshComp->PlayAnimation(AnimAsset, true);
     MeshComp->DEBUG_SetAnimationEnabled(true);
     MeshComp->SetPlaying(true);
-    
+
     ADirectionalLight* DirectionalLight = SkeletalMeshViewerWorld->SpawnActor<ADirectionalLight>();
     DirectionalLight->SetActorRotation(FRotator(45.f, 45.f, 0.f));
     DirectionalLight->GetComponentByClass<UDirectionalLightComponent>()->SetIntensity(4.0f);
@@ -327,7 +329,7 @@ void UEditorEngine::StartSkeletalMeshViewer(FName SkeletalMeshName, UAnimationAs
     FViewportCamera& Camera = *GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetPerspectiveCamera();
     CameraLocation = Camera.GetLocation();
     CameraRotation = Camera.GetRotation();
-    
+
     Camera.SetRotation(FVector(0.0f, 30, 180));
     if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(MeshComp))
     {
@@ -338,7 +340,7 @@ void UEditorEngine::StartSkeletalMeshViewer(FName SkeletalMeshName, UAnimationAs
         FVector LocalCenter = (Box.MinLocation + Box.MaxLocation) * 0.5f;
         FVector LocalExtents = (Box.MaxLocation - Box.MinLocation) * 0.5f;
         float Radius = LocalExtents.Length();
-        
+
         FMatrix ComponentToWorld = Primitive->GetWorldMatrix();
         FVector WorldCenter = ComponentToWorld.TransformPosition(LocalCenter);
 
@@ -367,7 +369,7 @@ void UEditorEngine::StartParticleViewer(UParticleSystem* ParticleSystemAsset)
 
     ClearActorSelection();
     ClearComponentSelection();
-    
+
     if (ParticleViewerWorld)
     {
         UE_LOG(ELogLevel::Warning, TEXT("SkeletalMeshViewerWorld already exists!"));
@@ -383,17 +385,17 @@ void UEditorEngine::StartParticleViewer(UParticleSystem* ParticleSystemAsset)
         ParticleViewerWorld = UParticleViewerWorld::CreateWorld(this);
         WorldContext.SetCurrentWorld(ParticleViewerWorld);
     }
-    
+
     ActiveWorld = ParticleViewerWorld;
     ParticleViewerWorld->WorldType = EWorldType::ParticleViewer;
-    
+
     // 파티클 스폰
     AActor* ParticleActor = ParticleViewerWorld->SpawnActor<AActor>();
     ParticleActor->SetActorTickInEditor(true);
-    
+
     UParticleSystemComponent* ParticleSystemComponent = ParticleActor->AddComponent<UParticleSystemComponent>();
     ParticleSystemComponent->SetParticleSystem(ParticleSystemAsset);
-    
+
     ParticleActor->SetRootComponent(ParticleSystemComponent);
     ParticleActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
 
@@ -413,14 +415,14 @@ void UEditorEngine::StartParticleViewer(UParticleSystem* ParticleSystemAsset)
 
     CameraLocation = Camera.GetLocation();
     CameraRotation = Camera.GetRotation();
-    
-    FVector NewCameraLocation = FVector(8, 8 , 8);
+
+    FVector NewCameraLocation = FVector(8, 8, 8);
 
     FVector Delta = (FVector(0.f, 0.f, 5.f) - NewCameraLocation).GetSafeNormal();
     float Pitch = FMath::RadiansToDegrees(FMath::Asin(Delta.Z));
     float Yaw = FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X));
-    FVector NewCameraRotation = FVector(0, -Pitch,  Yaw);
-    
+    FVector NewCameraRotation = FVector(0, -Pitch, Yaw);
+
     Camera.SetLocation(NewCameraLocation);
     Camera.SetRotation(NewCameraRotation);
 
@@ -483,7 +485,7 @@ void UEditorEngine::StartPhysicsAssetViewer(FName PreviewMeshKey, FName PhysicsA
     {
         PhysicsAsset = FObjectFactory::ConstructObject<UPhysicsAsset>(nullptr);
         PhysicsAsset->SetPreviewMesh(PreviewMesh);
-        
+
         FAssetInfo Info;
         Info.AssetName = PhysicsAsset->GetName();
         Info.PackagePath = TEXT("Contents/PhysicsAsset");
@@ -494,7 +496,7 @@ void UEditorEngine::StartPhysicsAssetViewer(FName PreviewMeshKey, FName PhysicsA
         UAssetManager::Get().AddAsset(Info.GetFullPath(), PhysicsAsset);
     }
     PreviewMesh->SetPhysicsAsset(PhysicsAsset);
-    
+
     if (PhysicsAssetViewerWorld) // PhysicsAssetViewerWorld가 유효한지 다시 확인하는 것이 좋습니다.
     {
         PhysicsAssetViewerWorld->SetSkeletalMeshComponent(MeshComp);
@@ -543,13 +545,13 @@ void UEditorEngine::StartPhysicsAssetViewer(FName PreviewMeshKey, FName PhysicsA
 void UEditorEngine::BindEssentialObjects()
 {
     int BindPlayerIndex = 0;
-    for (const auto Player: TObjectRange<APlayer>())
+    for (const auto Player : TObjectRange<APlayer>())
     {
         if (Player->GetWorld() == ActiveWorld)
         {
             ActiveWorld->SetPlayer(BindPlayerIndex, Player);
             Player->SetPlayerIndex(BindPlayerIndex);
-            
+
             // PlayerController 생성
             APlayerController* PC = CreatePlayerController(BindPlayerIndex);
 
@@ -557,19 +559,19 @@ void UEditorEngine::BindEssentialObjects()
 
             PC->Possess(Player);
             Player->SetupInputComponent(PC->GetInputComponent());
-            
+
             BindPlayerIndex++;
         }
     }
 
-    for (int i=BindPlayerIndex; i < MAX_PLAYER; i++)
+    for (int i = BindPlayerIndex; i < MAX_PLAYER; i++)
     {
         if (ActiveWorld->IsPlayerConnected(i))
         {
             CreatePlayer(i);
         }
     }
-    
+
     // 하나도 안 만들어졌다면 만들어주기
     if (BindPlayerIndex == 0 && ActiveWorld->GetPlayer(BindPlayerIndex) == nullptr)
     {
@@ -587,7 +589,7 @@ void UEditorEngine::CreatePlayer(int PlayerIndex) const // TODO: World.cpp로 �
     Player->SetPlayerIndex(PlayerIndex);
 
     APlayerController* PC = CreatePlayerController(PlayerIndex);
-    
+
     PC->Possess(Player);
     Player->SetupInputComponent(PC->GetInputComponent());
 }
@@ -622,7 +624,7 @@ void UEditorEngine::SetPhysXScene(UWorld* World) const
 void UEditorEngine::EndPIE()
 {
     ViewerType = EViewerType::EVT_Editor;
-    
+
     if (PIEWorld)
     {
         this->ClearActorSelection(); // PIE World 기준 Select Actor 해제 
@@ -647,7 +649,7 @@ void UEditorEngine::EndPIE()
 void UEditorEngine::EndSkeletalMeshViewer()
 {
     ViewerType = EViewerType::EVT_Editor;
-    
+
     if (SkeletalMeshViewerWorld)
     {
         this->ClearActorSelection();
@@ -655,11 +657,11 @@ void UEditorEngine::EndSkeletalMeshViewer()
         SkeletalMeshViewerWorld->Release();
         GUObjectArray.MarkRemoveObject(SkeletalMeshViewerWorld);
         SkeletalMeshViewerWorld = nullptr;
-        
+
         FViewportCamera& Camera = *GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetPerspectiveCamera();
         Camera.SetLocation(CameraLocation);
         Camera.SetRotation(CameraRotation);
-        
+
         ClearActorSelection();
         ClearComponentSelection();
     }
@@ -674,7 +676,7 @@ void UEditorEngine::EndSkeletalMeshViewer()
 void UEditorEngine::EndParticleViewer()
 {
     ViewerType = EViewerType::EVT_Editor;
-    
+
     if (ParticleViewerWorld)
     {
         this->ClearActorSelection();
@@ -682,11 +684,11 @@ void UEditorEngine::EndParticleViewer()
         ParticleViewerWorld->Release();
         GUObjectArray.MarkRemoveObject(ParticleViewerWorld);
         ParticleViewerWorld = nullptr;
-        
+
         FViewportCamera& Camera = *GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetPerspectiveCamera();
         Camera.SetLocation(CameraLocation);
         Camera.SetRotation(CameraRotation);
-        
+
         ClearActorSelection();
         ClearComponentSelection();
     }
@@ -701,7 +703,7 @@ void UEditorEngine::EndParticleViewer()
 void UEditorEngine::EndPhysicsAssetViewer()
 {
     ViewerType = EViewerType::EVT_Editor;
-    
+
     if (PhysicsAssetViewerWorld)
     {
         this->ClearActorSelection();

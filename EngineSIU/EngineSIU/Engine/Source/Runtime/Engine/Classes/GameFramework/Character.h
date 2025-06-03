@@ -4,6 +4,7 @@
 
 class USkeletalMeshComponent;
 class UCapsuleComponent;
+class UParticleSystemComponent;
 
 enum class EPlayerState : uint8
 {
@@ -35,6 +36,7 @@ public:
     
 protected:
     USkeletalMeshComponent* SkeletalMeshComponent = nullptr;
+    TMap<FString, UParticleSystemComponent*> ParticleSystemComponentMap;
     UCapsuleComponent* CapsuleComponent = nullptr;
 
 public:

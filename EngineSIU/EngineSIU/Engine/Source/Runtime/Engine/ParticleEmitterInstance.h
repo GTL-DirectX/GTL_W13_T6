@@ -46,6 +46,9 @@ public:
     uint8 bEnabled : 1;
 
     float AccumulatedTime = 0;
+    bool bIsPlaying = true;
+    float PlayStartTime = 0;
+    float ElapsedSincePlay = 0;
     float CurrentTimeForBurst;
     DistributionFloat* SpawnRateDistribution;
     float SpawnFraction = 0;
@@ -57,6 +60,9 @@ public:
     void SpawnParticles(int32 Count, float StartTime, float Increment, 
                         const FVector& InitialLocation, const FVector& InitialVelocity);
     void KillParticle(int32 Index);
+    
+    void StartEmission();
+    void StopEmission();
 
     int32 CalculateSpawnCount(float DeltaTime);
 
