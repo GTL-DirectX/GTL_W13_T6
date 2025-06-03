@@ -30,11 +30,26 @@ end
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     local this = self.this
-    if this.State == 0 and this.MoveSpeed > 100 then
-        this.State = 1
-    elseif this.State == 1 and this.MoveSpeed < 90 then
-        this.State = 0
+    if this.State == 0 and this.MoveSpeed > 50 then
+        this.State = 2
+    elseif this.State == 2 then -- Walking 으로부터 Transition (Run or Idle)
+        if this.MoveSpeed > 100 then
+            this.State = 1                          -- Walk to Run
+        elseif this.MoveSpeed <= 1 then         
+            this.State = 0                          -- Walk to Idle 
+        end
+    elseif this.State == 1 then -- Running to Walking
+        if this.MoveSpeed <= 1000 then
+            this.State = 2                          -- Run to Walk
+        elseif this.MoveSpeed <= 1 then
+            this.State = 0                          -- Run to Idle
+        end
     end
+    -- if this.State == 0 and this.MoveSpeed > 100 then
+    --     this.State = 1
+    -- elseif this.State == 1 and this.MoveSpeed < 90 then
+    --     this.State = 0
+    -- end
     
     --print(this.State, this.MoveSpeed)
     
