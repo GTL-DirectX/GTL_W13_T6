@@ -102,6 +102,7 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     FSoundManager::GetInstance().LoadSound("sizzle", "Contents/Sounds/sizzle.mp3");
     FSoundManager::GetInstance().LoadSound("BGM", "Contents/Sounds/BGM.wav");
     FSoundManager::GetInstance().LoadSound("SpawnKoopa", "Contents/Sounds/KoopaJR/vc_koopajr_special_S01.wav");
+    FSoundManager::GetInstance().LoadSound("Hit", "Contents/Sounds/Hit.wav");
     //FSoundManager::GetInstance().PlaySound("fishdream");
 
     UpdateUI();
@@ -174,10 +175,10 @@ void FEngineLoop::Tick()
 
         GEngineLoop.AppMessageHandler->UpdateXboxControllers(DeltaTime);
 
+        UIManager->BeginFrame();
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
         Render();
-        UIManager->BeginFrame();
         UnrealEditor->Render();
 
         FConsole::GetInstance().Draw();

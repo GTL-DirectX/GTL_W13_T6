@@ -17,8 +17,9 @@ void AGameMode::PostSpawnInitialize()
 
 
     OnGameInit.AddLambda([]() { UE_LOG(ELogLevel::Display, TEXT("Game Initialized")); });
-    
+
     SetActorTickInEditor(false); // PIE 모드에서만 Tick 수행
+    InitGame();
 
     if (FSlateAppMessageHandler* Handler = GEngineLoop.GetAppMessageHandler())
     {
@@ -27,19 +28,19 @@ void AGameMode::PostSpawnInitialize()
             this->InitGame();
         });*/
         Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
-        {
-            // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
-            if (KeyEvent.GetKeyCode() == VK_SPACE &&
-                !bGameRunning && bGameEnded)
             {
-                StartMatch();
-            }
-        });
+                // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
+                if (KeyEvent.GetKeyCode() == VK_SPACE &&
+                    !bGameRunning && bGameEnded)
+                {
+                    StartMatch();
+                }
+            });
 
         Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
             {
                 // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
-                if (KeyEvent.GetKeyCode() == VK_RCONTROL && 
+                if (KeyEvent.GetKeyCode() == VK_RCONTROL &&
                     bGameRunning && !bGameEnded)
                 {
                     EndMatch(false);
@@ -53,7 +54,7 @@ void AGameMode::RegisterLuaType(sol::state& Lua)
     Super::RegisterLuaType(Lua);
 
     DEFINE_LUA_TYPE_NO_PARENT(AGameMode,
-		"SpawnMonster", &ThisClass::SpawnMonster,
+        "SpawnMonster", &ThisClass::SpawnMonster,
         "IsAllPlayerDead", sol::property(&ThisClass::SetIsAllPlayerDead, &ThisClass::GetIsAllPlayerDead),
         "PlayerCount", sol::property(&ThisClass::SetPlayerCount, &ThisClass::GetPlayerCount),
         "MonsterCount", sol::property(&ThisClass::SetMonsterCount, &ThisClass::GetMonsterCount)
@@ -109,10 +110,18 @@ void AGameMode::StartMatch()
     bGameEnded = false;
     GameInfo.ElapsedGameTime = 0.0f;
     GameInfo.TotalGameTime = 0.0f;
-  
+
     /*LuaScriptComponent->GetLuaSelfTable()["ElapsedTime"] = GameInfo.ElapsedGameTime;
     LuaScriptComponent->ActivateFunction("StartMatch");*/
 
+    if (LuaScriptComponent)
+    {
+        LuaScriptComponent->InitializeComponent();
+        LuaScriptComponent->ActivateFunction("OnGameStart");
+    }
+    FSoundManager::GetInstance().StopAllSounds();
+    FSoundManager::GetInstance().PlaySound("BGM");
+    
     if (GEngine->ActiveWorld->GetPlayer(0))
     {
         GEngine->ActiveWorld->GetPlayer(0)->SetActorLocation(FVector(-10, -10, 30));
@@ -172,6 +181,10 @@ void AGameMode::Tick(float DeltaTime)
             EndMatch(false);
         }
     }
+    else
+    {
+        DrawStartUI();
+    }
 }
 
 void AGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -208,6 +221,51 @@ void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
     }
 }
 
+void AGameMode::DrawStartUI()
+{
+    ImGuiWindowFlags window_flags =
+        ImGuiWindowFlags_NoDecoration
+        | ImGuiWindowFlags_NoBringToFrontOnFocus
+        | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoResize;
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImVec2 displaySize = io.DisplaySize;
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.98f));
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(displaySize, ImGuiCond_Always);
+
+    auto srv = FEngineLoop::ResourceManager
+        .GetTexture(L"Assets/Texture/StartLogo.png")
+        .get()->TextureSRV;
+    ImTextureID my_texture_id = reinterpret_cast<ImTextureID>(srv);
+
+    ImVec2 img_size = ImVec2(1024.0f, 1024.0f);
+
+    if (ImGui::Begin("##ImageOverlay", nullptr, window_flags))
+    {
+        // 화면 중앙 기준 좌표 계산
+        float baseCenterX = (displaySize.x - img_size.x) * 0.5f;
+        float baseCenterY = (displaySize.y - img_size.y) * 0.5f;
+
+           // 이미지 위치
+        float imagePosX = baseCenterX  -150;
+        float imagePosY = baseCenterY + 50;
+        ImGui::SetCursorPosX(imagePosX);
+        ImGui::SetCursorPosY(imagePosY);
+        ImGui::Image(my_texture_id, img_size,
+            ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+            ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+            ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+       
+        ImGui::End();
+    }
+
+    ImGui::PopStyleColor();
+}
+
 
 void AGameMode::EndMatch(bool bIsWin)
 {
@@ -219,9 +277,9 @@ void AGameMode::EndMatch(bool bIsWin)
 
     FSoundManager::GetInstance().StopAllSounds();
     this->Reset();
-    
+
     GameInfo.TotalGameTime = GameInfo.ElapsedGameTime;
-    
+
     OnGameEnd.Broadcast(bIsWin);
 }
 

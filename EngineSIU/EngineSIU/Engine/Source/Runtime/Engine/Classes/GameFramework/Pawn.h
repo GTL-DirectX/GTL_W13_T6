@@ -48,11 +48,7 @@ public:
     virtual void RegisterLuaType(sol::state& Lua) override;
 
     void SetMoveSpeed(float InMoveSpeed) { MoveSpeed = InMoveSpeed; }
-    float GetMoveSpeed() const
-    {
-        //UE_LOG(ELogLevel::Error, TEXT("MoveSpeed : %f "), MoveSpeed);
-        return MoveSpeed;
-    }
+    float GetMoveSpeed() const { return MoveSpeed; }
 
 protected:
     UInputComponent* InputComponent;

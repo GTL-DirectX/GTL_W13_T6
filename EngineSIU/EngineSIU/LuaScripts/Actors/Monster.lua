@@ -21,9 +21,6 @@ local waitForChaseTime = 0.01
 ReturnTable.landingTimer       = 0.0
 ReturnTable.waitingForChase    = false
 
-
-
-
 -- ======================
 -- 유틸리티 함수
 -- ======================
@@ -105,9 +102,10 @@ end
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
 
-    print("BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
+    print("Monster BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
     
     self.CurrentTime = 0
+    this.KnockBackExp = 1
 
 end
 
@@ -165,6 +163,7 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
+    this.KnockBackExp = this.KnockBackExp * 4
     this.State = 5
     
     print("OnDamaged 실행", KnockBackDir.X, KnockBackDir.Y, KnockBackDir.Z)
@@ -182,8 +181,8 @@ function ReturnTable:Stun()
     this.State = 4
     self.StunCoroutine = coroutine.create(function()
         self:Wait(5.0)
-        print("Stun 끝")
-    
+        print("Stun 끝 zoflrxj")
+        
         this.StunGauge = 0;
         this.State = 0
     end)
@@ -193,10 +192,11 @@ end
 function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this -- local 추가
     print("KnockBack 시작")
-
-    print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
-        KnockBackDir.Z * this.KnockBackPower)
+    
+    print("몬스터", this.KnockBackPower, this.KnockBackExp)
+    
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
+        KnockBackDir.Z * this.KnockBackPower * this.KnockBackExp)
 
 
     self.KnockBackCoroutine = coroutine.create(function()
@@ -204,9 +204,10 @@ function ReturnTable:KnockBack(KnockBackDir)
 
         -- 1초 대기
         self:Wait(1.0)
+        this.Velocity = FVector(0, 0, 0)
 
         -- 넉백 종료 (코루틴 안에서 처리)
-        print("KnockBack 종료")
+        print("KnockBack 종료 캐릭터")
         this.MoveSpeed = 0
 
         -- 스턴 체크도 코루틴 안에서

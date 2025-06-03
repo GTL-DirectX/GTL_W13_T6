@@ -24,12 +24,14 @@ function ReturnTable:BeginPlay()
 
     --     print("BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
     local this = self.this
+
     this.Acceleration = 100000
     this.MaxSpeed = 100000
     this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 20
-    this.KnockBackPower = 40000
+    this.KnockBackPower = 200
+    this.KnockBackExp = 1
     
     self.CurrentTime = 0
 
@@ -41,34 +43,15 @@ function ReturnTable:Tick(DeltaTime)
     
     local moveSpeed = this.MoveSpeed or 0
 
-    -- 1) SmoothedSpeed 계산
-    local smoothingFactor = 3.0
-    local alpha = clamp(DeltaTime * smoothingFactor, 0, 1)
-    self.SmoothedSpeed = self.SmoothedSpeed 
-                        + (moveSpeed - self.SmoothedSpeed) 
-                          * alpha
-
-    
-    -- 2) 상태 전이용 임계값 비교 (SmoothedSpeed 이용)
-    if this.State == 0 then                     -- 현재 Idle
-        if self.SmoothedSpeed > 30 then
-            this.State = 2   -- Idle → Walk
-        end
-
-    elseif this.State == 2 then                 -- 현재 Walk
-        if self.SmoothedSpeed > 1000 then
-            this.State = 1   -- Walk → Run
-        elseif self.SmoothedSpeed <= 0.2 then
-            this.State = 0   -- Walk → Idle
-        end
-
-    elseif this.State == 1 then                 -- 현재 Run
-        if self.SmoothedSpeed < 500 then
-            this.State = 2   -- Run → Walk
+    if this.State < 3 then
+        if this.LinearSpeed <= 1 then
+            this.State = 0
+        elseif this.LinearSpeed >= 20 then
+            this.State = 1
+        else
+            this.State = 2
         end
     end
-    print("Smoothed Speed : ", self.SmoothedSpeed)
-
     -- (필요하다면) 이후 애니메이션 블렌딩 로직 등...
     -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리
 
@@ -131,6 +114,7 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
+    this.KnockBackExp = this.KnockBackExp * 1.2
     this.State = 5
     
     print("OnDamaged 실행")
@@ -160,8 +144,10 @@ function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this -- local 추가
     print("KnockBack 시작")
 
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
-        KnockBackDir.Z * this.KnockBackPower)
+    print(this.KnockBackPower, this.KnockBackExp)
+
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
+        KnockBackDir.Z * this.KnockBackPower * this.KnockBackExp)
 
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작

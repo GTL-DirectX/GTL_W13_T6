@@ -11,7 +11,7 @@ local FRotator = EngineTypes.FRotator
 local SpawnRate = 5.0                  -- 초 단위, 몬스터 생성 주기
 local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
 local MaxMonsterCount = 5
-
+local GameStart = false
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
 
@@ -30,7 +30,7 @@ function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
     -- this.IsAllPlayerDead
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
-    if ElapsedTimeSinceLastSpawn >= SpawnRate then
+    if ElapsedTimeSinceLastSpawn >= SpawnRate and self.GameStart == true then
         if self:IsBoundMonsterCount() then   
             
             self:SpawnMonster(DeltaTime)
@@ -75,4 +75,7 @@ function ReturnTable:SpawnMonster(DeltaTime)
     -- self.SpawnMonster()
 end
 
+function ReturnTable:OnGameStart()
+    self.GameStart = true
+end
 return ReturnTable

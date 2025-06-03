@@ -3,10 +3,13 @@
 #include "PhysicsManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Classes/Particles/ParticleSystemComponent.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 
+#include "SoundManager.h"
 #include "Engine/EditorEngine.h"
 
 UObject* ACharacter::Duplicate(UObject* InOuter)
@@ -20,7 +23,9 @@ UObject* ACharacter::Duplicate(UObject* InOuter)
         //NewActor->CapsuleComponent = Cast<UCapsuleComponent>(CapsuleComponent->Duplicate(InOuter));
         NewActor->SkeletalMeshComponent = GetComponentByClass<USkeletalMeshComponent>();
         //NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
-     }
+       // NewActor->ParticleSystemComponent = GetComponentByClass<UParticleSystemComponent>();
+  
+    }
 
     return NewActor;
 }
@@ -99,7 +104,8 @@ void ACharacter::RegisterLuaType(sol::state& Lua)
         "StunGauge", &ACharacter::StunGauge,
         "MaxStunGauge", &ACharacter::MaxStunGauge,
         "KnockBackPower", &ACharacter::KnockBackPower,
-        "IsGrounded", &ACharacter::CheckGrounded// CheckGrounded는 bool 반환
+        "IsGrounded", &ACharacter::CheckGrounded, // CheckGrounded는 bool 반환
+        "KnockBackExp", &ACharacter::KnockBackExp
         )
 }
 
@@ -133,6 +139,7 @@ int ACharacter::GetState()
 
 void ACharacter::OnDamaged(FVector KnockBackDir)
 {
+    FSoundManager::GetInstance().PlaySound("Hit");
     LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 

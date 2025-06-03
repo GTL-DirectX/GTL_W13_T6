@@ -275,7 +275,7 @@ void UAnimSequenceBase::EvaluateAnimNotifies(
             {
                 if (NotifyEvent.Notify)
                 {
-                    UE_LOG(ELogLevel::Display, TEXT("[Notify] Triggered: %s at Time=%.3f"), *NotifyEvent.NotifyName.ToString(), CurrentTime);
+                    /*UE_LOG(ELogLevel::Display, TEXT("[Notify] Triggered: %s at Time=%.3f"), *NotifyEvent.NotifyName.ToString(), CurrentTime);*/
                     NotifyEvent.Notify->Notify(MeshComp, AnimAsset);
                 }
                 NotifyEvent.bTriggered = true;

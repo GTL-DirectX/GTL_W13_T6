@@ -73,7 +73,9 @@ public:
     
     FEventManager EventManager;
 
-    void SetPlayer(int Index, APlayer* InPlayer){ Players[Index] = InPlayer; }
+    void SetPlayer(int Index, APlayer* InPlayer){ 
+        Players[Index] = InPlayer;
+    }
     APlayer* GetPlayer(int Index) const;
 
     void SetPlayerController(int Index, APlayerController* InPlayerController){ PlayerControllers[Index] = InPlayerController; }
