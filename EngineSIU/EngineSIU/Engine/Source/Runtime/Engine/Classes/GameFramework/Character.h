@@ -49,6 +49,9 @@ public:
     // bool IsJumping();
     // bool IsAttacking();
 
+    virtual void OnDamaged(FVector KnockBackDir);
+
+
 protected:
     EPlayerState PlayerState = EPlayerState::Idle;
 

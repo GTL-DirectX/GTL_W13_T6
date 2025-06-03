@@ -6,6 +6,7 @@
 #include "SoundManager.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Components/BoxComponent.h"
 
 class ULuaScriptAnimInstance;
 
@@ -36,6 +37,11 @@ void AMonster::PostSpawnInitialize()
     /*SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
     SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));*/
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
+
+    if (CollisionComponent)
+    {
+        CollisionComponent->SetBoxExtent(FVector(6.0f, 6.0f, 9.0f));
+    }
 
 
     /*if (!bNotifyInitialized)
@@ -169,8 +175,8 @@ bool AMonster::BindSelfLuaProperties()
 
 void AMonster::OnDamaged(FVector KnockBackDir)
 {
+    Super::OnDamaged(KnockBackDir);
     SetFallingToDeath(true);
-    LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 
 void AMonster::UpdateTargetPosition()

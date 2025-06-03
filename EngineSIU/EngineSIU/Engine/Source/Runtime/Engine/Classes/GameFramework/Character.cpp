@@ -131,6 +131,11 @@ int ACharacter::GetState()
     return static_cast<int>(PlayerState);
 }
 
+void ACharacter::OnDamaged(FVector KnockBackDir)
+{
+    LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
+}
+
 void ACharacter::Jump()
 {
     if (!bIsGrounded || PlayerState == EPlayerState::Jumping)

@@ -35,6 +35,10 @@ void UInputComponent::ProcessInput(float DeltaTime)
     {
         KeyBindDelegate[FString("E")].Broadcast(DeltaTime);
     }
+    if (PressedKeys.Contains(EKeys::P))
+    {
+        KeyBindDelegate[FString("P")].Broadcast(DeltaTime);
+    }
 
     ////////////////// Pad Input ////////////////
     ProcessControllerButton(DeltaTime);
@@ -361,6 +365,18 @@ void UInputComponent::InputKey(const FKeyEvent& InKeyEvent)
         else if (InKeyEvent.GetInputEvent() == IE_Released)
         {
             PressedKeys.Remove(EKeys::E);
+        }
+        break;
+    }
+    case 'P':
+    {
+        if (InKeyEvent.GetInputEvent() == IE_Pressed)
+        {
+            PressedKeys.Add(EKeys::P);
+        }
+        else if (InKeyEvent.GetInputEvent() == IE_Released)
+        {
+            PressedKeys.Remove(EKeys::P);
         }
         break;
     }
