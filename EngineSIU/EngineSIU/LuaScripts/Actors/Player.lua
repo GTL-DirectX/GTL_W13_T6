@@ -41,34 +41,13 @@ function ReturnTable:Tick(DeltaTime)
     
     local moveSpeed = this.MoveSpeed or 0
 
-    -- 1) SmoothedSpeed 계산
-    local smoothingFactor = 3.0
-    local alpha = clamp(DeltaTime * smoothingFactor, 0, 1)
-    self.SmoothedSpeed = self.SmoothedSpeed 
-                        + (moveSpeed - self.SmoothedSpeed) 
-                          * alpha
-
-    
-    -- 2) 상태 전이용 임계값 비교 (SmoothedSpeed 이용)
-    if this.State == 0 then                     -- 현재 Idle
-        if self.SmoothedSpeed > 30 then
-            this.State = 2   -- Idle → Walk
-        end
-
-    elseif this.State == 2 then                 -- 현재 Walk
-        if self.SmoothedSpeed > 1000 then
-            this.State = 1   -- Walk → Run
-        elseif self.SmoothedSpeed <= 0.2 then
-            this.State = 0   -- Walk → Idle
-        end
-
-    elseif this.State == 1 then                 -- 현재 Run
-        if self.SmoothedSpeed < 500 then
-            this.State = 2   -- Run → Walk
-        end
+    if this.LinearSpeed <= 1 then
+        this.State = 0
+    elseif this.LinearSpeed >= 20 then
+        this.State = 1
+    else
+        this.State = 2
     end
-    print("Smoothed Speed : ", self.SmoothedSpeed)
-
     -- (필요하다면) 이후 애니메이션 블렌딩 로직 등...
     -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리
 

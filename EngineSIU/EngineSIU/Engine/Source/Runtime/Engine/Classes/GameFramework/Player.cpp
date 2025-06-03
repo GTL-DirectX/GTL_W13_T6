@@ -35,7 +35,7 @@ void APlayer::PostSpawnInitialize()
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
     CameraComponent->SetRelativeLocation(FVector(-20,0,20));
-    CameraComponent->SetRelativeRotation(FRotator(0,-15,0));
+    CameraComponent->SetRelativeRotation(FRotator(-40,0,0));
     CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
@@ -52,7 +52,17 @@ void APlayer::PostSpawnInitialize()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    
+    FBodyInstance* BodyInstance = CollisionComponent->BodyInstance;
+    if (!BodyInstance)
+    {
+        return;
+    }
+
+    if (PxRigidDynamic* RigidActor = BodyInstance->BIGameObject->DynamicRigidBody)
+    {
+        LinearSpeed = RigidActor->getLinearVelocity().magnitude();
+        UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
+    }
     // if (SkeletalMeshComponent)
     // {
     //     const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
@@ -230,7 +240,8 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "MaxSpeed", &APlayer::MaxSpeed,
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
-    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer
+    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
+        "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
     )
 }
 
