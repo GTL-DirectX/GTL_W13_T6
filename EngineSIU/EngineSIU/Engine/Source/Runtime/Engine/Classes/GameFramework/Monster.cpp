@@ -11,6 +11,7 @@
 #include "Components/BoxComponent.h"
 
 #include "Components/PrimitiveComponent.h"
+#include "Engine/Contents/Weapons/WeaponComponent.h"
 #include "UObject/Casts.h"
 #include "Player.h"
 
@@ -262,11 +263,13 @@ void AMonster::AttatchParticleComponent()
 
 void AMonster::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
-    if (!OtherActor || !OtherComp)
+    if (!OtherActor || !OtherComp || Cast<UWeaponComponent>(OtherComp))
     {
         return;
     }
-    
+    if (!OtherComp->IsA<UBoxComponent>())
+        return;
+
     if (APlayer* Character = Cast<APlayer>(OtherActor))
     {
         FVector DamageDir = OtherActor->GetActorLocation() - GetActorLocation();
