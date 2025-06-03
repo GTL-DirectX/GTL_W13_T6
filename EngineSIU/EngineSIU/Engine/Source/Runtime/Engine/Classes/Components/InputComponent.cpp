@@ -128,6 +128,7 @@ void UInputComponent::ProcessControllerButton(float DeltaTime)
 
 void UInputComponent::ProcessControllerAnalog(float DeltaTime)
 {
+    DeltaTime = 0.04f; // TODO: 현재 DeltaTime 고장남
     // 참고: 아날로그 스틱 값들은 별도 처리
     // 왼쪽 스틱
     float LeftStickX = CurrentAnalogValues[EXboxAnalog::LeftStickX];

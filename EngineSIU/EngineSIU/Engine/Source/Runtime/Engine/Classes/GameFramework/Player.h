@@ -19,7 +19,11 @@ public:
     virtual void BeginPlay() override;
     
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override;
-    void SetPlayerIndex(int InPlayerIndex) { PlayerIndex = InPlayerIndex; }
+    void SetPlayerIndex(int InPlayerIndex) { PlayerIndex = InPlayerIndex; TargetViewPlayer = InPlayerIndex; }
+
+    int GetTargetViewPlayer() const { return TargetViewPlayer; }
+    void SetTargetViewPlayer(int Index) { TargetViewPlayer = Index; }
+    void ChangeTargetViewPlayer(int ChangeAmount);
     
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
     virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
@@ -32,6 +36,7 @@ private:
     void RotateYaw(float DeltaTime);
     void RotatePitch(float DeltaTime) const;
 
+
     void PlayerConnected(int TargetIndex) const;
     void PlayerDisconnected(int TargetIndex) const;
 
@@ -40,6 +45,7 @@ private:
     UCameraComponent* CameraComponent = nullptr;
 
     int PlayerIndex = -1;
+    int TargetViewPlayer = -1;
 
 public:
     void OnDamaged(FVector KnockBackDir) const;

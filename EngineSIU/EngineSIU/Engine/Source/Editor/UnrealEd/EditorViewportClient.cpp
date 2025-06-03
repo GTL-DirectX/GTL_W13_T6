@@ -400,7 +400,15 @@ void FEditorViewportClient::GetViewInfo(FMinimalViewInfo& OutViewInfo) const
     bool bGotViewInfo = false;
         
     OutViewInfo = FMinimalViewInfo();
-    if (APlayerController* PC = GEngine->ActiveWorld->GetPlayerController(ViewportIndex))
+
+    int TargetViewPlayer = ViewportIndex;
+    APlayer* Player = GEngine->ActiveWorld->GetPlayer(ViewportIndex);
+    if (Player && Player->GetState() == static_cast<int>(EPlayerState::Dead))
+    {
+        TargetViewPlayer = Player->GetTargetViewPlayer();
+    }
+    
+    if (APlayerController* PC = GEngine->ActiveWorld->GetPlayerController(TargetViewPlayer))
     {
         if (APlayerCameraManager* PCM = PC->PlayerCameraManager)
         {
