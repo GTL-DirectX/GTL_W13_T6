@@ -30,6 +30,8 @@ public:
 
     float GetScore() const { return Score; }
 private:
+    void StartGame();
+
     void MoveForward(float DeltaTime);
     void MoveRight(float DeltaTime);
     void MoveUp(float DeltaTime);
