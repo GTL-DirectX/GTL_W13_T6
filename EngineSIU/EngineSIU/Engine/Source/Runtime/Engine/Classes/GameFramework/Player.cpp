@@ -17,7 +17,7 @@
 #include "sol/sol.hpp"
 
 #include "Animation/AnimSequence.h"
-
+#include "GameFramework/GameMode.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/Contents/Objects/DamageCameraShake.h"
 
@@ -120,6 +120,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
+
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_START, [this](float) { StartGame(); });
 
         PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index) { PlayerConnected(Index); });
         PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index) { PlayerDisconnected(Index); });
@@ -255,6 +257,15 @@ void APlayer::OnDamaged(FVector KnockBackDir)
     Super::OnDamaged(KnockBackDir);
     UWorld* World = GetWorld();
     World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UDamageCameraShake::StaticClass());
+}
+
+void APlayer::StartGame()
+{
+    if (UWorld* World = GetWorld())
+    {
+        World->GetGameMode()->StartMatch();
+    }
+
 }
 bool APlayer::BindSelfLuaProperties()
 {

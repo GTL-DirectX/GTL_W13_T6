@@ -106,6 +106,8 @@ void AGameMode::InitGame()
 
 void AGameMode::StartMatch()
 {
+    if (bGameRunning) return;
+
     bGameRunning = true;
     bGameEnded = false;
     GameInfo.ElapsedGameTime = 0.0f;
