@@ -13,6 +13,7 @@ InGamePanel::InGamePanel()
     m_AnimationTime = 0.0f;
     m_RestartHoverState = 0.0f;
     m_ExitHoverState = 0.0f;
+    m_PauseHoverState = 0.0f;  // 추가: 정지 버튼 호버 상태
     Width = 0.0f;
     Height = 0.0f;
 }
@@ -43,21 +44,42 @@ void InGamePanel::Render()
                                    ImGuiWindowFlags_NoScrollWithMouse |
                                    ImGuiWindowFlags_NoCollapse;
 
-    // 그래디언트 배경 효과를 위한 반투명 배경
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f)); // 더 어두운 배경
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));  // 자식 윈도우는 투명
-    
-    if (GEngine && GEngine->ActiveWorld->GetGameMode() && GEngine->ActiveWorld->GetGameMode()->GetIsGameEnded())
+    if (GEngine && GEngine->ActiveWorld->GetGameMode())
     {
-        if (ImGui::Begin("InGameRestartPanel", nullptr, window_flags))
+        bool isGameEnded = GEngine->ActiveWorld->GetGameMode()->GetIsGameEnded();
+        
+        if (isGameEnded)
         {
-            RenderGameModeButton();
+            // 게임이 종료된 경우: 기존의 게임 오버 화면 표시
+            // 그래디언트 배경 효과를 위한 반투명 배경
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f)); // 더 어두운 배경
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));  // 자식 윈도우는 투명
+            
+            if (ImGui::Begin("InGameRestartPanel", nullptr, window_flags))
+            {
+                RenderGameModeButton();
+            }
+            ImGui::End();
+            
+            // 스타일 색상 복원
+            ImGui::PopStyleColor(2);
         }
-        ImGui::End();
+        else
+        {
+            // 게임이 진행 중인 경우: 투명한 배경으로 정지 버튼만 표시
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 완전 투명 배경
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));  // 자식 윈도우는 투명
+            
+            if (ImGui::Begin("InGamePausePanel", nullptr, window_flags))
+            {
+                RenderPauseButton();
+            }
+            ImGui::End();
+            
+            // 스타일 색상 복원
+            ImGui::PopStyleColor(2);
+        }
     }
-    
-    // 스타일 색상 복원
-    ImGui::PopStyleColor(2);
 }
 
 void InGamePanel::OnResize(HWND hWnd)
@@ -66,6 +88,74 @@ void InGamePanel::OnResize(HWND hWnd)
     GetClientRect(hWnd, &ClientRect);
     Width = ClientRect.right - ClientRect.left;
     Height = ClientRect.bottom - ClientRect.top;
+}
+
+void InGamePanel::RenderPauseButton()
+{
+    UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+    if (!EditorEngine)
+    {
+        return;
+    }
+    
+    // 윈도우 크기 가져오기
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    
+    // 정지 버튼 설정
+    constexpr float buttonWidth = 120.0f;
+    constexpr float buttonHeight = 40.0f;
+    constexpr float topMargin = 20.0f; // 상단 여백
+    
+    // 버튼 위치 계산 (상단 중앙)
+    float buttonX = (windowSize.x - buttonWidth) * 0.5f;
+    float buttonY = topMargin;
+    
+    ImGui::SetCursorPos(ImVec2(buttonX, buttonY));
+    
+    // 버튼 호버 상태 체크
+    ImVec2 buttonPos = ImGui::GetCursorScreenPos();
+    ImVec2 mousePos = ImGui::GetMousePos();
+    bool isPauseHovered = (mousePos.x >= buttonPos.x && mousePos.x <= buttonPos.x + buttonWidth &&
+                          mousePos.y >= buttonPos.y && mousePos.y <= buttonPos.y + buttonHeight);
+    
+    // 호버 애니메이션
+    m_PauseHoverState = Lerp(m_PauseHoverState, isPauseHovered ? 1.0f : 0.0f, ImGui::GetIO().DeltaTime * 8.0f);
+    
+    // 정지 버튼 색상 (반투명하게 설정)
+    float baseAlpha = 0.8f; // 기본 투명도
+    float hoverAlpha = 1.0f; // 호버 시 투명도
+    float currentAlpha = Lerp(baseAlpha, hoverAlpha, m_PauseHoverState);
+    
+    ImVec4 pauseBase = ImVec4(0.9f, 0.5f, 0.1f, currentAlpha);        // 주황색 기본
+    ImVec4 pauseHoverColor = ImVec4(1.0f, 0.6f, 0.2f, hoverAlpha);    // 밝은 주황색 호버
+    ImVec4 pauseActive = ImVec4(0.8f, 0.4f, 0.0f, hoverAlpha);        // 어두운 주황색 클릭
+    
+    // 버튼 스타일 설정
+    ImGui::PushStyleColor(ImGuiCol_Button, pauseBase);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, pauseHoverColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, pauseActive);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+    
+    // 텍스트 크기 설정 (약간 크게)
+    ImGui::SetWindowFontScale(1.2f);
+    
+    if (ImGui::Button("EXIT GAME", ImVec2(buttonWidth, buttonHeight)))
+    {
+        // 게임 정지 기능 (PIE 종료)
+        EditorEngine->EndPIE();
+    }
+    
+    // 스타일 복원
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(3);
+    
+    // 툴팁
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Pause and exit the game");
+    }
 }
 
 void InGamePanel::RenderGameModeButton()

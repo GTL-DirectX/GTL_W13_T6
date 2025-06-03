@@ -70,6 +70,27 @@ void FSlateRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& View
             NdcY
         );
     }
+    else if (GEngine->ActiveWorld->WorldType == EWorldType::PIE)
+    {
+        ClientWidthFloat /= 1.25f;
+        ClientHeightFloat /= 1.0f;
+
+        Transform.Scale = FVector2D(
+            Rect.Width / ClientWidthFloat,
+            Rect.Height / ClientHeightFloat
+        );
+
+        float CenterX = Rect.TopLeftX + Rect.Width * 0.5f; // 중앙 정렬용
+        float NdcX = CenterX / ClientWidthFloat * 2.0f - 1;
+
+        float CenterY = Rect.TopLeftY + Rect.Height * 0.5f + 52;
+        float NdcY = 1.0f - CenterY / ClientHeightFloat * 2.0f;
+
+        Transform.Offset = FVector2D(
+            NdcX,
+            NdcY
+        );
+    }
     else
     {
         Transform.Scale = FVector2D(
