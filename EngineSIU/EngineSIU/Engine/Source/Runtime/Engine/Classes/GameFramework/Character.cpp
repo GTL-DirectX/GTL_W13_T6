@@ -9,6 +9,7 @@
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 
+#include "SoundManager.h"
 #include "Engine/EditorEngine.h"
 
 UObject* ACharacter::Duplicate(UObject* InOuter)
@@ -137,6 +138,7 @@ int ACharacter::GetState()
 
 void ACharacter::OnDamaged(FVector KnockBackDir)
 {
+    FSoundManager::GetInstance().PlaySound("Hit");
     LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 
