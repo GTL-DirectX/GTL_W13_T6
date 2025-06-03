@@ -28,7 +28,7 @@ AnimFSM = {
             -- print("Anim : Landing")
             -- print("OwnerCharacter: ", self.OwnerCharacter)
             self.current = "Contents/Bowser/Armature|Bowser_Land"
-            self.BlendTime = 0.5
+            self.BlendTime = 1.0
             self.land = true
         -- elseif (self.OwnerCharacter.IsRoaring) then
         --     -- print("Is Roaring")
