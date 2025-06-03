@@ -10,7 +10,9 @@
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Components/BoxComponent.h"
 
+#include "Components/PrimitiveComponent.h"
 #include "UObject/Casts.h"
+#include "Player.h"
 
 class ULuaScriptAnimInstance;
 
@@ -45,6 +47,7 @@ void AMonster::PostSpawnInitialize()
     if (CollisionComponent)
     {
         CollisionComponent->SetBoxExtent(FVector(6.0f, 6.0f, 9.0f));
+        CollisionComponent->OnComponentBeginOverlap.AddUObject(this, &ThisClass::OnComponentBeginOverlap);
     }
 
 
@@ -255,6 +258,20 @@ void AMonster::AttatchParticleComponent()
         ParticleComp->SetAttachSocketName("Hip");
     }
 
+}
+
+void AMonster::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
+{
+    if (!OtherActor || !OtherComp)
+    {
+        return;
+    }
+    
+    if (APlayer* Character = Cast<APlayer>(OtherActor))
+    {
+        FVector DamageDir = OtherActor->GetActorLocation() - GetActorLocation();
+        Character->OnDamaged(DamageDir);
+    }
 }
 
 
