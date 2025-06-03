@@ -124,8 +124,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
 
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { SpringArmComponent->HandleYawRotation(DeltaTime); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { SpringArmComponent->HandlePitchRotation(DeltaTime); });
 
         PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index) { PlayerConnected(Index); });
         PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index) { PlayerDisconnected(Index); });
@@ -139,6 +139,7 @@ void APlayer::MoveForward(float DeltaTime)
         return;
     }
     
+    //Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
     Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)

@@ -75,7 +75,7 @@ void USpringArmComponent::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World && World->WorldType != EWorldType::Editor)
 	{
-		/*MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddUObject(this, &USpringArmComponent::OnRawMouseInput);*/
+		MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddUObject(this, &USpringArmComponent::OnRawMouseInput);
 	}
 }
 
@@ -83,8 +83,8 @@ void USpringArmComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (MouseInputHandle.has_value() && MouseInputHandle->IsValid())
 	{
-		/*GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
-		MouseInputHandle.reset();*/
+		GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
+		MouseInputHandle.reset();
 	}
 }
 
@@ -170,6 +170,17 @@ void USpringArmComponent::OnRawMouseInput(const FPointerEvent& InEvent)
 	HandleRotation(MouseDelta);
 }
 
+void USpringArmComponent::OnRawJoyStickYawInput(float DeltaTime)
+{
+	HandleRotation(DeltaTime);
+}
+
+/* 상하 */
+void USpringArmComponent::OnRawJoyStickPitchInput(float DeltaTime)
+{
+	HandleRotation(DeltaTime);
+}
+
 void USpringArmComponent::HandleRotation(const FVector2D& Vector)
 {
 	if (!Camera)
@@ -181,6 +192,30 @@ void USpringArmComponent::HandleRotation(const FVector2D& Vector)
 	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
 	CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);
 }
+
+void USpringArmComponent::HandleYawRotation(float YawDeltaTime)
+{
+	if (!Camera)
+		return;
+	//return;
+	float yaw = YawDeltaTime * 1000.f;
+	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", YawDeltaTime);
+
+	//CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
+	CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);
+}
+
+void USpringArmComponent::HandlePitchRotation(float PitchDeltaTime)
+{
+	if (!Camera)
+		return;
+
+	float pitch = PitchDeltaTime * -1000.f;
+	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", PitchDeltaTime);
+	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
+}
+
+
 
 void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
 {

@@ -31,6 +31,10 @@ public:
 
     bool IsCameraAttached() const { return bIsCameraAttached; }
 
+    void OnRawJoyStickYawInput(float DeltaTime);
+    void OnRawJoyStickPitchInput(float DeltaTime);
+    void HandleYawRotation(float YawDeltaTime);
+    void HandlePitchRotation(float PitchDeltaTime);
 protected:
     void OnRawMouseInput(const FPointerEvent& InEvent);
     void HandleRotation(const FVector2D& Vector);
