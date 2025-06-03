@@ -713,7 +713,7 @@ void FEditorRenderPass::RenderBoxInstanced(uint64 ShowFlag)
                 {
                     FConstantBufferDebugBox b;
                     FMatrix WorldMatrix =
-                        FTransform(GeomAttribute.Rotation, GeomAttribute.Offset, GeomAttribute.Extent).ToMatrixWithScale()
+                        FTransform(GeomAttribute.Rotation, GeomAttribute.Offset, FVector::OneVector).ToMatrixWithScale()
                         * StaticComp->GetWorldMatrix().GetMatrixWithoutScale();
                     b.WorldMatrix = WorldMatrix;
                     b.Extent = GeomAttribute.Extent;
