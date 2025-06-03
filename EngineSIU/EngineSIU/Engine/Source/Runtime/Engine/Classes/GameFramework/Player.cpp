@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include "GameMode.h"
 #include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
@@ -48,6 +49,11 @@ void APlayer::PostSpawnInitialize()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (PlayerState != EPlayerState::Dead)
+    {
+        Score = GetWorld()->GetGameMode()->GetGameInfo().ElapsedGameTime;
+    }
     
     // if (SkeletalMeshComponent)
     // {

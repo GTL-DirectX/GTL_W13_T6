@@ -155,7 +155,7 @@ void AGameMode::Tick(float DeltaTime)
     if (bGameRunning && !bGameEnded)
     {
         // TODO: 아래 코드에서 DeltaTime을 2로 나누는 이유가?
-        GameInfo.ElapsedGameTime += DeltaTime / 2.0f;
+        GameInfo.ElapsedGameTime += DeltaTime;
 
         bool bAllPlayersDead = true;
         for (int i=0; i<MAX_PLAYER; i++)
