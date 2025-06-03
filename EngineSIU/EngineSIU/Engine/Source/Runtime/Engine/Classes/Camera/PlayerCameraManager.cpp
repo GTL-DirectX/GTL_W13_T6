@@ -87,8 +87,8 @@ void APlayerCameraManager::InitializeFor(APlayerController* PC)
     VignetteRadius = 0.5f;
     VignetteSmoothness = 0.5f;
     VignetteIntensity = 0.0f;
-    LetterBoxWidth = 2.0f;
-    LetterBoxHeight = 1.0f;
+    LetterBoxWidth = 2.5f;
+    LetterBoxHeight = 1.5f;
 }
 
 AActor* APlayerCameraManager::GetViewTarget() const
