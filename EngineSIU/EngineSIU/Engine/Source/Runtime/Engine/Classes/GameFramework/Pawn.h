@@ -53,7 +53,6 @@ public:
         //UE_LOG(ELogLevel::Error, TEXT("MoveSpeed : %f "), MoveSpeed);
         return MoveSpeed;
     }
-
 protected:
     UInputComponent* InputComponent;
     AController* Controller = nullptr;

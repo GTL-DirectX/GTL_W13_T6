@@ -41,12 +41,14 @@ function ReturnTable:Tick(DeltaTime)
     
     local moveSpeed = this.MoveSpeed or 0
 
-    if this.LinearSpeed <= 1 then
-        this.State = 0
-    elseif this.LinearSpeed >= 20 then
-        this.State = 1
-    else
-        this.State = 2
+    if this.State < 3 then
+        if this.LinearSpeed <= 1 then
+            this.State = 0
+        elseif this.LinearSpeed >= 20 then
+            this.State = 1
+        else
+            this.State = 2
+        end
     end
     -- (필요하다면) 이후 애니메이션 블렌딩 로직 등...
     -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리

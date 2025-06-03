@@ -174,10 +174,10 @@ void FEngineLoop::Tick()
 
         GEngineLoop.AppMessageHandler->UpdateXboxControllers(DeltaTime);
 
+        UIManager->BeginFrame();
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
         Render();
-        UIManager->BeginFrame();
         UnrealEditor->Render();
 
         FConsole::GetInstance().Draw();

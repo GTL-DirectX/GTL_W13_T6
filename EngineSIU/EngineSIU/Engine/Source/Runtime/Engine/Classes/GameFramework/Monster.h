@@ -27,7 +27,8 @@ public:
     bool IsFalling() const;
     bool TestToggleVariable() const;
     void OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
-    void OnPlayParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnPlayFootDustParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnPlaySpinParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnPlayRoaringSound(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
@@ -61,7 +62,7 @@ public:
     void SetTargetPosition(const FVector NewTargetPos) { TargetPos = NewTargetPos; }
     void UpdateTargetPosition();
 
-
+    void AttatchParticleComponent();
 protected:
     TMap<FString, FString> StateToAnimName;
     TMap<FString, UAnimSequenceBase*> StateToAnimSequence;
@@ -90,4 +91,7 @@ protected:
     FVector TargetDir;
 
     float ChaseSpeed = 10.0f;
+
+private:
+    void OnComponentBeginOverlap(class UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 };

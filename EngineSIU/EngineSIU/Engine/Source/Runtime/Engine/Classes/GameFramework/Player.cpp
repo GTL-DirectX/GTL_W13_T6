@@ -19,12 +19,15 @@
 #include "Animation/AnimSequence.h"
 #include "SpringArmComponent.h"
 
+#include "Camera/PlayerCameraManager.h"
+#include "Engine/Contents/Objects/DamageCameraShake.h"
+
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(-10,0,9));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(-10, 0, 9));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     return NewActor;
 }
@@ -47,15 +50,18 @@ void APlayer::PostSpawnInitialize()
     CameraComponent->SetRelativeLocation(FVector(-20,0,20));
     CameraComponent->SetRelativeRotation(FRotator(-40,0,0));
     CameraComponent->SetupAttachment(RootComponent);*/
+    // CameraComponent->SetRelativeLocation(FVector(-20, 0, 20));
+    // CameraComponent->SetRelativeRotation(FRotator(-40, 0, 0));
+    // CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
 
-   
+
     SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0, 0, 30));
     AttachSocket();
-    
-   
+
+
     BindAnimNotifys();
 }
 
@@ -68,6 +74,7 @@ void APlayer::Tick(float DeltaTime)
         return;
     }
 
+    
     if (PxRigidDynamic* RigidActor = BodyInstance->BIGameObject->DynamicRigidBody)
     {
         LinearSpeed = RigidActor->getLinearVelocity().magnitude();
@@ -75,17 +82,18 @@ void APlayer::Tick(float DeltaTime)
         UE_LOG(ELogLevel::Error, TEXT("Velocity : %f"), Velocity);
 
         RigidActor->setAngularDamping(10.0f);
-        bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f);
+        bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f) && PlayerState != PlayerState::MuJuck;
         if (bIsMovingInput)
         {
             // 플레이어가 입력으로 움직이고 있다면 낮은 감쇠 (즉, 관성 유지)
-            RigidActor->setLinearDamping(1.1f);
+            RigidActor->setLinearDamping(0.1f);
         }
         else
         {
             // 플레이어가 입력을 안 해서 멈춰 있거나 거의 멈춰 있으면 높은 감쇠
             RigidActor->setLinearDamping(100.0f);
         }
+        //UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
     }
 
     
@@ -114,6 +122,7 @@ void APlayer::BeginPlay()
     }
 }
 
+
 void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupInputComponent(PlayerInputComponent);
@@ -125,7 +134,7 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
         PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
         PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
-        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); }); 
+        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
 
         PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
 
@@ -170,6 +179,7 @@ void APlayer::MoveForward(float DeltaTime)
     FVector ForwardVector = RotationQuat.GetForwardVector();
 
     Velocity += ForwardVector * Acceleration * DeltaTime;
+    // Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)
     {
@@ -226,7 +236,7 @@ void APlayer::MoveRight(float DeltaTime)
     {
         return;
     }
-    
+
     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)
@@ -451,16 +461,16 @@ void APlayer::RotateYaw(float DeltaTime)
     {
         // 현재 Transform 가져오기
         PxTransform CurrentTransform = RigidActor->getGlobalPose();
-    
+
         // 회전할 각도 계산 (Yaw)
         float YawRadians = FMath::DegreesToRadians(RawSpeed * DeltaTime);
-    
+
         // Z축 기준 회전 쿼터니언 생성
         PxQuat YawRotation(YawRadians, PxVec3(0.0f, 0.0f, 1.0f));
-    
+
         // 현재 회전에 새로운 회전 적용
         CurrentTransform.q = CurrentTransform.q * YawRotation;
-    
+
         // 새로운 Transform 설정
         RigidActor->setGlobalPose(CurrentTransform);
     }
@@ -487,7 +497,7 @@ void APlayer::ChangeTargetViewPlayer(int ChangeAmount)
         {
             break;
         }
-        
+
         TargetViewPlayer += ChangeAmount;
         TargetViewPlayer %= 4;
     }
@@ -512,15 +522,20 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-    "Acceleration", &APlayer::Acceleration,
-    "MaxSpeed", &APlayer::MaxSpeed,
-    "RawSpeed", &APlayer::RawSpeed,
-    "PitchSpeed", &APlayer::PitchSpeed,
-    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
+        "Acceleration", &APlayer::Acceleration,
+        "MaxSpeed", &APlayer::MaxSpeed,
+        "RawSpeed", &APlayer::RawSpeed,
+        "PitchSpeed", &APlayer::PitchSpeed,
+        "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
         "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
     )
 }
-
+void APlayer::OnDamaged(FVector KnockBackDir)
+{
+    Super::OnDamaged(KnockBackDir);
+    UWorld* World = GetWorld();
+    World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UDamageCameraShake::StaticClass());
+}
 bool APlayer::BindSelfLuaProperties()
 {
     if (!Super::BindSelfLuaProperties())
@@ -535,7 +550,7 @@ bool APlayer::BindSelfLuaProperties()
     }
 
     LuaTable["this"] = this;
-    
+
     return true;
 }
 
@@ -546,6 +561,7 @@ void APlayer::Stun() const
 
 void APlayer::KnockBack(FVector KnockBackDir) const
 {
+    
     LuaScriptComponent->ActivateFunction("KnockBack", KnockBackDir);
 }
 
@@ -586,7 +602,7 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 }
 
 /*
-* 현재 StaticMeshComp는 소캣 테스트를 위한 임시 컴포넌트, 
+* 현재 StaticMeshComp는 소캣 테스트를 위한 임시 컴포넌트,
 *
 * 무기 Overlapped 구현됐을 때 StaticMeshComp대신 EquippedWeapon 사용하면 됨
 * 소캣 위치는 현재 Glove 기준. 프라이팬 기준으로 수정 필요함
@@ -620,7 +636,7 @@ void APlayer::BindAnimNotifys()
     int32 NewNotifyIndex = INDEX_NONE;
     float NotifyTime = 0.1f;
     bool bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnStartAttack, NewNotifyIndex);
-   
+
     NewNotifyIndex = INDEX_NONE;
     NotifyTime = 0.9f;
     bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnFinishAttack, NewNotifyIndex);

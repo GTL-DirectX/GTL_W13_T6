@@ -926,7 +926,6 @@ void PropertyEditorPanel::RenderForParticleSystem(UParticleSystemComponent* Part
                 UAssetManager::Get().AddAsset(Info.GetFullPath(), ParticleSystemAsset);
                 ParticleSystemComponent->SetParticleSystem(ParticleSystemAsset);
             }
-
             Engine->StartParticleViewer(ParticleSystemAsset);
         }
     }

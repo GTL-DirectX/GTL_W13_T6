@@ -4,6 +4,8 @@
 
 class USkeletalMeshComponent;
 class UBoxComponent;
+class UCapsuleComponent;
+class UParticleSystemComponent;
 
 enum class EPlayerState : uint8
 {
@@ -37,6 +39,8 @@ public:
 protected:
     USkeletalMeshComponent* SkeletalMeshComponent = nullptr;
     UBoxComponent* CollisionComponent = nullptr;
+    TMap<FString, UParticleSystemComponent*> ParticleSystemComponentMap;
+    UCapsuleComponent* CapsuleComponent = nullptr;
 
 public:
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
