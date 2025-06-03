@@ -20,8 +20,12 @@ AnimFSM = {
         -- self.OwnerCharacter.IsFalling()
 
         -- and self.land == false
-        if (self.OwnerCharacter.IsLanding == true ) then
-            print("Anim : Landing")
+        if (self.OwnerCharacter.IsRoaring) then
+            -- print("Anim : Roaring")
+            self.current = "Contents/Bowser/Armature|Bowser_Roar"
+            self.BlendTime = 0.5
+        elseif (self.OwnerCharacter.IsLanding) then
+            -- print("Anim : Landing")
             -- print("OwnerCharacter: ", self.OwnerCharacter)
             self.current = "Contents/Bowser/Armature|Bowser_Land"
             self.BlendTime = 0.5
@@ -30,22 +34,22 @@ AnimFSM = {
         --     -- print("Is Roaring")
         --     self.current = "Contents/Bowser/Armature|Bowser_Roar"
         --     self.BlendTime = 0.5
-        elseif (self.OwnerCharacter.IsChasing == true ) then
-            print("Anim : Chasing")
+        elseif (self.OwnerCharacter.IsChasing) then
+            -- print("Anim : Chasing")
             self.current = "Contents/Bowser/Armature|Bowser_Spin"
             self.BlendTime = 0.5
-        elseif (self.OwnerCharacter.IsFalling == true ) then
-            print("Anim : Falling")
+        elseif (self.OwnerCharacter.IsFalling) then
+            -- print("Anim : Falling")
             self.current = "Contents/Bowser/Armature|Bowser_Falling"
             self.BlendTime = 0.5
-        -- else
-            print("Landing / Chasing / Falling : ", self.OwnerCharacter.IsLanding, self.OwnerCharacter.IsChasing, self.OwnerCharacter.IsFalling)
+        else
+            print("Roaring / Landing / Chasing / Falling : ", self.OwnerCharacter.IsRoaring, self.OwnerCharacter.IsLanding, self.OwnerCharacter.IsChasing, self.OwnerCharacter.IsFalling)
         end
         if self == nil then
             print("Self is nill!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end
             -- print(self.OwnerCharacter:GetIsLanding())
-        print("Current Anim : ", self.current)
+        -- print("Current Anim : ", self.current)
 
         return {
             anim = self.current,

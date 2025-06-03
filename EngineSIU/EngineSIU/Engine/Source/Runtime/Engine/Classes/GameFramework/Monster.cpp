@@ -94,7 +94,7 @@ void AMonster::AddAnimNotifies()
         return;
     }
     NewNotifyIndex = INDEX_NONE;
-    NotifyTime = 5.2f;
+    NotifyTime = 0.9f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleRoaring, NewNotifyIndex);
 
     if (bAdded)
@@ -218,8 +218,8 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
         return;
     }   
     bIsLanding = false; // 착지 상태 해제
-    //bIsRoaring = true;
-    bIsChasing = true; // 추격 상태 전환
+    bIsRoaring = true;
+    //bIsChasing = true; // Roar이후 추격하는 것으로 변경
     bLandEnded = true; // 다시는 위 Notify 실행 X
 
     UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
@@ -227,6 +227,12 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 
 void AMonster::OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        // 다른 몬스터의 Notify이므로 무시
+        return;
+    }
+
     if (bRoarEnded == true)
     {
         return;
@@ -236,5 +242,18 @@ void AMonster::OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     bIsChasing = true;
 
     bRoarEnded = true;
+}
+
+/* Falling, Landing, Roaring 도중엔 Hit 시작되지 않도록 함 */
+void AMonster::OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        // 다른 몬스터의 Notify이므로 무시
+        return;
+    }
+    bIsHit = false; // Hit 상태 해제
+    bIsChasing = true; // Hit 이후 추격하는 것으로 변경
+    UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
 }
 

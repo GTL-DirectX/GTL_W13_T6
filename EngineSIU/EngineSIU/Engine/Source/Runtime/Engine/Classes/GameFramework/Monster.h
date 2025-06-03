@@ -27,6 +27,7 @@ public:
     bool TestToggleVariable() const;
     void OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void SetFalling(bool bInFalling) { bFalling = bInFalling; }
 
     bool GetIsChasing() const { return bIsChasing; }
@@ -38,8 +39,8 @@ public:
     bool IsDead() const { return bDead; }
     void SetDead(bool b) { bDead = b; }
 
-    bool IsHit() const { return bHit; }
-    void SetHit(bool b) { bHit = b; }
+    bool IsHit() const { return bIsHit; }
+    void SetHit(bool b) { bIsHit = b; }
 
     void SetIsLanding(bool bInLanding) { bIsLanding = bInLanding; }
     bool IsLanding();
@@ -69,7 +70,7 @@ protected:
     UPROPERTY(EditAnywhere, float, FollowTimer, = 0.0f)
 
     // -- State -- //
-    UPROPERTY(EditAnywhere, bool, bHit, = false)
+    UPROPERTY(EditAnywhere, bool, bIsHit, = false)
     UPROPERTY(EditAnywhere, bool, bDead, = false)
     UPROPERTY(EditAnywhere, bool, bFalling, = true)
     UPROPERTY(EditAnywhere, bool, bIsLanding, = false)

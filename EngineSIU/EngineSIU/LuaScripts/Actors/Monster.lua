@@ -115,8 +115,9 @@ function ReturnTable:Tick(DeltaTime)
     local currentLocation = this.ActorLocation
 
     
-    
-    if this.IsLanding then
+    if this.IsRoaring then
+        -- print("Process Roaring")
+    elseif this.IsLanding then
         ProcessLanding(self, DeltaTime)
         -- print("this.Landing ", this.IsLanding)
     elseif this.IsFalling then

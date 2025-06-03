@@ -22,9 +22,7 @@ end
 function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
     -- this.IsAllPlayerDead
-    if SpawnCount > 2 then
-        return
-    end
+
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
     if ElapsedTimeSinceLastSpawn >= SpawnRate then
         self:SpawnMonster(DeltaTime)
