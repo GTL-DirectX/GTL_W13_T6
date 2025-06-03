@@ -38,7 +38,11 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.5;
+    this.Velocity = this.Velocity * 0.05;
+    
+    if(this.ActorLocation.Z < -10) then
+        self:Dead()
+    end
     
     self.CurrentTime = (self.CurrentTime or 0) + DeltaTime
     
@@ -123,23 +127,24 @@ function ReturnTable:Stun()
 end
 
 function ReturnTable:KnockBack(KnockBackDir)
-    local this = self.this  -- local 추가
+    local this = self.this -- local 추가
     print("KnockBack 시작")
-    
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower, KnockBackDir.Z * this.KnockBackPower)
-    
+
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
+        KnockBackDir.Z * this.KnockBackPower)
+
     print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
-    
+
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작
-        
+
         -- 1초 대기
         self:Wait(1.0)
-        
+
         -- 넉백 종료 (코루틴 안에서 처리)
         print("KnockBack 종료")
         this.MoveSpeed = 0
-        
+
         -- 스턴 체크도 코루틴 안에서
         if this.StunGauge >= this.MaxStunGauge then
             this.State = 0
@@ -148,6 +153,16 @@ function ReturnTable:KnockBack(KnockBackDir)
             this.State = 0
         end
     end)
+end
+
+function ReturnTable:Dead()
+    local this = self.this
+    
+    if (this.State >= 6) then return end
+        
+    print("Dead")
+    this:ChangeViewTarget(1)
+    this.State = 6
 end
 
 function ReturnTable:Wait(duration)

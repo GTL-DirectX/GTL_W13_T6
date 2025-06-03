@@ -23,7 +23,7 @@ UObject* APlayer::Duplicate(UObject* InOuter)
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(3, 0, 9));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(-10,0,9));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     return NewActor;
 }
@@ -96,8 +96,11 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
-        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
+        // PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });
+
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_LEFT_SHOULDER, [this](float Temp) { ChangeTargetViewPlayer(1); });
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_RIGHT_SHOULDER, [this](float Temp) { ChangeTargetViewPlayer(1); });
 
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
@@ -190,6 +193,23 @@ void APlayer::RotatePitch(float DeltaTime) const
     }
 }
 
+void APlayer::ChangeTargetViewPlayer(int ChangeAmount)
+{
+    TargetViewPlayer += ChangeAmount;
+    TargetViewPlayer %= 4;
+    while (true) // 죽은 플레이어 건너뛰기
+    {
+        APlayer* TargetPlayer = GetWorld()->GetPlayer(TargetViewPlayer);
+        if (TargetPlayer && TargetPlayer->GetState() != static_cast<int>(EPlayerState::Dead))
+        {
+            break;
+        }
+        
+        TargetViewPlayer += ChangeAmount;
+        TargetViewPlayer %= 4;
+    }
+}
+
 void APlayer::PlayerConnected(int TargetIndex) const
 {
     if (TargetIndex == PlayerIndex)
@@ -218,7 +238,7 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "StunGauge", &APlayer::StunGauge,
     "MaxStunGauge", &APlayer::MaxStunGauge,
     "KnockBackPower", &APlayer::KnockBackPower,
-    "State", sol::property(&APlayer::GetState, &APlayer::SetState)
+    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer
     )
 }
 
@@ -253,7 +273,6 @@ void APlayer::Stun() const
 void APlayer::KnockBack(FVector KnockBackDir) const
 {
     LuaScriptComponent->ActivateFunction("KnockBack", KnockBackDir);
-    
 }
 
 void APlayer::Dead() const

@@ -67,7 +67,7 @@ void ACharacter::BeginPlay()
         CollisionComponent->CreatePhysXGameObject();
         CollisionComponent->BodyInstance->BIGameObject->DynamicRigidBody->
         setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X
-            | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y); // X, Y축 회전 잠금
+            | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // X, Y축 회전 잠금
     }
 
     if (SkeletalMeshComponent)
@@ -90,8 +90,8 @@ void ACharacter::Tick(float DeltaTime)
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
-        "State", sol::property(&APlayer::GetState, &APlayer::SetState),
-        "IsGrounded", &ACharacter::CheckGrounded
+        "State", sol::property(&ACharacter::GetState, &ACharacter::SetState),
+        "IsGrounded", &ACharacter::CheckGrounded// CheckGrounded는 bool 반환
         )
 }
 
