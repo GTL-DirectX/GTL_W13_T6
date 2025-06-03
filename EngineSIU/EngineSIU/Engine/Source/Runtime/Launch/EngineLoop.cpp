@@ -100,6 +100,8 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     FSoundManager::GetInstance().Initialize();
     FSoundManager::GetInstance().LoadSound("fishdream", "Contents/Sounds/fishdream.mp3");
     FSoundManager::GetInstance().LoadSound("sizzle", "Contents/Sounds/sizzle.mp3");
+    FSoundManager::GetInstance().LoadSound("BGM", "Contents/Sounds/BGM.wav");
+    FSoundManager::GetInstance().LoadSound("SpawnKoopa", "Contents/Sounds/KoopaJR/vc_koopajr_special_S01.wav");
     //FSoundManager::GetInstance().PlaySound("fishdream");
 
     UpdateUI();

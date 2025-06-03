@@ -42,7 +42,7 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
-
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     void SpawnMonster(const FVector& Location, const FRotator& Rotation);
 
     void SetIsAllPlayerDead(bool bInIsAllPlayerDead) { bIsAllPlayerDead = bInIsAllPlayerDead; }

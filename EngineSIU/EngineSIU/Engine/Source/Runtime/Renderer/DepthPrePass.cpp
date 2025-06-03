@@ -33,7 +33,7 @@ void FDepthPrePass::PrepareRenderArr()
                 continue;
             }
 
-            StaticMeshComponents.Add(StaticMeshComp);       
+            StaticMeshComponents.Add(StaticMeshComp);
         }
     }
 }
@@ -53,7 +53,7 @@ void FDepthPrePass::Render(const std::shared_ptr<FEditorViewportClient>& Viewpor
 
     PrepareSkeletalMesh();
     RenderSkeletalMesh();
-    
+
     CleanUpRender(Viewport);
 }
 
@@ -96,7 +96,7 @@ void FDepthPrePass::PrepareStaticMesh()
 {
     ID3D11VertexShader* VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
     ID3D11InputLayout* InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
-    
+
     Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     Graphics->DeviceContext->IASetInputLayout(InputLayout);
 }
@@ -105,7 +105,7 @@ void FDepthPrePass::PrepareSkeletalMesh()
 {
     ID3D11VertexShader* VertexShader = ShaderManager->GetVertexShaderByKey(L"SkeletalMeshVertexShader");
     ID3D11InputLayout* InputLayout = ShaderManager->GetInputLayoutByKey(L"SkeletalMeshVertexShader");
-    
+
     Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     Graphics->DeviceContext->IASetInputLayout(InputLayout);
 }
@@ -124,7 +124,10 @@ void FDepthPrePass::RenderStaticMesh()
         {
             continue;
         }
-
+        if (RenderData->ObjectName == L"Contents/SkySphere/SKY.obj")
+        {
+            continue;
+        }
         FMatrix WorldMatrix = Comp->GetWorldMatrix();
         FVector4 UUIDColor = Comp->EncodeUUID() / 255.0f;
         constexpr bool bIsSelected = false;
