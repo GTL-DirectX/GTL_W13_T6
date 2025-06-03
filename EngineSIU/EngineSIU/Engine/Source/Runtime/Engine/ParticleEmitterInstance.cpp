@@ -48,16 +48,34 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
 
     // 초당 생성속도에 따른 현재 프레임에 생성할 파티클 수 계산
     int32 SpawnCount = CalculateSpawnCount(DeltaTime);
+    
+    UParticleModuleRequired* ReqModule = CurrentLODLevel->RequiredModule;
 
-    // 최대 활성 파티클 수를 초과하지 않도록 조정
-    int32 AvailableParticles = MaxActiveParticles - ActiveParticles;
-    SpawnCount = FMath::Min(SpawnCount, AvailableParticles);
-
-    if (SpawnCount > 0)
+    if (!ReqModule)
     {
-        float Increment = (SpawnCount > 1) ? DeltaTime / (SpawnCount - 1) : 0.0f;
-        float StartTime = AccumulatedTime - DeltaTime;
-        SpawnParticles(SpawnCount, StartTime, Increment, FVector::ZeroVector, FVector::ZeroVector);
+        return;
+    }
+    bool bIsFiniteDuration = (ReqModule->EmitterDuration > 0.0f);
+    
+    bool bAllowSpawningThisTick = false;
+    if (!bIsFiniteDuration) // EmitterDuration <= 0.0f, so consider it infinite for this cycle
+    {
+        bAllowSpawningThisTick = true;
+    }
+    else // bIsFiniteDuration is true
+    {
+        if (AccumulatedTime < ReqModule->EmitterDuration) // Check if we are still within the active duration
+        {
+            bAllowSpawningThisTick = true;
+        }
+        // Else, AccumulatedTime >= ReqModule->EmitterDuration, so spawning for this cycle should stop.
+    }
+
+    if (SpawnCount > 0 && bAllowSpawningThisTick)
+    {
+        float Increment = (SpawnCount > 1) ? DeltaTime / (float)(SpawnCount - 1) : 0.0f;
+        float StartTimeForParticles = AccumulatedTime - DeltaTime;
+        SpawnParticles(SpawnCount, StartTimeForParticles, Increment, FVector::ZeroVector, FVector::ZeroVector);
     }
 
     UpdateModules(DeltaTime);
@@ -220,10 +238,10 @@ void FParticleEmitterInstance::AllKillParticles()
 void FParticleEmitterInstance::BuildMemoryLayout()
 {
     // BaseParticle 헤더 분량
+    AccumulatedTime = 0;
     PayloadOffset = sizeof(FBaseParticle);
     ParticleSize = PayloadOffset;
     InstancePayloadSize = 0;
-
     for (auto* Module : CurrentLODLevel->GetModules())
     {
         Module->SetModulePayloadOffset(ParticleSize);
