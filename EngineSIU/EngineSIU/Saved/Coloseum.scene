@@ -7,6 +7,32 @@
             "ActorTickInEditor": "true",
             "Components": [
                 {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent",
+                        "ComponentOwner": "ASkeletalMeshActor_443",
+                        "ComponentOwnerClass": "ASkeletalMeshActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "ASkeletalMeshActor_443",
+                        "ComponentOwnerClass": "ASkeletalMeshActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "USkeletalMeshComponent",
                     "ComponentID": "SkeletalMeshComponent",
                     "Properties": {
@@ -21,6 +47,7 @@
                         "ComponentName": "SkeletalMeshComponent",
                         "ComponentOwner": "ASkeletalMeshActor_443",
                         "ComponentOwnerClass": "ASkeletalMeshActor",
+                        "Geom_Count": "0",
                         "LoopEndFrame": "0",
                         "LoopStartFrame": "0",
                         "PlayRate": "0.000000",
@@ -30,7 +57,6 @@
                         "RigidBodyType": "1",
                         "SkeletalMeshKey": "Contents/Bowser/Bowser_Hit",
                         "SocketNames": "",
-                        "StateMachineFileName": "LuaScripts/Animations/DefaultStateMachine.lua",
                         "bApplyGravity": "false",
                         "bAutoActive": "true",
                         "bIsActive": "true",
@@ -39,32 +65,6 @@
                         "bReverse": "false",
                         "bSimulate": "false",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
-                        "ComponentOwner": "ASkeletalMeshActor_443",
-                        "ComponentOwnerClass": "ASkeletalMeshActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent",
-                        "ComponentOwner": "ASkeletalMeshActor_443",
-                        "ComponentOwnerClass": "ASkeletalMeshActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
                     }
                 }
             ],
@@ -77,6 +77,19 @@
             "ActorTickInEditor": "false",
             "Components": [
                 {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "ACube_320",
+                        "ComponentOwnerClass": "ACube",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
                     "Properties": {
@@ -88,6 +101,7 @@
                         "ComponentName": "StaticMeshComponent_0",
                         "ComponentOwner": "ACube_320",
                         "ComponentOwnerClass": "ACube",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -98,19 +112,6 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
-                        "ComponentOwner": "ACube_320",
-                        "ComponentOwnerClass": "ACube",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
                     }
                 },
                 {
@@ -135,28 +136,6 @@
             "ActorLabel": "OBJ_DIRECTIONALLGIHT_324",
             "ActorTickInEditor": "false",
             "Components": [
-                {
-                    "ComponentClass": "UDirectionalLightComponent",
-                    "ComponentID": "UDirectionalLightComponent_0",
-                    "Properties": {
-                        "AABB_Max": "X=1.000 Y=1.000 Z=0.100",
-                        "AABB_Min": "X=-1.000 Y=-1.000 Z=-0.100",
-                        "AttachParentID": "UBillboardComponent_0",
-                        "AttachSocketName": "None",
-                        "ComponentClass": "UDirectionalLightComponent",
-                        "ComponentName": "UDirectionalLightComponent_0",
-                        "ComponentOwner": "ADirectionalLight_324",
-                        "ComponentOwnerClass": "ADirectionalLight",
-                        "Direction": "X=-1.000 Y=-0.000 Z=-0.000",
-                        "Intensity": "4.100000",
-                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
-                },
                 {
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "LuaComponent",
@@ -185,6 +164,7 @@
                         "ComponentOwnerClass": "ADirectionalLight",
                         "FinalIndexU": "0.000000",
                         "FinalIndexV": "0.000000",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=121.400",
                         "RelativeRotation": "Pitch=48.173 Yaw=0.000 Roll=-19.480",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -194,6 +174,28 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": "UBillboardComponent"
+                    }
+                },
+                {
+                    "ComponentClass": "UDirectionalLightComponent",
+                    "ComponentID": "UDirectionalLightComponent_0",
+                    "Properties": {
+                        "AABB_Max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_Min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "AttachParentID": "UBillboardComponent_0",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UDirectionalLightComponent",
+                        "ComponentName": "UDirectionalLightComponent_0",
+                        "ComponentOwner": "ADirectionalLight_324",
+                        "ComponentOwnerClass": "ADirectionalLight",
+                        "Direction": "X=-1.000 Y=-0.000 Z=-0.000",
+                        "Intensity": "2.100000",
+                        "LightColor": "R=1.000 G=0.475 B=0.475 A=1.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 },
                 {
@@ -239,19 +241,6 @@
                     }
                 },
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent",
-                        "ComponentOwner": "AAmbientLight_329",
-                        "ComponentOwnerClass": "AAmbientLight",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
-                },
-                {
                     "ComponentClass": "UBillboardComponent",
                     "ComponentID": "UBillboardComponent_0",
                     "Properties": {
@@ -266,6 +255,7 @@
                         "ComponentOwnerClass": "AAmbientLight",
                         "FinalIndexU": "0.000000",
                         "FinalIndexV": "0.000000",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -289,6 +279,19 @@
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
+                },
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent",
+                        "ComponentOwner": "AAmbientLight_329",
+                        "ComponentOwnerClass": "AAmbientLight",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
                 }
             ],
             "RootComponentID": "UBillboardComponent_0"
@@ -299,6 +302,19 @@
             "ActorLabel": "OBJ_FOG_424",
             "ActorTickInEditor": "false",
             "Components": [
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent",
+                        "ComponentOwner": "AHeightFogActor_424",
+                        "ComponentOwnerClass": "AHeightFogActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
                 {
                     "ComponentClass": "UHeightFogComponent",
                     "ComponentID": "UHeightFogComponent_0",
@@ -316,6 +332,7 @@
                         "FogHeightFalloff": "0.050000",
                         "FogInscatteringColor": "R=0.547 G=0.620 B=0.664 A=1.000",
                         "FogMaxOpacity": "0.100000",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=-162.340",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -340,19 +357,6 @@
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent",
-                        "ComponentOwner": "AHeightFogActor_424",
-                        "ComponentOwnerClass": "AHeightFogActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
                 }
             ],
             "RootComponentID": "UHeightFogComponent_0"
@@ -365,10 +369,10 @@
             "Components": [
                 {
                     "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
+                    "ComponentID": "LuaComponent",
                     "Properties": {
                         "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
+                        "ComponentName": "LuaComponent",
                         "ComponentOwner": "ACube_887",
                         "ComponentOwnerClass": "ACube",
                         "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
@@ -388,6 +392,7 @@
                         "ComponentName": "StaticMeshComponent_0",
                         "ComponentOwner": "ACube_887",
                         "ComponentOwnerClass": "ACube",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=98.388 Y=-35.156 Z=14.293",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=10.000 Y=10.000 Z=10.000",
@@ -402,10 +407,10 @@
                 },
                 {
                     "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent",
+                    "ComponentID": "LuaComponent_0",
                     "Properties": {
                         "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent",
+                        "ComponentName": "LuaComponent_0",
                         "ComponentOwner": "ACube_887",
                         "ComponentOwnerClass": "ACube",
                         "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
@@ -423,6 +428,23 @@
             "ActorTickInEditor": "true",
             "Components": [
                 {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_815",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1372",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_815",
+                        "ComponentOwner": "AActor_1369",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "LuaComponent_0",
                     "Properties": {
@@ -436,13 +458,38 @@
                     }
                 },
                 {
+                    "ComponentClass": "UParticleSystemComponent",
+                    "ComponentID": "UParticleSystemComponent_1372",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "AttachParentID": "nullptr",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UParticleSystemComponent",
+                        "ComponentName": "UParticleSystemComponent_1372",
+                        "ComponentOwner": "AActor_1369",
+                        "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
+                        "RelativeLocation": "X=106.886 Y=276.859 Z=89.526",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "RigidBodyType": "1",
+                        "TemplateKey": "Contents/ParticleSystem/Fire",
+                        "bApplyGravity": "false",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bSimulate": "false",
+                        "m_Type": ""
+                    }
+                },
+                {
                     "ComponentClass": "USceneComponent",
-                    "ComponentID": "USceneComponent_646",
+                    "ComponentID": "USceneComponent_588",
                     "Properties": {
                         "AttachParentID": "UParticleSystemComponent_1372",
                         "AttachSocketName": "None",
                         "ComponentClass": "USceneComponent",
-                        "ComponentName": "USceneComponent_646",
+                        "ComponentName": "USceneComponent_588",
                         "ComponentOwner": "AActor_1369",
                         "ComponentOwnerClass": "AActor",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
@@ -454,12 +501,12 @@
                 },
                 {
                     "ComponentClass": "USceneComponent",
-                    "ComponentID": "USceneComponent_815",
+                    "ComponentID": "USceneComponent_646",
                     "Properties": {
                         "AttachParentID": "UParticleSystemComponent_1372",
                         "AttachSocketName": "None",
                         "ComponentClass": "USceneComponent",
-                        "ComponentName": "USceneComponent_815",
+                        "ComponentName": "USceneComponent_646",
                         "ComponentOwner": "AActor_1369",
                         "ComponentOwnerClass": "AActor",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
@@ -485,30 +532,6 @@
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
-                },
-                {
-                    "ComponentClass": "UParticleSystemComponent",
-                    "ComponentID": "UParticleSystemComponent_1372",
-                    "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "AttachParentID": "nullptr",
-                        "AttachSocketName": "None",
-                        "ComponentClass": "UParticleSystemComponent",
-                        "ComponentName": "UParticleSystemComponent_1372",
-                        "ComponentOwner": "AActor_1369",
-                        "ComponentOwnerClass": "AActor",
-                        "RelativeLocation": "X=106.886 Y=276.859 Z=89.526",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "RigidBodyType": "1",
-                        "TemplateKey": "Contents/ParticleSystem/Fire",
-                        "bApplyGravity": "false",
-                        "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "bSimulate": "false",
-                        "m_Type": ""
-                    }
                 }
             ],
             "RootComponentID": "UParticleSystemComponent_1372"
@@ -519,6 +542,36 @@
             "ActorLabel": "AActor1379",
             "ActorTickInEditor": "true",
             "Components": [
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "AActor_1379",
+                        "ComponentOwnerClass": "AActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_596",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1382",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_596",
+                        "ComponentOwner": "AActor_1379",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
                 {
                     "ComponentClass": "UParticleSystemComponent",
                     "ComponentID": "UParticleSystemComponent_1382",
@@ -531,6 +584,7 @@
                         "ComponentName": "UParticleSystemComponent_1382",
                         "ComponentOwner": "AActor_1379",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=295.834 Y=203.158 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -541,19 +595,6 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
-                    "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
-                        "ComponentOwner": "AActor_1379",
-                        "ComponentOwnerClass": "AActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
                     }
                 },
                 {
@@ -592,27 +633,20 @@
                     }
                 },
                 {
-                    "ComponentClass": "UParticleSystemComponent",
-                    "ComponentID": "UParticleSystemComponent_1387",
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_602",
                     "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "AttachParentID": "nullptr",
+                        "AttachParentID": "UParticleSystemComponent_1387",
                         "AttachSocketName": "None",
-                        "ComponentClass": "UParticleSystemComponent",
-                        "ComponentName": "UParticleSystemComponent_1387",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_602",
                         "ComponentOwner": "AActor_1384",
                         "ComponentOwnerClass": "AActor",
-                        "RelativeLocation": "X=407.206 Y=77.041 Z=86.688",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "RigidBodyType": "1",
-                        "TemplateKey": "Contents/ParticleSystem/Fire",
-                        "bApplyGravity": "false",
                         "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "bSimulate": "false",
-                        "m_Type": ""
+                        "bIsActive": "true"
                     }
                 },
                 {
@@ -627,6 +661,31 @@
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
+                },
+                {
+                    "ComponentClass": "UParticleSystemComponent",
+                    "ComponentID": "UParticleSystemComponent_1387",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "AttachParentID": "nullptr",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UParticleSystemComponent",
+                        "ComponentName": "UParticleSystemComponent_1387",
+                        "ComponentOwner": "AActor_1384",
+                        "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
+                        "RelativeLocation": "X=407.206 Y=77.041 Z=86.688",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "RigidBodyType": "1",
+                        "TemplateKey": "Contents/ParticleSystem/Fire",
+                        "bApplyGravity": "false",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bSimulate": "false",
+                        "m_Type": ""
+                    }
                 }
             ],
             "RootComponentID": "UParticleSystemComponent_1387"
@@ -637,6 +696,19 @@
             "ActorLabel": "AActor1389",
             "ActorTickInEditor": "true",
             "Components": [
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "AActor_1389",
+                        "ComponentOwnerClass": "AActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
                 {
                     "ComponentClass": "UParticleSystemComponent",
                     "ComponentID": "UParticleSystemComponent_1392",
@@ -649,6 +721,7 @@
                         "ComponentName": "UParticleSystemComponent_1392",
                         "ComponentOwner": "AActor_1389",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=412.869 Y=-68.514 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -662,14 +735,18 @@
                     }
                 },
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_608",
                     "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
+                        "AttachParentID": "UParticleSystemComponent_1392",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_608",
                         "ComponentOwner": "AActor_1389",
                         "ComponentOwnerClass": "AActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
@@ -697,27 +774,16 @@
             "ActorTickInEditor": "true",
             "Components": [
                 {
-                    "ComponentClass": "UParticleSystemComponent",
-                    "ComponentID": "UParticleSystemComponent_1397",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_1396",
                     "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "AttachParentID": "nullptr",
-                        "AttachSocketName": "None",
-                        "ComponentClass": "UParticleSystemComponent",
-                        "ComponentName": "UParticleSystemComponent_1397",
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "ULuaScriptComponent_1396",
                         "ComponentOwner": "AActor_1394",
                         "ComponentOwnerClass": "AActor",
-                        "RelativeLocation": "X=302.135 Y=-193.887 Z=86.688",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "RigidBodyType": "1",
-                        "TemplateKey": "Contents/ParticleSystem/Fire",
-                        "bApplyGravity": "false",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
                         "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "bSimulate": "false",
-                        "m_Type": ""
+                        "bIsActive": "true"
                     }
                 },
                 {
@@ -734,16 +800,45 @@
                     }
                 },
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_1396",
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_614",
                     "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "ULuaScriptComponent_1396",
+                        "AttachParentID": "UParticleSystemComponent_1397",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_614",
                         "ComponentOwner": "AActor_1394",
                         "ComponentOwnerClass": "AActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
                         "bIsActive": "true"
+                    }
+                },
+                {
+                    "ComponentClass": "UParticleSystemComponent",
+                    "ComponentID": "UParticleSystemComponent_1397",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "AttachParentID": "nullptr",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UParticleSystemComponent",
+                        "ComponentName": "UParticleSystemComponent_1397",
+                        "ComponentOwner": "AActor_1394",
+                        "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
+                        "RelativeLocation": "X=302.135 Y=-193.887 Z=86.688",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "RigidBodyType": "1",
+                        "TemplateKey": "Contents/ParticleSystem/Fire",
+                        "bApplyGravity": "false",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bSimulate": "false",
+                        "m_Type": ""
                     }
                 }
             ],
@@ -769,14 +864,18 @@
                     }
                 },
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_1400",
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_620",
                     "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "ULuaScriptComponent_1400",
+                        "AttachParentID": "UParticleSystemComponent_1402",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_620",
                         "ComponentOwner": "AActor_1399",
                         "ComponentOwnerClass": "AActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
@@ -793,6 +892,7 @@
                         "ComponentName": "UParticleSystemComponent_1402",
                         "ComponentOwner": "AActor_1399",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=112.029 Y=-265.099 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -803,6 +903,19 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_1400",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "ULuaScriptComponent_1400",
+                        "ComponentOwner": "AActor_1399",
+                        "ComponentOwnerClass": "AActor",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 }
             ],
@@ -828,6 +941,23 @@
                     }
                 },
                 {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_626",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1406",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_626",
+                        "ComponentOwner": "AActor_1404",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "UParticleSystemComponent",
                     "ComponentID": "UParticleSystemComponent_1406",
                     "Properties": {
@@ -839,6 +969,7 @@
                         "ComponentName": "UParticleSystemComponent_1406",
                         "ComponentOwner": "AActor_1404",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=-109.272 Y=-273.636 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -887,6 +1018,23 @@
                     }
                 },
                 {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_632",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1411",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_632",
+                        "ComponentOwner": "AActor_1409",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "ULuaScriptComponent_1410",
                     "Properties": {
@@ -911,6 +1059,7 @@
                         "ComponentName": "UParticleSystemComponent_1411",
                         "ComponentOwner": "AActor_1409",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=-300.601 Y=-197.986 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -933,16 +1082,28 @@
             "ActorTickInEditor": "true",
             "Components": [
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaComponent_0",
+                    "ComponentClass": "UParticleSystemComponent",
+                    "ComponentID": "UParticleSystemComponent_1416",
                     "Properties": {
-                        "ComponentClass": "ULuaScriptComponent",
-                        "ComponentName": "LuaComponent_0",
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "AttachParentID": "nullptr",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UParticleSystemComponent",
+                        "ComponentName": "UParticleSystemComponent_1416",
                         "ComponentOwner": "AActor_1414",
                         "ComponentOwnerClass": "AActor",
-                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
+                        "Geom_Count": "0",
+                        "RelativeLocation": "X=-411.337 Y=-69.882 Z=86.688",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "RigidBodyType": "1",
+                        "TemplateKey": "Contents/ParticleSystem/Fire",
+                        "bApplyGravity": "false",
                         "bAutoActive": "true",
-                        "bIsActive": "true"
+                        "bIsActive": "true",
+                        "bSimulate": "false",
+                        "m_Type": ""
                     }
                 },
                 {
@@ -959,27 +1120,33 @@
                     }
                 },
                 {
-                    "ComponentClass": "UParticleSystemComponent",
-                    "ComponentID": "UParticleSystemComponent_1416",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
                     "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "AttachParentID": "nullptr",
-                        "AttachSocketName": "None",
-                        "ComponentClass": "UParticleSystemComponent",
-                        "ComponentName": "UParticleSystemComponent_1416",
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
                         "ComponentOwner": "AActor_1414",
                         "ComponentOwnerClass": "AActor",
-                        "RelativeLocation": "X=-411.337 Y=-69.882 Z=86.688",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "RigidBodyType": "1",
-                        "TemplateKey": "Contents/ParticleSystem/Fire",
-                        "bApplyGravity": "false",
+                        "ScriptName": "LuaScripts/Actors/DefaultActor.lua",
                         "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "bSimulate": "false",
-                        "m_Type": ""
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_638",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1416",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_638",
+                        "ComponentOwner": "AActor_1414",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 }
             ],
@@ -1016,6 +1183,7 @@
                         "ComponentName": "UParticleSystemComponent_1421",
                         "ComponentOwner": "AActor_1419",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=-411.337 Y=73.287 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -1026,6 +1194,23 @@
                         "bIsActive": "true",
                         "bSimulate": "false",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_644",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1421",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_644",
+                        "ComponentOwner": "AActor_1419",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 },
                 {
@@ -1077,6 +1262,23 @@
                     }
                 },
                 {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_650",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1426",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_650",
+                        "ComponentOwner": "AActor_1424",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "UParticleSystemComponent",
                     "ComponentID": "UParticleSystemComponent_1426",
                     "Properties": {
@@ -1088,6 +1290,7 @@
                         "ComponentName": "UParticleSystemComponent_1426",
                         "ComponentOwner": "AActor_1424",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=-296.763 Y=200.271 Z=86.688",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -1123,6 +1326,23 @@
                     }
                 },
                 {
+                    "ComponentClass": "USceneComponent",
+                    "ComponentID": "USceneComponent_656",
+                    "Properties": {
+                        "AttachParentID": "UParticleSystemComponent_1432",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "USceneComponent",
+                        "ComponentName": "USceneComponent_656",
+                        "ComponentOwner": "AActor_1429",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "ComponentClass": "UParticleSystemComponent",
                     "ComponentID": "UParticleSystemComponent_1432",
                     "Properties": {
@@ -1134,6 +1354,7 @@
                         "ComponentName": "UParticleSystemComponent_1432",
                         "ComponentOwner": "AActor_1429",
                         "ComponentOwnerClass": "AActor",
+                        "Geom_Count": "0",
                         "RelativeLocation": "X=-111.663 Y=271.745 Z=88.872",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=-0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -1161,6 +1382,53 @@
                 }
             ],
             "RootComponentID": "UParticleSystemComponent_1432"
+        },
+        {
+            "ActorClass": "ACube",
+            "ActorID": "ACube_660",
+            "ActorLabel": "OBJ_CUBE_660",
+            "ActorTickInEditor": "false",
+            "Components": [
+                {
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "StaticMeshComponent_0",
+                    "Properties": {
+                        "AABB_max": "X=575.459 Y=575.459 Z=575.459",
+                        "AABB_min": "X=-575.459 Y=-575.459 Z=-575.459",
+                        "AttachParentID": "nullptr",
+                        "AttachSocketName": "None",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "StaticMeshComponent_0",
+                        "ComponentOwner": "ACube_660",
+                        "ComponentOwnerClass": "ACube",
+                        "Geom_Count": "0",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=90.000",
+                        "RelativeScale3D": "X=5.000 Y=5.000 Z=5.000",
+                        "RigidBodyType": "1",
+                        "StaticMeshPath": "Contents/SkySphere/SKY.obj",
+                        "bApplyGravity": "false",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "bSimulate": "false",
+                        "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaComponent_0",
+                    "Properties": {
+                        "ComponentClass": "ULuaScriptComponent",
+                        "ComponentName": "LuaComponent_0",
+                        "ComponentOwner": "ACube_660",
+                        "ComponentOwnerClass": "ACube",
+                        "ScriptName": "5",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "StaticMeshComponent_0"
         }
     ],
     "NextUUID": 0,
