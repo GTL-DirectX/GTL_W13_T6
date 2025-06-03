@@ -87,7 +87,6 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
     const float EndTime = static_cast<float>(LoopEndFrame) / static_cast<float>(FrameRate);
     
     float AnimLength = PlayAnim->GetPlayLength();
-
     if (IsLooping())
     {
         if (ElapsedTime > EndTime)
@@ -113,7 +112,7 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
     // ▶ 그 다음 Blend 로직
     if (bIsBlending)
     {
-        float BlendElapsed = ElapsedTime - BlendStartTime;
+        float BlendElapsed = FMath::Abs(ElapsedTime - BlendStartTime);
         BlendAlpha = FMath::Clamp(BlendElapsed / BlendDuration, 0.f, 1.f);
         if (BlendAlpha >= 1.f)
         {

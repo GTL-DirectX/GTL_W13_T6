@@ -1,4 +1,4 @@
-﻿#include "AnimDataModel.h"
+#include "AnimDataModel.h"
 
 #include "Animation/AnimationAsset.h"
 #include "Animation/AnimSequence.h"
@@ -184,9 +184,14 @@ void UAnimDataModel::GetBoneTrackNames(TArray<FName>& OutNames) const
     }
 }
 
+/* [수정] : 실제 초단위 재생 시간을 반환 */
 double UAnimDataModel::GetPlayLength() const
 {
-    return NumberOfFrames * FrameRate;
+    if (FrameRate > 0)
+    {
+        return static_cast<double>(NumberOfFrames) / static_cast<double>(FrameRate);
+    }
+    return 0.0;
 }
 
 int32 UAnimDataModel::GetNumberOfFrames() const

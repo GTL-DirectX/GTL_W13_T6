@@ -7,6 +7,7 @@ class UCameraComponent;
 class UWeaponComponent;
 class UStaticMeshComponent;
 
+
 class APlayer : public ACharacter
 {
     DECLARE_CLASS(APlayer, ACharacter)
@@ -41,19 +42,12 @@ private:
     int PlayerIndex = -1;
 
 public:
-    FVector GetVelocity() const { return Velocity; }
-    float GetAcceleration() const { return Acceleration; }
-    void SetAcceleration(float NewAcceleration) { Acceleration = NewAcceleration; }
-    float GetMaxSpeed() const { return MaxSpeed; }
-    void SetMaxSpeed(float NewMaxSpeed) { MaxSpeed = NewMaxSpeed; }
-    float GetRotationSpeed() const { return RotationSpeed; }
-    void SetRotationSpeed(float NewRotationSpeed) { RotationSpeed = NewRotationSpeed; }
-    bool IsAttacking() const { return bIsAttacking; }
-    void SetIsAttacking(bool IsAttack) { bIsAttacking = IsAttack; }
+    void OnDamaged(FVector KnockBackDir) const;
+    void Stun() const;
+    void KnockBack(FVector KnockBackDir) const;
+    void Dead() const;
+    void Attack() const;
 
-public:
-    
-    void Attack();
     void EquipWeapon(UWeaponComponent* WeaponComponent);
     void AttachSocket();
 
@@ -63,13 +57,18 @@ protected:
 
 
 private:
+    
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
     UStaticMeshComponent* StaticMeshComp = nullptr; //소캣 테스트용
     
     FVector Velocity = FVector(); // 이동 속도
     float Acceleration = 100000.0f;
     float MaxSpeed = 100000.0f;
-    float RotationSpeed = 100.0f; // 회전 속도
+    float RawSpeed = 100.0f; // 좌우 회전 속도
+    float PitchSpeed = 100.0f;
     
-    bool bIsAttacking = false;
+    float StunGauge = 0.0f;
+    float MaxStunGauge = 100.0f;
+
+    float KnockBackPower = 100000;
 };
