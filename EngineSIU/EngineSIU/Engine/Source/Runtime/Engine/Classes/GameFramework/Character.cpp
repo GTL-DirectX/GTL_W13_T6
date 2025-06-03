@@ -9,6 +9,7 @@
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 
+#include "SoundManager.h"
 #include "Engine/EditorEngine.h"
 
 UObject* ACharacter::Duplicate(UObject* InOuter)
@@ -103,7 +104,8 @@ void ACharacter::RegisterLuaType(sol::state& Lua)
         "StunGauge", &ACharacter::StunGauge,
         "MaxStunGauge", &ACharacter::MaxStunGauge,
         "KnockBackPower", &ACharacter::KnockBackPower,
-        "IsGrounded", &ACharacter::CheckGrounded// CheckGrounded는 bool 반환
+        "IsGrounded", &ACharacter::CheckGrounded, // CheckGrounded는 bool 반환
+        "KnockBackExp", &ACharacter::KnockBackExp
         )
 }
 
@@ -137,6 +139,7 @@ int ACharacter::GetState()
 
 void ACharacter::OnDamaged(FVector KnockBackDir)
 {
+    FSoundManager::GetInstance().PlaySound("Hit");
     LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 

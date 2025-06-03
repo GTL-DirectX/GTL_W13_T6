@@ -57,6 +57,10 @@ public:
 
     int32 GetMonsterCount() const { return MonsterCount; }
 
+    bool GetIsGameEnded() const { return bGameEnded;}
+
+    FGameInfo GetGameInfo() const { return GameInfo; }
+
     FOnGameInit OnGameInit;
     FOnGameStart OnGameStart;
     FOnGameEnd OnGameEnd;

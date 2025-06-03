@@ -28,7 +28,11 @@ public:
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
     virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
     virtual void OnDamaged(FVector KnockBackDir) override;
+
+    float GetScore() const { return Score; }
 private:
+    void StartGame();
+
     void MoveForward(float DeltaTime);
     void MoveRight(float DeltaTime);
     void UpdateFacingRotation(float DeltaTime);
@@ -37,9 +41,10 @@ private:
     void RotateYaw(float DeltaTime);
     void RotatePitch(float DeltaTime) const;
 
-
     void PlayerConnected(int TargetIndex) const;
     void PlayerDisconnected(int TargetIndex) const;
+
+    void SetControllerVibration(float LeftMotor, float RightMotor) const;
 
     FName Socket = "jx_c_camera";
     
@@ -49,10 +54,12 @@ private:
     int PlayerIndex = -1;
     int TargetViewPlayer = -1;
 
+    float Score;
+
 public:
     void Stun() const;
     void KnockBack(FVector KnockBackDir) const;
-    void Dead() const;
+    void OnDead() const;
     void Attack() const;
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);

@@ -24,12 +24,14 @@ function ReturnTable:BeginPlay()
 
     --     print("BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
     local this = self.this
+
     this.Acceleration = 100000
     this.MaxSpeed = 100000
-    this.RawSpeed = 100
+    this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 20
-    this.KnockBackPower = 40000
+    this.KnockBackPower = 200
+    this.KnockBackExp = 1
     
     self.CurrentTime = 0
 
@@ -63,9 +65,10 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
+    this.Velocity = this.Velocity * 0.01
     
-    if(this.ActorLocation.Z < -10) then
-        self:Dead()
+    if(this.ActorLocation.Z < -100) then
+        self:OnDead()
     end
     
     self.CurrentTime = (self.CurrentTime or 0) + DeltaTime
@@ -106,25 +109,12 @@ function ReturnTable:EndPlay(EndPlayReason)
     print("EndPlay")
 end
 
-function ReturnTable:Attack()
-    -- if self.this.State >= 3 then return end
-
-    -- self.this.State = 3
-    -- print("공격 시작")
-
-    -- -- 공격 지속시간 코루틴 생성
-    -- self.AttackCoroutine = coroutine.create(function()
-    --     self:Wait(0.5)
-    --     self.this.State = 0
-    --     print("공격 종료")
-    -- end)
-end
-
 function ReturnTable:OnDamaged(KnockBackDir)
     this = self.this
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
+    this.KnockBackExp = this.KnockBackExp * 1.2
     this.State = 5
     
     print("OnDamaged 실행")
@@ -154,19 +144,20 @@ function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this -- local 추가
     print("KnockBack 시작")
 
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
-        KnockBackDir.Z * this.KnockBackPower)
+    print(this.KnockBackPower, this.KnockBackExp)
 
-    print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
+        KnockBackDir.Z * this.KnockBackPower * this.KnockBackExp)
 
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작
-
+        this:SetControllerVibration(1.0, 1.0)
         -- 1초 대기
         self:Wait(1.0)
 
         -- 넉백 종료 (코루틴 안에서 처리)
         print("KnockBack 종료")
+        this:SetControllerVibration(0.0, 0.0)
         this.MoveSpeed = 0
 
         -- 스턴 체크도 코루틴 안에서
@@ -179,7 +170,7 @@ function ReturnTable:KnockBack(KnockBackDir)
     end)
 end
 
-function ReturnTable:Dead()
+function ReturnTable:OnDead()
     local this = self.this
     
     if (this.State >= 6) then return end

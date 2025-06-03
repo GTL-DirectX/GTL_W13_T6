@@ -7,6 +7,8 @@
 #include "PropertyEditor/PropertyEditorPanel.h"
 #include "PropertyEditor/SkeletalMeshViewerPanel.h"
 #include "PropertyEditor/PhysicsAssetViewerPanel.h"
+#include "PropertyEditor/InGamePanel.h"
+
 #include "World/World.h"
 void UnrealEd::Initialize()
 {
@@ -28,6 +30,9 @@ void UnrealEd::Initialize()
 
     auto PhysicsAssetPanel = std::make_shared<PhysicsAssetViewerPanel>();
     Panels["PhysicsAssetViewerPanel"] = PhysicsAssetPanel;
+
+    auto InGameUIPanel = std::make_shared<InGamePanel>();
+    Panels["InGamePanel"] = InGameUIPanel;
 }
 
 void UnrealEd::Render() const
