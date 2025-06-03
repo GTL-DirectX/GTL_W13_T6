@@ -35,7 +35,7 @@ void UInputComponent::ProcessInput(float DeltaTime)
     {
         KeyBindDelegate[FString("E")].Broadcast(DeltaTime);
     }
-    if (PressedKeys.Contains(EKeys::LeftMouseButton))
+    if (PressedKeys.Contains(EKeys::P))
     {
         KeyBindDelegate[FString("P")].Broadcast(DeltaTime);
     }
