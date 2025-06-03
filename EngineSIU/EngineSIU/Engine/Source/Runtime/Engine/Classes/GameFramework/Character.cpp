@@ -3,6 +3,8 @@
 #include "PhysicsManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Classes/Particles/ParticleSystemComponent.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
@@ -20,7 +22,9 @@ UObject* ACharacter::Duplicate(UObject* InOuter)
         //NewActor->CapsuleComponent = Cast<UCapsuleComponent>(CapsuleComponent->Duplicate(InOuter));
         NewActor->SkeletalMeshComponent = GetComponentByClass<USkeletalMeshComponent>();
         //NewActor->SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshComponent->Duplicate(InOuter));
-     }
+       // NewActor->ParticleSystemComponent = GetComponentByClass<UParticleSystemComponent>();
+  
+    }
 
     return NewActor;
 }

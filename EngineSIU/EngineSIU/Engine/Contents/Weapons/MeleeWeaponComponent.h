@@ -4,6 +4,7 @@
 
 class UAnimSequence;
 class USphereComponent;
+class UParticleSystemComponent;
 
 class UMeleeWeaponComponent : public UWeaponComponent
 {
@@ -26,6 +27,6 @@ protected:
     float AttackRadius = 50.0f; // 공격 반경
 
     USphereComponent* AttackCollision = nullptr; // 공격 충돌 컴포넌트
-
+    UParticleSystemComponent* HitParticle = nullptr;
 };
 

@@ -3,7 +3,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Player.h"
-
+#include "Classes/Particles/ParticleSystemComponent.h"
+#include "Classes/Particles/ParticleSystem.h"
 #include "GameFramework/Monster.h"
 
 
@@ -31,6 +32,21 @@ void UMeleeWeaponComponent::InitializeComponent()
         AttackCollision->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
     }
 
+    if (!HitParticle && GetOwner())
+    {
+        HitParticle = GetOwner()->AddComponent<UParticleSystemComponent>("HitParticle");
+        HitParticle->SetupAttachment(this);
+
+        UObject* Object = UAssetManager::Get().GetAsset(EAssetType::ParticleSystem, "Contents/ParticleSystem/HitEffect");
+        if (UParticleSystem* ParticleSystem = Cast<UParticleSystem>(Object))
+        {
+            HitParticle->SetParticleSystem(ParticleSystem);
+            HitParticle->StopEmissions();
+        }
+
+        HitParticle->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
+
+    }
 }
 
 void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
@@ -47,6 +63,11 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
         {
             FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
             OtherPlayer->OnDamaged(DamageDir);
+        }
+        if (OtherActor && HitParticle)
+        {
+            HitParticle->SetWorldLocation(GetOwner()->GetActorLocation());
+            HitParticle->StartEmissions();
         }
     }
 }

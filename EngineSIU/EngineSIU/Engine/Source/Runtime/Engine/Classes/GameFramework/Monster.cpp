@@ -3,10 +3,14 @@
 #include "Animation/AnimSequence.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
+#include "Classes/Particles/ParticleSystemComponent.h"
+#include "Classes/Particles/ParticleSystem.h"
 #include "SoundManager.h"
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Components/BoxComponent.h"
+
+#include "UObject/Casts.h"
 
 class ULuaScriptAnimInstance;
 
@@ -50,6 +54,45 @@ void AMonster::PostSpawnInitialize()
     AddAnimNotifies();
     bNotifyInitialized = true;
     //}
+
+    {
+        //FootDust
+        UParticleSystemComponent* ParticleComponent = AddComponent<UParticleSystemComponent>("ParticleComponent");
+        ParticleComponent->SetupAttachment(SkeletalMeshComponent);
+        UObject* Object = UAssetManager::Get().GetAsset(EAssetType::ParticleSystem, "Contents/ParticleSystem/FootDust");
+        if (UParticleSystem* ParticleSystem = Cast<UParticleSystem>(Object))
+        {
+            ParticleComponent->SetParticleSystem(ParticleSystem);
+        }
+        ParticleSystemComponentMap["FootDust"] = ParticleComponent;
+    }
+
+    {
+        //Spin
+        UParticleSystemComponent* ParticleComponent = AddComponent<UParticleSystemComponent>("ParticleComponent");
+        ParticleComponent->SetupAttachment(SkeletalMeshComponent);
+        UObject* Object = UAssetManager::Get().GetAsset(EAssetType::ParticleSystem, "Contents/ParticleSystem/Spin");
+        if (UParticleSystem* ParticleSystem = Cast<UParticleSystem>(Object))
+        {
+            ParticleComponent->SetParticleSystem(ParticleSystem);
+            ParticleComponent->StopEmissions();
+        }
+        ParticleSystemComponentMap["Spin"] = ParticleComponent;
+    }
+    {
+        //Hit
+        UParticleSystemComponent* ParticleComponent = AddComponent<UParticleSystemComponent>("ParticleComponent");
+
+        ParticleComponent->SetupAttachment(SkeletalMeshComponent);
+    
+        UObject* Object = UAssetManager::Get().GetAsset(EAssetType::ParticleSystem, "Contents/ParticleSystem/Hit");
+        if (UParticleSystem* ParticleSystem = Cast<UParticleSystem>(Object))
+        {
+            ParticleComponent->SetParticleSystem(ParticleSystem);
+        }
+        ParticleSystemComponentMap["Hit"] = ParticleComponent;
+    }
+    AttatchParticleComponent();
 }
 
 void AMonster::AddMonsterAnimSequenceCache()
@@ -95,6 +138,25 @@ void AMonster::AddAnimNotifies()
         printf("[Monster] DelegateNotify 추가 실패\n");
     }
 
+
+    { //FootDust
+        UAnimSequenceBase* LandingAnimSeq = StateToAnimSequence["Land"];
+        TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(LandingAnimSeq, FName(TEXT("Default")));
+
+        NewNotifyIndex = INDEX_NONE;
+        NotifyTime = 0.005f;
+        bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayFootDustParticle, NewNotifyIndex);
+
+    {//Spin
+        UAnimSequenceBase* SpinAnimSeq = StateToAnimSequence["Spin"];
+        TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(SpinAnimSeq, FName(TEXT("Default")));
+
+        NewNotifyIndex = INDEX_NONE;
+        NotifyTime = 0.5f;
+        bAdded = SpinAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlaySpinParticle, NewNotifyIndex);
+    }
+    }
+
     UAnimSequenceBase* RoaringAnimSeq = StateToAnimSequence["Roar"];
     TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(RoaringAnimSeq, FName(TEXT("Default")));
     if (TrackIdx == INDEX_NONE)
@@ -104,7 +166,7 @@ void AMonster::AddAnimNotifies()
     NewNotifyIndex = INDEX_NONE;
     NotifyTime = 0.9f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleRoaring, NewNotifyIndex);
-  
+
     NewNotifyIndex = INDEX_NONE;
     NotifyTime = 0.3f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayRoaringSound, NewNotifyIndex);
@@ -120,15 +182,6 @@ void AMonster::AddAnimNotifies()
     }
 
 
-
-    {
-        UAnimSequenceBase* SpinAnimSeq = StateToAnimSequence["Spin"];
-        TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(SpinAnimSeq, FName(TEXT("Default")));
-
-        NewNotifyIndex = INDEX_NONE;
-        NotifyTime = 0.3f;
-        bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
-    }
 
 }
 
@@ -184,6 +237,26 @@ void AMonster::UpdateTargetPosition()
     TargetPos = TargetDistributionVector.GetValue();
 }
 
+void AMonster::AttatchParticleComponent()
+{
+    UParticleSystemComponent* ParticleComp =  ParticleSystemComponentMap["FootDust"];
+
+    if (ParticleComp)
+    {
+        FVector Pos = FVector(0,0,10);
+        FRotator Rot = FRotator();
+        FVector Scale = FVector::OneVector;
+        FTransform TF = FTransform(Rot, Pos, Scale);
+        SkeletalMeshComponent->AddSocket("Hip", "mixamorig:Hip", TF);
+
+        ParticleComp->SetupAttachment(SkeletalMeshComponent);
+
+       
+        ParticleComp->SetAttachSocketName("Hip");
+    }
+
+}
+
 
 void AMonster::BeginPlay()
 {
@@ -204,7 +277,7 @@ void AMonster::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (bFalling && GetActorLocation().Z <= 3.7f && (bIsLanding == false && bLandEnded == false))
+    if (bFalling && GetActorLocation().Z <= 11.7f && (bIsLanding == false && bLandEnded == false))
     {
         // 착지 순간: bIsLanding을 한 번 true로 바꿔 준다.
         bIsLanding = true;
@@ -237,7 +310,7 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     if (MeshComp != SkeletalMeshComponent)
     {
         // 다른 몬스터의 Notify이므로 무시
-        
+
         return;
     }
     //UE_LOG(ELogLevel::Error, "Name1 : %s", *MeshComp->GetName());
@@ -255,13 +328,24 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     //UE_LOG(ELogLevel::Error, TEXT("Monster Landed Name : %s"), *GetName());
 }
 
-void AMonster::OnPlayParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void AMonster::OnPlayFootDustParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
     if (MeshComp != SkeletalMeshComponent)
     {
         // 다른 몬스터의 Notify이므로 무시
         return;
     }
+    ParticleSystemComponentMap["FootDust"]->StartEmissions();
+}
+
+void AMonster::OnPlaySpinParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        // 다른 몬스터의 Notify이므로 무시
+        return;
+    }
+    ParticleSystemComponentMap["Spin"]->StartEmissions();
 }
 
 void AMonster::OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)

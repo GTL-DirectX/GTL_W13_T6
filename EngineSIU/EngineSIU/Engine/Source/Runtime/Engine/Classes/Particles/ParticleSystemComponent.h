@@ -49,6 +49,8 @@ public:
     
     void ReBuildInstancesMemoryLayout();
     
+    void StartEmissions();
+    void StopEmissions();
 public:
     float AccumTickTime;
     

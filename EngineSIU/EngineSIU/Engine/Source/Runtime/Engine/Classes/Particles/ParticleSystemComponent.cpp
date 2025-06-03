@@ -44,7 +44,6 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
     if (EmitterInstances.Num() != Template->GetEmitters().Num())
     {
         EmitterInstances.Empty();
-        InitializeSystem();
     }
 
     for (auto* Instance : EmitterInstances)
@@ -201,6 +200,33 @@ void UParticleSystemComponent::ReBuildInstancesMemoryLayout()
         {
             Instance->AllKillParticles();
             Instance->BuildMemoryLayout();
+        }
+    }
+}
+
+void UParticleSystemComponent::StartEmissions()
+{
+    if (Template &&  EmitterInstances.IsEmpty())
+        InitializeSystem();
+    for (auto* Instance : EmitterInstances)
+    {
+        if (Instance)
+        {
+            Instance->StartEmission();
+        }
+    }
+}
+
+void UParticleSystemComponent::StopEmissions()
+{
+    if(Template && EmitterInstances.IsEmpty())  
+        InitializeSystem();
+
+    for (auto* Instance : EmitterInstances)
+    {
+        if (Instance)
+        {
+            Instance->StopEmission();
         }
     }
 }
