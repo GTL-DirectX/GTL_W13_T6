@@ -8,9 +8,9 @@ local ReturnTable = {} -- Return용 table. cpp에서 Table 단위로 객체 관�
 local FVector = EngineTypes.FVector -- EngineTypes로 등록된 FVector local로 선언.
 local FRotator = EngineTypes.FRotator
 
-local SpawnRate = 4.0                  -- 초 단위, 몬스터 생성 주기
+local SpawnRate = 5.0                  -- 초 단위, 몬스터 생성 주기
 local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
-
+local SpawnCount = 0
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
 
@@ -22,6 +22,7 @@ end
 function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
     -- this.IsAllPlayerDead
+
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
     if ElapsedTimeSinceLastSpawn >= SpawnRate then
         self:SpawnMonster(DeltaTime)
@@ -48,7 +49,7 @@ end
 function ReturnTable:SpawnMonster(DeltaTime)
     -- print("GameMode Spawn Monster Tick: ", DeltaTime)
     -- 예: 로컬 좌표를 랜덤으로 생성해서 몬스터 스폰 테스트
-
+    SpawnCount = SpawnCount + 1
     local randomX = math.random(-140, 140)
     local randomY = math.random(-140, 140)
     local randomZ = 50
