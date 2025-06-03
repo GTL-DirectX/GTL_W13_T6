@@ -1,4 +1,4 @@
-﻿
+
 #pragma once
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
@@ -49,6 +49,7 @@ public:
     // End IAnimationDataModel
     
     USkeleton* GetSkeleton() const;
+    virtual float GetDuration() const;
 
 private:
     // All individual bone animation tracks

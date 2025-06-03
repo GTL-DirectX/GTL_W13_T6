@@ -55,6 +55,8 @@ public:
     UAnimStateMachine* GetAnimStateMachine() const { return StateMachine; }
 
 private:
+    float PreviousTime;
+    float PreElapsedTime;
     float ElapsedTime;
     float PlayRate;
     

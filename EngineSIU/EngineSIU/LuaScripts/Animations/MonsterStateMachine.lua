@@ -23,7 +23,7 @@ AnimFSM = {
         if (self.OwnerCharacter.IsRoaring) then
             -- print("Anim : Roaring")
             self.current = "Contents/Bowser/Armature|Bowser_Roar"
-            self.BlendTime = 0.5
+            self.BlendTime = 0.0
         elseif (self.OwnerCharacter.IsLanding) then
             -- print("Anim : Landing")
             -- print("OwnerCharacter: ", self.OwnerCharacter)
@@ -49,7 +49,7 @@ AnimFSM = {
             print("Self is nill!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end
             -- print(self.OwnerCharacter:GetIsLanding())
-        -- print("Current Anim : ", self.current)
+        print("Current Anim : ", self.current)
 
         return {
             anim = self.current,

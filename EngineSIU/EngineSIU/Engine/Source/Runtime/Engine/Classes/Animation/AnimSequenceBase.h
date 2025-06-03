@@ -33,6 +33,7 @@ protected:
     
 public:
     virtual float GetPlayLength() const override;
+    float GetDuration() const;
 
     UAnimDataModel* GetDataModel() const;
 

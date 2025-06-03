@@ -226,8 +226,11 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     if (MeshComp != SkeletalMeshComponent)
     {
         // 다른 몬스터의 Notify이므로 무시
+        
         return;
     }
+    //UE_LOG(ELogLevel::Error, "Name1 : %s", *MeshComp->GetName());
+    //UE_LOG(ELogLevel::Error, "Name2 : %s", *SkeletalMeshComponent->GetName());
 
     if (bLandEnded == true)
     {
@@ -238,7 +241,7 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     //bIsChasing = true; // Roar이후 추격하는 것으로 변경
     bLandEnded = true; // 다시는 위 Notify 실행 X
 
-    UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
+    //UE_LOG(ELogLevel::Error, TEXT("Monster Landed Name : %s"), *GetName());
 }
 
 void AMonster::OnPlayParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)

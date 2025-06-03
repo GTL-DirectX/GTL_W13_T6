@@ -1,5 +1,6 @@
 #pragma once
 #include "AnimSequenceBase.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "UObject/ObjectMacros.h"
 
 struct FPoseContext;
@@ -21,4 +22,5 @@ public:
     void GetBonePose(FPoseContext& OutPoseContext, const FAnimExtractContext& ExtractionContext);
     
     virtual void SerializeAsset(FArchive& Ar) override;
+    
 };

@@ -472,8 +472,8 @@ bool FShadowManager::CreateDirectionalShadowResources()
 
     // 1. Texture2DArray 생성 (CSM 용)
     D3D11_TEXTURE2D_DESC texDesc = {};
-    texDesc.Width = DirectionalShadowCascadeDepthRHI->ShadowMapResolution;
-    texDesc.Height = DirectionalShadowCascadeDepthRHI->ShadowMapResolution;
+    texDesc.Width = 4096;
+    texDesc.Height = 4096;
     texDesc.MipLevels = 1;
     texDesc.ArraySize = NumCascades; // 캐스케이드 개수만큼
     texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
