@@ -1,4 +1,4 @@
-﻿#include "MathUtility.h"
+#include "MathUtility.h"
 #include "Color.h"
 #include "Quat.h"
 #include "Vector.h"
@@ -224,4 +224,26 @@ FQuat FMath::QInterpTo(const FQuat& Current, const FQuat& Target, float DeltaTim
 	}
 
 	return FQuat::Slerp(Current, Target, FMath::Clamp<float>(InterpSpeed * DeltaTime, 0.f, 1.f));
+}
+
+float FMath::FindDeltaAngleDegrees(float A2, float A1)
+{
+    // Find the difference
+    auto Delta = A2 - A1;
+
+    // If change is larger than 180
+    if (Delta > 180.0f)
+    {
+        // Flip to negative equivalent
+        Delta = Delta - 360.0f;
+    }
+    else if (Delta < -180.0f)
+    {
+        // Otherwise, if change is smaller than -180
+        // Flip to positive equivalent
+        Delta = Delta + 360.0f;
+    }
+
+    // Return delta in [-180,180] range
+    return Delta;
 }

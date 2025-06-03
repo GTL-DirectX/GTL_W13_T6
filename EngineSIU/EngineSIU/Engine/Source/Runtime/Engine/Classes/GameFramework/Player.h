@@ -31,6 +31,7 @@ public:
 private:
     void MoveForward(float DeltaTime);
     void MoveRight(float DeltaTime);
+    void UpdateFacingRotation(float DeltaTime);
     void MoveUp(float DeltaTime);
 
     void RotateYaw(float DeltaTime);

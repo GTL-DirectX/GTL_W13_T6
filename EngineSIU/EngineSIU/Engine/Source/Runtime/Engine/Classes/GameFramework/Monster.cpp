@@ -182,6 +182,7 @@ void AMonster::OnDamaged(FVector KnockBackDir)
 void AMonster::UpdateTargetPosition()
 {
     TargetPos = TargetDistributionVector.GetValue();
+    TargetDir = TargetPos - GetActorLocation();
 }
 
 
@@ -210,6 +211,19 @@ void AMonster::Tick(float DeltaTime)
         bIsLanding = true;
         bFalling = false;
         // bLandEnded는 아직 false, Notify가 붙어 있는 애니메이션이 끝날 때까지 기다린다.
+    }
+
+    if (bDead == false && bIsChasing)
+    {
+        if (TargetDir.Length() < 1.0f)
+        {
+            UpdateTargetPosition();
+        }
+        if (GetCapsuleComponent() && GetCapsuleComponent()->BodyInstance)
+        {
+            auto* CapsuleComp = GetCapsuleComponent();
+            CapsuleComp->BodyInstance->AddForce(TargetDir * ChaseSpeed);
+        }
     }
 }
 

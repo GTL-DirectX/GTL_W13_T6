@@ -72,7 +72,24 @@ void APlayer::Tick(float DeltaTime)
     {
         LinearSpeed = RigidActor->getLinearVelocity().magnitude();
         UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
+        UE_LOG(ELogLevel::Error, TEXT("Velocity : %f"), Velocity);
+
+        RigidActor->setAngularDamping(10.0f);
+        bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f);
+        if (bIsMovingInput)
+        {
+            // 플레이어가 입력으로 움직이고 있다면 낮은 감쇠 (즉, 관성 유지)
+            RigidActor->setLinearDamping(1.1f);
+        }
+        else
+        {
+            // 플레이어가 입력을 안 해서 멈춰 있거나 거의 멈춰 있으면 높은 감쇠
+            RigidActor->setLinearDamping(100.0f);
+        }
     }
+
+    
+
     // if (SkeletalMeshComponent)
     // {
     //     const FTransform SocketTransform = SkeletalMeshComponent->GetSocketTransform(Socket);
@@ -134,24 +151,78 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
 
 void APlayer::MoveForward(float DeltaTime)
 {
-    if (PlayerState >= EPlayerState::Attacking)
+    if (PlayerState >= EPlayerState::Attacking || !GetCapsuleComponent())
     {
         return;
     }
-    
-    //Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
-    Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+
+    FBodyInstance* BodyInstance = GetCapsuleComponent()->BodyInstance;
+    if (!BodyInstance || !BodyInstance->BIGameObject || !BodyInstance->BIGameObject->DynamicRigidBody)
+    {
+        return;
+    }
+
+    PxRigidDynamic* RigidBody = BodyInstance->BIGameObject->DynamicRigidBody;
+
+    // PhysX → Unreal 변환
+    const PxTransform PhysXTransform = RigidBody->getGlobalPose();
+    const FQuat RotationQuat = FQuat(PhysXTransform.q.x, PhysXTransform.q.y, PhysXTransform.q.z, PhysXTransform.q.w);
+    FVector ForwardVector = RotationQuat.GetForwardVector();
+
+    Velocity += ForwardVector * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)
     {
         MoveSpeed = MaxSpeed;
-        Velocity.Normalize()* MaxSpeed;
+        Velocity = Velocity.GetSafeNormal() * MaxSpeed;
     }
+
+    UpdateFacingRotation(DeltaTime);
+    //if (PlayerState >= EPlayerState::Attacking)
+    //{
+    //    return;
+    //}
+    //
+    ////Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+    //Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+
+    //if (MoveSpeed > MaxSpeed)
+    //{
+    //    MoveSpeed = MaxSpeed;
+    //    Velocity.Normalize()* MaxSpeed;
+    //}
+    //UpdateFacingRotation(DeltaTime);
 }
 
 void APlayer::MoveRight(float DeltaTime)
 {
-    if (PlayerState >= EPlayerState::Attacking)
+    if (PlayerState >= EPlayerState::Attacking || !GetCapsuleComponent())
+    {
+        return;
+    }
+
+    FBodyInstance* BodyInstance = GetCapsuleComponent()->BodyInstance;
+    if (!BodyInstance || !BodyInstance->BIGameObject || !BodyInstance->BIGameObject->DynamicRigidBody)
+    {
+        return;
+    }
+
+    PxRigidDynamic* RigidBody = BodyInstance->BIGameObject->DynamicRigidBody;
+
+    // PhysX → Unreal 회전 정보
+    const PxTransform PhysXTransform = RigidBody->getGlobalPose();
+    const FQuat RotationQuat = FQuat(PhysXTransform.q.x, PhysXTransform.q.y, PhysXTransform.q.z, PhysXTransform.q.w);
+    FVector RightVector = RotationQuat.GetRightVector(); // 오른쪽 방향 추출
+
+    Velocity += RightVector * Acceleration * DeltaTime;
+
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity = Velocity.GetSafeNormal() * MaxSpeed;
+    }
+
+    /*if (PlayerState >= EPlayerState::Attacking)
     {
         return;
     }
@@ -162,8 +233,200 @@ void APlayer::MoveRight(float DeltaTime)
     {
         MoveSpeed = MaxSpeed;
         Velocity.Normalize()* MaxSpeed;
-    }
+    }*/
+    UpdateFacingRotation(DeltaTime);
 }
+void APlayer::UpdateFacingRotation(float DeltaTime)
+{
+    // 1) BodyInstance와 PxRigidDynamic 확인
+    if (!GetCapsuleComponent() || !GetCapsuleComponent()->BodyInstance)
+    {
+        return;
+    }
+    PxRigidDynamic* RigidActor = GetCapsuleComponent()
+        ->BodyInstance
+        ->BIGameObject
+        ->DynamicRigidBody;
+    if (!RigidActor)
+    {
+        return;
+    }
+
+    // 2) PhysX 속도(PxVec3) --> FVector로 변환
+    PxVec3 PxVelocity = RigidActor->getLinearVelocity();
+    FVector Velocity = FVector(PxVelocity.x, PxVelocity.y, PxVelocity.z);
+
+    // 3) XY 평면 성분만 취하고, 너무 작은 속도는 무시
+    FVector FlatVel = Velocity;
+    FlatVel.Z = 0.f;
+    if (FlatVel.IsNearlyZero(1e-3f))
+    {
+        return;
+    }
+
+    // 4) 목표 Yaw 계산 (FlatVel의 방향)
+    float TargetYawRaw = FlatVel.Rotation().Yaw;
+    //    - FlatVel.Rotation().Yaw는 일반적으로 -180~+180 범위
+
+    // 5) 현재 Actor의 Yaw 가져오기 (역시 -180~+180 범위일 수 있음)
+    float CurrentYawRaw = GetActorRotation().Yaw;
+
+    // 6) 두 Yaw를 –180~+180° 범위로 정규화(Unwind)
+    float CurrentYaw = FMath::UnwindDegrees(CurrentYawRaw);
+    float TargetYaw = FMath::UnwindDegrees(TargetYawRaw);
+
+    // 7) 두 Yaw 사이의 최소 각도 차이(Shortest Angle) 구하기
+    //    ex) CurrentYaw= 179°, TargetYaw= -179° → DeltaYaw= -2°
+    float DeltaYaw = -FMath::FindDeltaAngleDegrees(CurrentYaw, TargetYaw);
+
+    // 8) 차이가 너무 작으면 무시
+    const float AngleThreshold = 1.0f; // 1° 미만 변화는 건너뜀
+    if (FMath::Abs(DeltaYaw) < AngleThreshold)
+    {
+        return;
+    }
+
+    // 9) “초당 몇 도”만큼만 회전할 것인지 정의 (예: 180°/초)
+    const float TurnSpeedDegPerSec = 180.0f;
+    float MaxDeltaThisFrame = TurnSpeedDegPerSec * DeltaTime;
+
+    // 10) 실제 회전량 = DeltaYaw를 [-MaxDeltaThisFrame, +MaxDeltaThisFrame]로 클램프
+    float YawChange = FMath::Clamp(DeltaYaw, -MaxDeltaThisFrame, +MaxDeltaThisFrame);
+
+    // 11) 새로운 Yaw = (CurrentYaw + YawChange), 이 상태도 –180~+180 범위를 약간 벗어날 수 있음
+    float NewYawUnwound = CurrentYaw + YawChange;
+
+    // 12) 다시 –180~+180°로 정규화하여 Actor에 적용
+    float NewYaw = FMath::UnwindDegrees(NewYawUnwound);
+
+    // 13) Actor 레벨에서 Yaw만 업데이트 (Pitch/Roll은 0)
+    FRotator NewRotation(0.f, NewYaw, 0.f);
+    SetActorRotation(NewRotation);
+
+    // 14) PhysX Body에도 최소한의 회전만 반영
+    PxTransform PxCurrentTM = RigidActor->getGlobalPose();
+    FQuat    NewQuat = NewRotation.Quaternion();
+    PxQuat   PxNewQuat(
+        NewQuat.X,
+        NewQuat.Y,
+        NewQuat.Z,
+        NewQuat.W
+    );
+    PxCurrentTM.q = PxNewQuat;
+    RigidActor->setGlobalPose(PxCurrentTM, false);
+}
+//void APlayer::UpdateFacingRotation(float DeltaTime)
+//{
+//    // 1) BodyInstance와 PxRigidDynamic 확인
+//    if (!GetCapsuleComponent() || !GetCapsuleComponent()->BodyInstance)
+//    {
+//        return;
+//    }
+//    PxRigidDynamic* RigidActor = GetCapsuleComponent()
+//        ->BodyInstance
+//        ->BIGameObject
+//        ->DynamicRigidBody;
+//    if (!RigidActor)
+//    {
+//        return;
+//    }
+//
+//    // 2) PhysX 속도(PxVec3) --> FVector로 변환
+//    PxVec3 PxVelocity = RigidActor->getLinearVelocity();
+//    FVector Velocity = FVector(PxVelocity.x, PxVelocity.y, PxVelocity.z);
+//
+//    // 3) XY 평면 성분만 취하고, 너무 작은 속도는 무시
+//    FVector FlatVel = Velocity;
+//    FlatVel.Z = 0.f;
+//    // XY 속도가 거의 0이면 더 이상 회전 처리 불필요
+//    if (FlatVel.IsNearlyZero(1e-3f))
+//    {
+//        return;
+//    }
+//
+//    // 4) 목표 Yaw 계산 (FlatVel의 방향)
+//    float TargetYaw = FlatVel.Rotation().Yaw;
+//
+//    // 5) 현재 Actor의 Yaw 가져오기
+//    FRotator CurrentRotator = GetActorRotation();
+//    float CurrentYaw = CurrentRotator.Yaw;
+//
+//    // 6) 두 Yaw 사이의 최소 각도 차이(Shortest Angle) 구하기
+//    float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentYaw, TargetYaw);
+//    const float AngleThreshold = 1.0f; // 1도 미만 변화는 무시
+//    if (FMath::Abs(DeltaYaw) < AngleThreshold)
+//    {
+//        return;
+//    }
+//
+//    // 7) 부드럽게 보간된 새 Yaw 계산 (속도 계수는 10.0f, 필요 시 변경)
+//    float NewYaw = FMath::FInterpTo(CurrentYaw, TargetYaw, DeltaTime, 10.0f);
+//
+//    // 8) Actor 레벨에서 Yaw만 업데이트 (Pitch/Roll 은 0)
+//    FRotator NewRotation(0.f, NewYaw, 0.f);
+//    SetActorRotation(NewRotation);
+//
+//    // 9) PhysX Body에도 최소한의 회전만 반영
+//    //    위치는 물리가 관리하므로 그대로 두고, 회전만 덮어씌웁니다.
+//    {
+//        PxTransform PxCurrentTM = RigidActor->getGlobalPose();
+//        FQuat    NewQuat = NewRotation.Quaternion();
+//        PxQuat   PxNewQuat(
+//            NewQuat.X,
+//            NewQuat.Y,
+//            NewQuat.Z,
+//            NewQuat.W
+//        );
+//        PxCurrentTM.q = PxNewQuat;
+//        RigidActor->setGlobalPose(PxCurrentTM, false);
+//    }
+//}
+
+//void APlayer::UpdateFacingRotation(float DeltaTime)
+//{
+//    if (!GetCapsuleComponent() || !GetCapsuleComponent()->BodyInstance)
+//    {
+//        return;
+//    }
+//    PxVec3 PxVelocity = GetCapsuleComponent()->BodyInstance->BIGameObject->DynamicRigidBody->getLinearVelocity();
+//    FVector Velocity = FVector(PxVelocity.x, PxVelocity.y, PxVelocity.z);
+//    FRotator CurrentRotation = GetActorRotation();
+//    // 목표 방향의 Yaw만 추출
+//    float TargetYaw = Velocity.Rotation().Yaw;
+//
+//    // 부드럽게 보간
+//    float NewYaw = FMath::FInterpTo(CurrentRotation.Yaw, TargetYaw, DeltaTime, 10.f);
+//    UE_LOG(ELogLevel::Display, "Target Yaw : %f", TargetYaw);
+//    UE_LOG(ELogLevel::Display,"New Yaw : %f", NewYaw);
+//    FRotator NewRotation = FRotator(0.f, NewYaw, 0.f);
+//
+//    // Pitch, Roll은 고정하고 Yaw만 변경
+//
+//    //FQuat NewQuat = NewRotation.Quaternion();
+//
+//    //// RigidBody 얻기 (BodyInstance 또는 직접 보유한 PxRigidDynamic*)
+//    //if (SkeletalMeshComponent->BodyInstance)
+//    //{
+//    //    PxRigidDynamic* RigidBody = SkeletalMeshComponent->BodyInstance->GetPxRigidDynamic_AssumesLocked();
+//    //    if (RigidBody)
+//    //    {
+//    //        PxTransform CurrentPose = RigidBody->getGlobalPose();
+//    //        CurrentPose.q = U2PQuat(NewQuat); // Unreal → PhysX 회전만 변경
+//    //        RigidBodydf->setGlobalPose(CurrentPose, false); // 위치 유지, 회전만 적용
+//    //    }
+//    //}
+//
+//
+//    if (PxRigidDynamic* RigidActor = GetCapsuleComponent()->BodyInstance->BIGameObject->DynamicRigidBody)
+//    {
+//        PxTransform CurrentTransform = RigidActor->getGlobalPose();
+//        FQuat NewQuat = NewRotation.Quaternion();
+//
+//        // 절대 회전 덮어쓰기 (누적 X)
+//        CurrentTransform.q = PxQuat(NewQuat.X, NewQuat.Y, NewQuat.Z, NewQuat.W);
+//        RigidActor->setGlobalPose(CurrentTransform, false);
+//    }
+//}
 
 void APlayer::MoveUp(float DeltaTime)
 {

@@ -87,4 +87,7 @@ protected:
 
     FDistributionVector TargetDistributionVector;
     FVector TargetPos;
+    FVector TargetDir;
+
+    float ChaseSpeed = 10.0f;
 };

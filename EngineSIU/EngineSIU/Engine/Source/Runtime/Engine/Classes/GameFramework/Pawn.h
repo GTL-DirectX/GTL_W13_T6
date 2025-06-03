@@ -50,7 +50,7 @@ public:
     void SetMoveSpeed(float InMoveSpeed) { MoveSpeed = InMoveSpeed; }
     float GetMoveSpeed() const
     {
-        UE_LOG(ELogLevel::Error, TEXT("MoveSpeed : %f "), MoveSpeed);
+        //UE_LOG(ELogLevel::Error, TEXT("MoveSpeed : %f "), MoveSpeed);
         return MoveSpeed;
     }
 

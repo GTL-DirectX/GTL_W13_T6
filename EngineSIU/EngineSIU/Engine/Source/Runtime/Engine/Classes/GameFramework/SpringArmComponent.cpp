@@ -4,6 +4,13 @@
 #include "Launch/EngineLoop.h"
 #include "World/World.h"
 
+static float NormalizeAngle(float Angle)
+{
+	// 360° 단위로 순환
+	float A = FMath::Fmod(Angle, 360.f);
+	return (A < 0.f) ? A + 360.f : A;
+}
+
 USpringArmComponent::USpringArmComponent()
 {
 
@@ -75,7 +82,7 @@ void USpringArmComponent::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World && World->WorldType != EWorldType::Editor)
 	{
-		MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddUObject(this, &USpringArmComponent::OnRawMouseInput);
+		/*MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddUObject(this, &USpringArmComponent::OnRawMouseInput);*/
 	}
 }
 
@@ -83,8 +90,8 @@ void USpringArmComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (MouseInputHandle.has_value() && MouseInputHandle->IsValid())
 	{
-		GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
-		MouseInputHandle.reset();
+		/*GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
+		MouseInputHandle.reset();*/
 	}
 }
 
@@ -202,7 +209,11 @@ void USpringArmComponent::HandleYawRotation(float YawDeltaTime)
 	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", YawDeltaTime);
 
 	//CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
-	CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);
+	/*CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);*/
+
+	float YawInput = YawDeltaTime * 1000.f;
+	CurrentYawAngle += YawInput / 10.f;
+	//CurrentYawAngle = NormalizeAngle(CurrentYawAngle + YawInput / 10.f);
 }
 
 void USpringArmComponent::HandlePitchRotation(float PitchDeltaTime)
@@ -210,9 +221,12 @@ void USpringArmComponent::HandlePitchRotation(float PitchDeltaTime)
 	if (!Camera)
 		return;
 
-	float pitch = PitchDeltaTime * -1000.f;
+	/*float pitch = PitchDeltaTime * -1000.f;
 	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", PitchDeltaTime);
-	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
+	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);*/
+	float PitchInput = PitchDeltaTime * -1000.f;
+	CurrentPitchAngle += PitchInput / 10.f;
+	//CurrentPitchAngle = NormalizeAngle(CurrentPitchAngle + PitchInput / 10.f);
 }
 
 
