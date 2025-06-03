@@ -3,13 +3,21 @@ setmetatable(_ENV, { __index = EngineTypes })
 
 -- Template은 AActor라는 가정 하에 작동.
 
-local ReturnTable = {} -- Return용 table. cpp에서 Table 단위로 객체 관리.
+local ReturnTable = {
+    SmoothedSpeed = 0,
+} -- Return용 table. cpp에서 Table 단위로 객체 관리.
 
 local FVector = EngineTypes.FVector -- EngineTypes로 등록된 FVector local로 선언.
 -- local FRotator = EngineTypes.FRotator
 -- 
 -- local SpawnRate = 4.0                  -- 초 단위, 몬스터 생성 주기
 -- local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
+
+local function clamp(val, lo, hi)
+    if val < lo then return lo end
+    if val > hi then return hi end
+    return val
+end
 
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
@@ -30,21 +38,42 @@ end
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     local this = self.this
-    if this.State == 0 and this.MoveSpeed > 50 then
-        this.State = 2
-    elseif this.State == 2 then -- Walking 으로부터 Transition (Run or Idle)
-        if this.MoveSpeed > 100 then
-            this.State = 1                          -- Walk to Run
-        elseif this.MoveSpeed <= 1 then         
-            this.State = 0                          -- Walk to Idle 
+    
+    local moveSpeed = this.MoveSpeed or 0
+
+    -- 1) SmoothedSpeed 계산
+    local smoothingFactor = 3.0
+    local alpha = clamp(DeltaTime * smoothingFactor, 0, 1)
+    self.SmoothedSpeed = self.SmoothedSpeed 
+                        + (moveSpeed - self.SmoothedSpeed) 
+                          * alpha
+
+    
+    -- 2) 상태 전이용 임계값 비교 (SmoothedSpeed 이용)
+    if this.State == 0 then                     -- 현재 Idle
+        if self.SmoothedSpeed > 30 then
+            this.State = 2   -- Idle → Walk
         end
-    elseif this.State == 1 then -- Running to Walking
-        if this.MoveSpeed <= 1000 then
-            this.State = 2                          -- Run to Walk
-        elseif this.MoveSpeed <= 1 then
-            this.State = 0                          -- Run to Idle
+
+    elseif this.State == 2 then                 -- 현재 Walk
+        if self.SmoothedSpeed > 1000 then
+            this.State = 1   -- Walk → Run
+        elseif self.SmoothedSpeed <= 0.2 then
+            this.State = 0   -- Walk → Idle
+        end
+
+    elseif this.State == 1 then                 -- 현재 Run
+        if self.SmoothedSpeed < 500 then
+            this.State = 2   -- Run → Walk
         end
     end
+    print("Smoothed Speed : ", self.SmoothedSpeed)
+
+    -- (필요하다면) 이후 애니메이션 블렌딩 로직 등...
+    -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리
+
+    -- 3) 최종 Velocity 보정 (예시: 감속 개념)
+    this.Velocity = this.Velocity * 0.05
     -- if this.State == 0 and this.MoveSpeed > 100 then
     --     this.State = 1
     -- elseif this.State == 1 and this.MoveSpeed < 90 then
@@ -53,7 +82,6 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.05;
     
     if(this.ActorLocation.Z < -10) then
         self:Dead()
