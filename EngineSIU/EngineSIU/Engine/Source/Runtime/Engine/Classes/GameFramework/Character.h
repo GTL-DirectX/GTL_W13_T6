@@ -3,7 +3,7 @@
 #include "Pawn.h"
 
 class USkeletalMeshComponent;
-class UCapsuleComponent;
+class UBoxComponent;
 
 enum class EPlayerState : uint8
 {
@@ -31,11 +31,11 @@ public:
     virtual void SetupInputComponent(UInputComponent* PlayerInputComponent) override { }
 
     USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
-    UCapsuleComponent* GetCapsuleComponent() const { return CapsuleComponent; }
+    UBoxComponent* GetCapsuleComponent() const { return CollisionComponent; }
     
 protected:
     USkeletalMeshComponent* SkeletalMeshComponent = nullptr;
-    UCapsuleComponent* CapsuleComponent = nullptr;
+    UBoxComponent* CollisionComponent = nullptr;
 
 public:
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
@@ -55,7 +55,14 @@ protected:
     void Jump();
     bool CheckGrounded();
 
-private:
+protected:
     bool bIsGrounded;
+
+    FVector Velocity = FVector(); // 이동 속도
+
+    float StunGauge = 0.0f;
+    float MaxStunGauge = 100.0f;
+
+    float KnockBackPower = 100000;
 
 };

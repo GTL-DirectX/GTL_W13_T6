@@ -3,18 +3,20 @@
 #include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "World/World.h"
 
 #include "Engine/Contents/Weapons/Weapon.h"
-#include "Engine/Contents/Weapons/WeaponComponent.h"
+#include "Engine/Contents/Weapons/MeleeWeaponComponent.h"
 
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "Engine/FObjLoader.h"
 #include "sol/sol.hpp"
+
+#include "Animation/AnimSequence.h"
 
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
@@ -44,13 +46,12 @@ void APlayer::PostSpawnInitialize()
     AttachSocket();
     
    
+    BindAnimNotifys();
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    MoveSpeed = Velocity.Length();
-    CapsuleComponent->BodyInstance->AddForce(Velocity);
     
     // if (SkeletalMeshComponent)
     // {
@@ -149,12 +150,12 @@ void APlayer::MoveUp(float DeltaTime)
 
 void APlayer::RotateYaw(float DeltaTime)
 {
-    if (!CapsuleComponent)
+    if (!CollisionComponent)
     {
         return;
     }
 
-    FBodyInstance* BodyInstance = CapsuleComponent->BodyInstance;
+    FBodyInstance* BodyInstance = CollisionComponent->BodyInstance;
     if (!BodyInstance)
     {
         return;
@@ -225,15 +226,10 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-    "MoveSpeed", &APlayer::MoveSpeed,
-    "Velocity", &APlayer::Velocity,
     "Acceleration", &APlayer::Acceleration,
     "MaxSpeed", &APlayer::MaxSpeed,
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
-    "StunGauge", &APlayer::StunGauge,
-    "MaxStunGauge", &APlayer::MaxStunGauge,
-    "KnockBackPower", &APlayer::KnockBackPower,
     "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer
     )
 }
@@ -315,7 +311,7 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 */
 void APlayer::AttachSocket()
 {
-    if (StaticMeshComp = AddComponent<UStaticMeshComponent>())
+    if (EquippedWeapon = AddComponent<UMeleeWeaponComponent>())
     {
         FVector Pos = FVector(2.4f, -5.1, 40.3);
         FRotator Rot = FRotator(178, -178, 13);
@@ -323,11 +319,44 @@ void APlayer::AttachSocket()
         FTransform TF = FTransform(Rot, Pos, Scale);
         SkeletalMeshComponent->AddSocket("LeftHand", "mixamorig:LeftHand", TF);
 
-        StaticMeshComp->SetupAttachment(SkeletalMeshComponent);
+        EquippedWeapon->SetupAttachment(SkeletalMeshComponent);
 
-        StaticMeshComp->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/PUBG/FlyPan.obj"));
+        EquippedWeapon->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/PUBG/FlyPan.obj"));
 
-        StaticMeshComp->SetAttachSocketName("LeftHand");
+        EquippedWeapon->SetAttachSocketName("LeftHand");
     }
+}
 
+void APlayer::BindAnimNotifys()
+{
+    UAnimSequenceBase* AttackAnim = Cast<UAnimSequenceBase>(UAssetManager::Get().GetAnimation(FName("Contents/Player_3TTook/Armature|Armature|Armature|Left_Hook")));
+    int32 TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(AttackAnim, FName(TEXT("Default")));
+    if (TrackIdx == INDEX_NONE)
+    {
+        return;
+    }
+    int32 NewNotifyIndex = INDEX_NONE;
+    float NotifyTime = 0.1f;
+    bool bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnStartAttack, NewNotifyIndex);
+   
+    NewNotifyIndex = INDEX_NONE;
+    NotifyTime = 0.9f;
+    bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnFinishAttack, NewNotifyIndex);
+
+}
+
+void APlayer::OnStartAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    /*if (EquippedWeapon)
+    {
+        EquippedWeapon->Attack();
+    }*/
+}
+
+void APlayer::OnFinishAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (EquippedWeapon)
+    {
+        EquippedWeapon->FinishAttack();
+    }
 }

@@ -21,6 +21,7 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
+
 public:
     // -- State Management -- //
     bool IsFalling() const;
@@ -54,6 +55,7 @@ public:
     float GetFollowTimer() const { return FollowTimer; }
     void SetFollowTimer(float Value) { FollowTimer = Value; }
 
+    void OnDamaged(FVector KnockBackDir) const;
 
     FVector GetTargetPosition() const { return TargetPos; }
     void SetTargetPosition(const FVector NewTargetPos) { TargetPos = NewTargetPos; }
