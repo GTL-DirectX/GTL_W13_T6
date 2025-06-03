@@ -5,6 +5,7 @@
 class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
+class UStaticMeshComponent;
 
 class APlayer : public ACharacter
 {
@@ -54,6 +55,7 @@ public:
     
     void Attack();
     void EquipWeapon(UWeaponComponent* WeaponComponent);
+    void AttachSocket();
 
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Player.lua")
@@ -62,6 +64,7 @@ protected:
 
 private:
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
+    UStaticMeshComponent* StaticMeshComp = nullptr; //소캣 테스트용
     
     FVector Velocity = FVector(); // 이동 속도
     float Acceleration = 100000.0f;

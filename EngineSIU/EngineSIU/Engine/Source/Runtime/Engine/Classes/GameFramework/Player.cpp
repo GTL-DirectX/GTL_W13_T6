@@ -13,6 +13,7 @@
 
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Engine/FObjLoader.h"
 #include "sol/sol.hpp"
 
 UObject* APlayer::Duplicate(UObject* InOuter)
@@ -20,26 +21,27 @@ UObject* APlayer::Duplicate(UObject* InOuter)
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(3,0,9));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(3, 0, 9));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
-    
     return NewActor;
 }
 
 void APlayer::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
+
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(3,0,9));
+    CameraComponent->SetRelativeLocation(FVector(3, 0, 30));
     CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
-    
+
     SetActorLocation(FVector(10, 10, 0) * PlayerIndex);
-    SetActorScale(FVector(0.05));
+    AttachSocket();
+
 }
 
 void APlayer::Tick(float DeltaTime)
@@ -48,7 +50,7 @@ void APlayer::Tick(float DeltaTime)
     MoveSpeed = Velocity.Length();
     PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
     CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
-    
+
     Velocity *= 0.8f;
 
     // if (SkeletalMeshComponent)
@@ -100,8 +102,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
-        PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index){ PlayerConnected(Index); });
-        PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index){ PlayerDisconnected(Index); });
+        PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index) { PlayerConnected(Index); });
+        PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index) { PlayerDisconnected(Index); });
     }
 }
 
@@ -109,11 +111,11 @@ void APlayer::MoveForward(float DeltaTime)
 {
     bIsAttacking = false;
     Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
-    
+
     if (MoveSpeed > MaxSpeed)
     {
         MoveSpeed = MaxSpeed;
-        Velocity.Normalize() * MaxSpeed;
+        Velocity.Normalize()* MaxSpeed;
     }
 }
 
@@ -121,11 +123,11 @@ void APlayer::MoveRight(float DeltaTime)
 {
     bIsAttacking = false;
     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
-    
+
     if (MoveSpeed > MaxSpeed)
     {
         MoveSpeed = MaxSpeed;
-        Velocity.Normalize() * MaxSpeed;
+        Velocity.Normalize()* MaxSpeed;
     }
 }
 
@@ -171,23 +173,23 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-    "Speed", &APlayer::MoveSpeed,
-    "Velocity", &APlayer::Velocity,
-    "Acceleration", &APlayer::Acceleration,
-    "MaxSpeed", &APlayer::MaxSpeed,
-    "RotationSpeed", &APlayer::RotationSpeed,
-    "IsAttacking", sol::property(&ThisClass::IsAttacking, &ThisClass::SetIsAttacking)
+        "Speed", &APlayer::MoveSpeed,
+        "Velocity", &APlayer::Velocity,
+        "Acceleration", &APlayer::Acceleration,
+        "MaxSpeed", &APlayer::MaxSpeed,
+        "RotationSpeed", &APlayer::RotationSpeed,
+        "IsAttacking", sol::property(&ThisClass::IsAttacking, &ThisClass::SetIsAttacking)
     )
-    
-    
-    
-   //  DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
-   //      "Velocity", sol::property(&ThisClass::GetVelocity),
-   //      "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
-   //      "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
-   //      "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
-   // )
-   // "Destroy", &ThisClass::Destroy
+
+
+
+        //  DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
+        //      "Velocity", sol::property(&ThisClass::GetVelocity),
+        //      "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
+        //      "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
+        //      "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
+        // )
+        // "Destroy", &ThisClass::Destroy
 }
 
 bool APlayer::BindSelfLuaProperties()
@@ -208,7 +210,7 @@ bool APlayer::BindSelfLuaProperties()
     // LuaTable["Acceleration"] = Acceleration;
     // LuaTable["MaxSpeed"] = MaxSpeed;
     // LuaTable["RotationSpeed"] = RotationSpeed;
-    
+
     return true;
 }
 
@@ -239,7 +241,25 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 
     EquippedWeapon = WeaponComponent;
     EquippedWeapon->SetOwner(this);
+    // AttachSocket();
+     // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
+}
 
-    // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
+void APlayer::AttachSocket()
+{
+    if (StaticMeshComp = AddComponent<UStaticMeshComponent>())
+    {
+        FVector Pos = FVector(1, 0, 23.6);
+        FRotator Rot = FRotator(180, 0, 0);
+        FVector Scale = FVector(0.45, 0.45, 0.45);
+        FTransform TF = FTransform(Rot, Pos, Scale);
+        SkeletalMeshComponent->AddSocket("LeftHand", "mixamorig:LeftHand", TF);
+
+        StaticMeshComp->SetupAttachment(SkeletalMeshComponent);
+
+        StaticMeshComp->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/Glov/Glov_L.obj"));
+
+        StaticMeshComp->SetAttachSocketName("LeftHand");
+    }
 
 }

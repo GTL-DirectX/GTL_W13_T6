@@ -31,7 +31,7 @@ void ACharacter::PostSpawnInitialize()
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
         CapsuleComponent->SetupAttachment(RootComponent);
-        CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
+        //CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
         CapsuleComponent->AddLocation({ 0.0f, 0.0f, 0.0f });
         CapsuleComponent->bSimulate = true;
         CapsuleComponent->bApplyGravity = true;
