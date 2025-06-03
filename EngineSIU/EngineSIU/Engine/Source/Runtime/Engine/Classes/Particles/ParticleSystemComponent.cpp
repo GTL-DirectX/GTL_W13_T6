@@ -206,7 +206,7 @@ void UParticleSystemComponent::ReBuildInstancesMemoryLayout()
 
 void UParticleSystemComponent::StartEmissions()
 {
-    if (EmitterInstances.IsEmpty())
+    if (Template &&  EmitterInstances.IsEmpty())
         InitializeSystem();
     for (auto* Instance : EmitterInstances)
     {
@@ -219,7 +219,7 @@ void UParticleSystemComponent::StartEmissions()
 
 void UParticleSystemComponent::StopEmissions()
 {
-    if(EmitterInstances.IsEmpty())  
+    if(Template && EmitterInstances.IsEmpty())  
         InitializeSystem();
 
     for (auto* Instance : EmitterInstances)
