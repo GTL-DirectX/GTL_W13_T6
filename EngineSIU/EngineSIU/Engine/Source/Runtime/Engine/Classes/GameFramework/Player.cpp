@@ -289,6 +289,12 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
      // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
 }
 
+/*
+* 현재 StaticMeshComp는 소캣 테스트를 위한 임시 컴포넌트, 
+*
+* 무기 Overlapped 구현됐을 때 StaticMeshComp대신 EquippedWeapon 사용하면 됨
+* 소캣 위치는 현재 Glove 기준. 프라이팬 기준으로 수정 필요함
+*/
 void APlayer::AttachSocket()
 {
     if (StaticMeshComp = AddComponent<UStaticMeshComponent>())
