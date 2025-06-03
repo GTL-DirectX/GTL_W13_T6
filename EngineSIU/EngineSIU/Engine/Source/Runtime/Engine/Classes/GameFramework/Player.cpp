@@ -33,8 +33,8 @@ void APlayer::PostSpawnInitialize()
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(-12,0,20));
-    CameraComponent->SetRelativeRotation(FRotator(0,-10,0));
+    CameraComponent->SetRelativeLocation(FVector(-20,0,20));
+    CameraComponent->SetRelativeRotation(FRotator(0,-15,0));
     CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
@@ -299,15 +299,15 @@ void APlayer::AttachSocket()
 {
     if (StaticMeshComp = AddComponent<UStaticMeshComponent>())
     {
-        FVector Pos = FVector(1, 0, 23.6);
-        FRotator Rot = FRotator(180, 0, 0);
-        FVector Scale = FVector(0.45, 0.45, 0.45);
+        FVector Pos = FVector(2.4f, -5.1, 40.3);
+        FRotator Rot = FRotator(178, -178, 13);
+        FVector Scale = FVector(5, 5, 5);
         FTransform TF = FTransform(Rot, Pos, Scale);
         SkeletalMeshComponent->AddSocket("LeftHand", "mixamorig:LeftHand", TF);
 
         StaticMeshComp->SetupAttachment(SkeletalMeshComponent);
 
-        StaticMeshComp->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/Glov/Glov_L.obj"));
+        StaticMeshComp->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/PUBG/FlyPan.obj"));
 
         StaticMeshComp->SetAttachSocketName("LeftHand");
     }
