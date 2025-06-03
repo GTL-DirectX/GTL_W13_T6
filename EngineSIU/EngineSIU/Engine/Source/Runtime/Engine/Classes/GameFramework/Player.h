@@ -47,7 +47,6 @@ private:
     int TargetViewPlayer = -1;
 
 public:
-    void OnDamaged(FVector KnockBackDir) const;
     void Stun() const;
     void KnockBack(FVector KnockBackDir) const;
     void Dead() const;
