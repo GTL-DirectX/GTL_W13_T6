@@ -1,21 +1,26 @@
 AnimFSM = {
     current = "Idle",
+    BlendTime = 0.5,
     Update = function(self, dt)
         State = self.OwnerCharacter.State
         
         if State == 0 then
-            self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Player_Running"
+            self.current = "Contents/Player_3TTook/Armature|Player_Walk"
+            self.BlendTime = 0.5
         elseif State == 1 then
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Player_Running"
+            self.BlendTime = 2.0
         elseif State == 2 then
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Player_Jumping"
+            self.BlendTime = 0.0
         elseif State == 3 then
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Left_Hook"
+            self.BlendTime = 0.0
         end
         
         return {
             anim = self.current,
-            blend = 0.5
+            blend = self.BlendTime
         }
     end
 }
