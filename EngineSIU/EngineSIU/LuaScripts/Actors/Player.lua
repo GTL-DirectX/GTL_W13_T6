@@ -3,13 +3,21 @@ setmetatable(_ENV, { __index = EngineTypes })
 
 -- Template은 AActor라는 가정 하에 작동.
 
-local ReturnTable = {} -- Return용 table. cpp에서 Table 단위로 객체 관리.
+local ReturnTable = {
+    SmoothedSpeed = 0,
+} -- Return용 table. cpp에서 Table 단위로 객체 관리.
 
 local FVector = EngineTypes.FVector -- EngineTypes로 등록된 FVector local로 선언.
 -- local FRotator = EngineTypes.FRotator
 -- 
 -- local SpawnRate = 4.0                  -- 초 단위, 몬스터 생성 주기
 -- local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
+
+local function clamp(val, lo, hi)
+    if val < lo then return lo end
+    if val > hi then return hi end
+    return val
+end
 
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
@@ -30,15 +38,29 @@ end
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     local this = self.this
-    if this.State == 0 and this.MoveSpeed > 100 then
-        this.State = 1
-    elseif this.State == 1 and this.MoveSpeed < 90 then
+    
+    local moveSpeed = this.MoveSpeed or 0
+
+    if this.LinearSpeed <= 1 then
         this.State = 0
+    elseif this.LinearSpeed >= 20 then
+        this.State = 1
+    else
+        this.State = 2
     end
+    -- (필요하다면) 이후 애니메이션 블렌딩 로직 등...
+    -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리
+
+    -- 3) 최종 Velocity 보정 (예시: 감속 개념)
+    this.Velocity = this.Velocity * 0.05
+    -- if this.State == 0 and this.MoveSpeed > 100 then
+    --     this.State = 1
+    -- elseif this.State == 1 and this.MoveSpeed < 90 then
+    --     this.State = 0
+    -- end
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.05;
     
     if(this.ActorLocation.Z < -10) then
         self:Dead()

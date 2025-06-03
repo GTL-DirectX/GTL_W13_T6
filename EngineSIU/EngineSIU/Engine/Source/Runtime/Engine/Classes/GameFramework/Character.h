@@ -10,13 +10,14 @@ class UParticleSystemComponent;
 enum class EPlayerState : uint8
 {
     Idle = 0,
-    Walking,
-    Jumping,
-    Attacking,
-    Stun,
-    MuJuck, // 무적 영어로 뭐임?
-    Dead,
-    Max
+    Running, // 1
+    Walking, // 2
+    Attacking, // 3
+    Stun, // 4
+    MuJuck, // 5
+    Dead, // 6
+    Jumping, // 7
+    Max, 
 };
 
 class ACharacter : public APawn

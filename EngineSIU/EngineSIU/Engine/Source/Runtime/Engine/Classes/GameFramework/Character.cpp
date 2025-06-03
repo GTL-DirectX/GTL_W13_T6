@@ -98,7 +98,7 @@ void ACharacter::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
         "State", sol::property(&ACharacter::GetState, &ACharacter::SetState),
-        "MoveSpeed", &ACharacter::MoveSpeed,
+        "MoveSpeed", sol::property(&ACharacter::GetMoveSpeed, &ACharacter::SetMoveSpeed), 
         "Velocity", &ACharacter::Velocity,
         "StunGauge", &ACharacter::StunGauge,
         "MaxStunGauge", &ACharacter::MaxStunGauge,

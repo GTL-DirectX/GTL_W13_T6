@@ -27,6 +27,7 @@ void UMeleeWeaponComponent::InitializeComponent()
     {
         AttackCollision = GetOwner()->AddComponent<USphereComponent>("AttackCollision");
         AttackCollision->SetupAttachment(this);
+        AttackCollision->AddLocation(FVector(0.0f, -0.1f, -0.3f));
         AttackCollision->SetRadius(0.7f);
         AttackCollision->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
     }

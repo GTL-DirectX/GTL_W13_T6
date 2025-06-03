@@ -55,6 +55,9 @@ public:
     void EquipWeapon(UWeaponComponent* WeaponComponent);
     void AttachSocket();
 
+    void SetLinearSpeed(float InLinearSpeed) { LinearSpeed = InLinearSpeed; }
+    float GetLinearSpeed() const { return LinearSpeed; }
+
 private:
     void BindAnimNotifys();
 
@@ -75,4 +78,6 @@ private:
     float RawSpeed = 100.0f; // 좌우 회전 속도
     float PitchSpeed = 100.0f;
 
+
+    float LinearSpeed;
 };
