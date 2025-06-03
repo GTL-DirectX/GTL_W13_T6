@@ -24,12 +24,14 @@ function ReturnTable:BeginPlay()
 
     --     print("BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
     local this = self.this
+
     this.Acceleration = 100000
     this.MaxSpeed = 100000
     this.RawSpeed = 100
     this.PitchSpeed = 100
     this.MaxStunGauge = 20
-    this.KnockBackPower = 40000
+    this.KnockBackPower = 200
+    this.KnockBackExp = 1
     
     self.CurrentTime = 0
 
@@ -125,6 +127,7 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
+    this.KnockBackExp = this.KnockBackExp * 1.2
     this.State = 5
     
     print("OnDamaged 실행")
@@ -154,8 +157,10 @@ function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this -- local 추가
     print("KnockBack 시작")
 
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
-        KnockBackDir.Z * this.KnockBackPower)
+    print(this.KnockBackPower, this.KnockBackExp)
+
+    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
+        KnockBackDir.Z * this.KnockBackPower * this.KnockBackExp)
 
     print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
 
