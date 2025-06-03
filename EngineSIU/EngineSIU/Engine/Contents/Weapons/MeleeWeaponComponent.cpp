@@ -66,7 +66,6 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
         if (OtherActor && HitParticle)
         {
             HitParticle->SetWorldLocation(GetOwner()->GetActorLocation());
-            FVector Own = GetOwner()->GetActorLocation();
             HitParticle->StartEmissions();
         }
     }
