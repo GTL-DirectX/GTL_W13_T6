@@ -23,6 +23,7 @@ public:
 
 public:
     virtual void Attack();
+    virtual void FinishAttack();
 
 protected:
     ACharacter* OwnerCharacter = nullptr;
@@ -32,7 +33,7 @@ public:
 
 protected:
     float AttackDamage = 10.0f;
-
+    float bIsAttacking = false;
 
 
 };

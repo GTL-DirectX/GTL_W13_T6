@@ -10,7 +10,12 @@ class MeleeWeaponComponent : public UWeaponComponent
 
 public:
     MeleeWeaponComponent() = default;
+
     virtual void Attack() override;
+    virtual void InitializeComponent() override;
+
+protected:
+    virtual void ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 
 protected:
     UAnimSequence* AttackAnimation = nullptr; // 공격 애니메이션

@@ -252,7 +252,10 @@ void UAnimSequenceBase::EvaluateAnimNotifies(
 
         const bool bPassed = bReversed
             ? (PreviousTime >= StartTime && CurrentTime < StartTime)
-            : (PreviousTime <= StartTime && CurrentTime > StartTime);
+            : (PreviousTime <= StartTime && CurrentTime > StartTime)
+            || (PreviousTime >= CurrentTime && CurrentTime >= StartTime)
+            || (CurrentTime <=PreviousTime && PreviousTime <= StartTime);
+
 
         const bool bInside = CurrentTime >= StartTime && CurrentTime < EndTime;
 

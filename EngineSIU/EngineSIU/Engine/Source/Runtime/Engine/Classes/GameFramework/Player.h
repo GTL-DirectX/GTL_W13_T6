@@ -5,7 +5,7 @@
 class UProjectileMovementComponent;
 class UCameraComponent;
 class UWeaponComponent;
-
+class UAnimSequenceBase;
 
 class APlayer : public ACharacter
 {
@@ -48,6 +48,12 @@ public:
     void Attack() const;
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);
+
+private:
+    void BindAnimNotifys();
+
+    void OnStartAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnFinishAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
 
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/Player.lua")

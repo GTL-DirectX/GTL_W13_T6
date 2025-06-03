@@ -15,6 +15,8 @@
 #include "Lua/LuaUtils/LuaTypeMacros.h"
 #include "sol/sol.hpp"
 
+#include "Animation/AnimSequence.h"
+
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
@@ -32,14 +34,23 @@ void APlayer::PostSpawnInitialize()
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(3,0,9));
+    CameraComponent->SetRelativeLocation(FVector(-13, 0, 12));
     CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
-    
     SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0,0,30));
     SetActorScale(FVector(0.05));
+
+	EquippedWeapon = AddComponent<UWeaponComponent>("WeaponComponent");
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->SetRelativeLocation(FVector(0, 0, 0));
+		EquippedWeapon->SetRelativeRotation(FRotator(0, 0, 0));
+
+	}
+
+    BindAnimNotifys();
 }
 
 void APlayer::Tick(float DeltaTime)
@@ -283,4 +294,38 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 
     // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
 
+}
+
+void APlayer::BindAnimNotifys()
+{
+    UAnimSequenceBase* AttackAnim = Cast<UAnimSequenceBase>(UAssetManager::Get().GetAnimation(FName("Contents/Player_3TTook/Armature|Left_Hook")));
+    int32 TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(AttackAnim, FName(TEXT("Default")));
+    if (TrackIdx == INDEX_NONE)
+    {
+        return;
+    }
+    int32 NewNotifyIndex = INDEX_NONE;
+    float NotifyTime = 0.1f;
+    bool bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnStartAttack, NewNotifyIndex);
+   
+    NewNotifyIndex = INDEX_NONE;
+    NotifyTime = 0.9f;
+    bAdded = AttackAnim->AddDelegateNotifyEventAndBind<APlayer>(TrackIdx, NotifyTime, this, &APlayer::OnFinishAttack, NewNotifyIndex);
+
+}
+
+void APlayer::OnStartAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    /*if (EquippedWeapon)
+    {
+        EquippedWeapon->Attack();
+    }*/
+}
+
+void APlayer::OnFinishAttack(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (EquippedWeapon)
+    {
+        EquippedWeapon->FinishAttack();
+    }
 }

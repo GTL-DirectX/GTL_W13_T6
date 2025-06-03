@@ -24,5 +24,19 @@ UObject* UWeaponComponent::Duplicate(UObject* InOuter)
 
 void UWeaponComponent::Attack()
 {
+    bIsAttacking = true;
     
+    if (OwnerCharacter)
+    {
+        OwnerCharacter->SetState(static_cast<int>(EPlayerState::Attacking));
+    }
+}
+
+void UWeaponComponent::FinishAttack()
+{
+    bIsAttacking = false;
+    if (OwnerCharacter)
+    {
+        OwnerCharacter->SetState(static_cast<int>(EPlayerState::Idle));
+    }
 }

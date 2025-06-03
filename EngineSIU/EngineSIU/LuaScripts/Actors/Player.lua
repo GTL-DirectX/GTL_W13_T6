@@ -79,17 +79,17 @@ function ReturnTable:EndPlay(EndPlayReason)
 end
 
 function ReturnTable:Attack()
-    if self.this.State >= 3 then return end
+    -- if self.this.State >= 3 then return end
 
-    self.this.State = 3
-    print("공격 시작")
+    -- self.this.State = 3
+    -- print("공격 시작")
 
-    -- 공격 지속시간 코루틴 생성
-    self.AttackCoroutine = coroutine.create(function()
-        self:Wait(0.5)
-        self.this.State = 0
-        print("공격 종료")
-    end)
+    -- -- 공격 지속시간 코루틴 생성
+    -- self.AttackCoroutine = coroutine.create(function()
+    --     self:Wait(0.5)
+    --     self.this.State = 0
+    --     print("공격 종료")
+    -- end)
 end
 
 function ReturnTable:OnDamaged(KnockBackDir)

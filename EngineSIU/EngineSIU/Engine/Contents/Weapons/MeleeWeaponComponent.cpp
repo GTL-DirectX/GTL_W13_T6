@@ -3,16 +3,36 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Player.h"
 
+#include "GameFramework/Monster.h"
+
+
 void MeleeWeaponComponent::Attack()
 {
     if (!OwnerCharacter)
     {
         return;
     }
+}
 
-    // OwnerActor에 Animation 넣어서 재생해주기.
-    if (USkeletalMeshComponent* SkelComp = OwnerCharacter->GetSkeletalMeshComponent())
+void MeleeWeaponComponent::InitializeComponent()
+{
+    Super::InitializeComponent();
+
+    OnComponentBeginOverlap.AddUObject(this, &MeleeWeaponComponent::ComponentBeginOverlap);
+
+}
+
+void MeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
+{
+    if (bIsAttacking)
     {
-        SkelComp->PlayAnimation(AttackAnimation,  1.0f, false);
+        if (AMonster* Monster = Cast<AMonster>(OtherActor))
+        {
+            
+        }
+        else if (APlayer* OtherPlayer = Cast<APlayer>(OtherActor))
+        {
+
+        }
     }
 }
