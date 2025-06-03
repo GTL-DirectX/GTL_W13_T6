@@ -33,7 +33,7 @@ void APlayer::PostSpawnInitialize()
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(-12,0,12));
+    CameraComponent->SetRelativeLocation(FVector(-12,0,20));
     CameraComponent->SetRelativeRotation(FRotator(0,-10,0));
     CameraComponent->SetupAttachment(RootComponent);
 
@@ -42,7 +42,6 @@ void APlayer::PostSpawnInitialize()
 
    
     SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0, 0, 30));
-    SetActorScale(FVector(0.05));
     AttachSocket();
     
    
