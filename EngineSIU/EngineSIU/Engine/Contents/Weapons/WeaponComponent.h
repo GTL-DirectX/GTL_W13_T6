@@ -33,7 +33,7 @@ public:
 
 protected:
     float AttackDamage = 10.0f;
-    float bIsAttacking = false;
+    bool bIsAttacking = false;
 
 
 };

@@ -85,12 +85,20 @@ void ACharacter::BeginPlay()
 void ACharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    MoveSpeed = Velocity.Length();
+    CollisionComponent->BodyInstance->AddForce(Velocity);
 }
 
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
         "State", sol::property(&ACharacter::GetState, &ACharacter::SetState),
+        "MoveSpeed", &ACharacter::MoveSpeed,
+        "Velocity", &ACharacter::Velocity,
+        "StunGauge", &ACharacter::StunGauge,
+        "MaxStunGauge", &ACharacter::MaxStunGauge,
+        "KnockBackPower", &ACharacter::KnockBackPower,
         "IsGrounded", &ACharacter::CheckGrounded// CheckGrounded는 bool 반환
         )
 }

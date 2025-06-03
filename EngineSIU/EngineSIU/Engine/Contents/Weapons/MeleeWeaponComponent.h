@@ -25,7 +25,7 @@ protected:
     float AttackRange = 100.0f; // 공격 범위
     float AttackRadius = 50.0f; // 공격 반경
 
-    USphereComponent* AttackCollision; // 공격 충돌 컴포넌트
+    USphereComponent* AttackCollision = nullptr; // 공격 충돌 컴포넌트
 
 };
 

@@ -55,7 +55,14 @@ protected:
     void Jump();
     bool CheckGrounded();
 
-private:
+protected:
     bool bIsGrounded;
+
+    FVector Velocity = FVector(); // 이동 속도
+
+    float StunGauge = 0.0f;
+    float MaxStunGauge = 100.0f;
+
+    float KnockBackPower = 100000;
 
 };

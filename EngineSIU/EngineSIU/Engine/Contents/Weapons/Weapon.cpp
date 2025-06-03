@@ -2,7 +2,7 @@
 
 #include "UObject/ObjectFactory.h"
 
-#include "WeaponComponent.h"
+#include "MeleeWeaponComponent.h"
 #include "Components/SphereComponent.h"
 
 #include "GameFramework/Player.h"
@@ -29,9 +29,9 @@ void AWeapon::PostSpawnInitialize()
 
     if (!WeaponMeshComponent)
     {
-        WeaponMeshComponent = AddComponent<UWeaponComponent>("WeaponMesh");
+        WeaponMeshComponent = AddComponent<UMeleeWeaponComponent>("WeaponMesh");
         WeaponMeshComponent->SetupAttachment(RootComponent);
-        WeaponMeshComponent->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/Glov/Glov_L.obj"));
+        WeaponMeshComponent->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/PUBG/FlyPan.obj"));
     }
 
 }

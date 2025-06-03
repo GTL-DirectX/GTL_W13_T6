@@ -26,7 +26,7 @@ void UMeleeWeaponComponent::InitializeComponent()
     {
         AttackCollision = GetOwner()->AddComponent<USphereComponent>("AttackCollision");
         AttackCollision->SetupAttachment(this);
-        AttackCollision->SetRadius(1.0f);
+        AttackCollision->SetRadius(0.7f);
         AttackCollision->OnComponentBeginOverlap.AddUObject(this, &UMeleeWeaponComponent::ComponentBeginOverlap);
     }
 
@@ -39,11 +39,13 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
     {
         if (AMonster* Monster = Cast<AMonster>(OtherActor))
         {
-            
+            FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
+            Monster->OnDamaged(DamageDir);
         }
         else if (APlayer* OtherPlayer = Cast<APlayer>(OtherActor))
         {
-
+            FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
+            OtherPlayer->OnDamaged(DamageDir);
         }
     }
 }

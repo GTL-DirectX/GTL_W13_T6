@@ -53,8 +53,6 @@ void APlayer::PostSpawnInitialize()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    MoveSpeed = Velocity.Length();
-    CollisionComponent->BodyInstance->AddForce(Velocity);
     
     // if (SkeletalMeshComponent)
     // {
@@ -229,15 +227,10 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-    "MoveSpeed", &APlayer::MoveSpeed,
-    "Velocity", &APlayer::Velocity,
     "Acceleration", &APlayer::Acceleration,
     "MaxSpeed", &APlayer::MaxSpeed,
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
-    "StunGauge", &APlayer::StunGauge,
-    "MaxStunGauge", &APlayer::MaxStunGauge,
-    "KnockBackPower", &APlayer::KnockBackPower,
     "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer
     )
 }

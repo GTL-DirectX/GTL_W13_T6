@@ -71,14 +71,9 @@ private:
     
     UWeaponComponent* EquippedWeapon = nullptr; // 현재 장착된 무기 컴포넌트
     
-    FVector Velocity = FVector(); // 이동 속도
     float Acceleration = 100000.0f;
     float MaxSpeed = 100000.0f;
     float RawSpeed = 100.0f; // 좌우 회전 속도
     float PitchSpeed = 100.0f;
-    
-    float StunGauge = 0.0f;
-    float MaxStunGauge = 100.0f;
 
-    float KnockBackPower = 100000;
 };
