@@ -10,7 +10,8 @@ local FRotator = EngineTypes.FRotator
 
 local SpawnRate = 5.0                  -- 초 단위, 몬스터 생성 주기
 local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
-local SpawnCount = 0
+local MaxMonsterCount = 5
+
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
 
@@ -18,15 +19,24 @@ function ReturnTable:BeginPlay()
 
 end
 
+function ReturnTable:IsBoundMonsterCount()
+    local this = self.this
+    print("asdf")
+    -- print("MaxMonsterCount, this.MonsterCount", MaxMonsterCount, " " , this.MonsterCount)
+    return MaxMonsterCount > this.MonsterCount
+end
+
 -- Tick: 매 프레임마다 호출
 function ReturnTable:Tick(DeltaTime)
     -- local this = self.this
     -- this.IsAllPlayerDead
-
     ElapsedTimeSinceLastSpawn = ElapsedTimeSinceLastSpawn + DeltaTime
     if ElapsedTimeSinceLastSpawn >= SpawnRate then
-        self:SpawnMonster(DeltaTime)
-        ElapsedTimeSinceLastSpawn = 0.0
+        if self:IsBoundMonsterCount() then   
+            
+            self:SpawnMonster(DeltaTime)
+            ElapsedTimeSinceLastSpawn = 0.0
+        end
     end
     -- 기본적으로 Table로 등록된 변수는 self, Class usertype으로 선언된 변수는 self.this로 불러오도록 설정됨.
     -- sol::property로 등록된 변수는 변수 사용으로 getter, setter 등록이 되어 .(dot) 으로 접근가능하고
@@ -49,7 +59,7 @@ end
 function ReturnTable:SpawnMonster(DeltaTime)
     -- print("GameMode Spawn Monster Tick: ", DeltaTime)
     -- 예: 로컬 좌표를 랜덤으로 생성해서 몬스터 스폰 테스트
-    SpawnCount = SpawnCount + 1
+    -- SpawnCount = SpawnCount + 1
     local randomX = math.random(-140, 140)
     local randomY = math.random(-140, 140)
     local randomZ = 50

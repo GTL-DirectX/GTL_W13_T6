@@ -54,7 +54,9 @@ void AGameMode::RegisterLuaType(sol::state& Lua)
 
     DEFINE_LUA_TYPE_NO_PARENT(AGameMode,
 		"SpawnMonster", &ThisClass::SpawnMonster,
-        "IsAllPlayerDead", sol::property(&ThisClass::SetIsAllPlayerDead, &ThisClass::GetIsAllPlayerDead)
+        "IsAllPlayerDead", sol::property(&ThisClass::SetIsAllPlayerDead, &ThisClass::GetIsAllPlayerDead),
+        "PlayerCount", sol::property(&ThisClass::SetPlayerCount, &ThisClass::GetPlayerCount),
+        "MonsterCount", sol::property(&ThisClass::SetMonsterCount, &ThisClass::GetMonsterCount)
     )
 }
 
@@ -158,6 +160,8 @@ void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
         SpawnedMonster->SetActorLocation(Location);
         SpawnedMonster->SetActorRotation(Rotation);
         SpawnedMonster->SetActorScale(FVector(1, 1, 1));
+
+        SetMonsterCount(GetMonsterCount() + 1);
     }
 
     if (SpawnedMonster)
@@ -192,4 +196,6 @@ void AGameMode::Reset()
     bGameEnded = true;
     FSoundManager::GetInstance().StopAllSounds();
 }
+
+
 

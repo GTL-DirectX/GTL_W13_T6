@@ -26,6 +26,16 @@ float UAnimSequenceBase::GetPlayLength() const
     return 0.f;
 }
 
+float UAnimSequenceBase::GetDuration() const
+{
+    if (DataModel)
+    {
+        return static_cast<float>(DataModel->GetDuration());
+    }
+    return 0.f;
+}
+
+
 UAnimDataModel* UAnimSequenceBase::GetDataModel() const
 {
     return DataModel;
@@ -244,15 +254,17 @@ void UAnimSequenceBase::EvaluateAnimNotifies(
         float StartTime = NotifyEvent.Time;
         if (StartTime > 1.0f)
         {
-            float AnimLength = static_cast<float>(AnimAsset->GetPlayLength());
-            StartTime = FMath::Clamp(StartTime / AnimLength, 0.0f, 1.0f); // Normalize to [0,1]
+            //float AnimLength = static_cast<float>(AnimAsset->GetPlayLength());
+            //StartTime = FMath::Clamp(StartTime / AnimLength, 0.0f, 1.0f); // Normalize to [0,1]
         }
         const float EndTime = NotifyEvent.GetEndTime();
         const bool bReversed = DeltaTime < 0.0f;
 
         const bool bPassed = bReversed
             ? (PreviousTime >= StartTime && CurrentTime < StartTime)
-            : (PreviousTime <= StartTime && CurrentTime > StartTime);
+            : (PreviousTime <= StartTime && CurrentTime > StartTime)
+            || (PreviousTime >= CurrentTime && CurrentTime >= StartTime)
+            || (CurrentTime <= PreviousTime && PreviousTime <= StartTime);
 
         const bool bInside = CurrentTime >= StartTime && CurrentTime < EndTime;
 

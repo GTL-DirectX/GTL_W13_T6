@@ -48,6 +48,11 @@ public:
     void SetIsAllPlayerDead(bool bInIsAllPlayerDead) { bIsAllPlayerDead = bInIsAllPlayerDead; }
     bool GetIsAllPlayerDead() const { return bIsAllPlayerDead; }
 
+    void SetPlayerCount(int32 InPlayerCount) { PlayerCount = InPlayerCount; }
+    int32 GetPlayerCount() const { return PlayerCount; }
+
+    void SetMonsterCount(int32 InMonsterCount) { MonsterCount = InMonsterCount; }
+    int32 GetMonsterCount() const { return MonsterCount; }
 
     FOnGameInit OnGameInit;
     FOnGameStart OnGameStart;
@@ -57,6 +62,9 @@ public:
     
 protected:
     UPROPERTY(EditAnywhere, FString, ScriptName, = "LuaScripts/Actors/GameMode.lua")
+    UPROPERTY(EditAnywhere, int32, PlayerCount, = 0)
+    UPROPERTY(EditAnywhere, int32, MonsterCount, = 0)
+
 
     bool bGameRunning = false; // 내부 
     bool bGameEnded = true;

@@ -17,6 +17,7 @@ ULuaScriptAnimInstance::ULuaScriptAnimInstance()
     : PrevAnim(nullptr)
     , CurrAnim(nullptr)
     , ElapsedTime(0.f)
+    , PreElapsedTime(0.f)
     , PlayRate(1.f)
     , bLooping(true)
     , bPlaying(true)
@@ -56,64 +57,41 @@ UObject* ULuaScriptAnimInstance::Duplicate(UObject* InOuter)
     }
     return NewInstance;
 }
-
 void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseContext& OutPose)
 {
     UAnimInstance::NativeUpdateAnimation(DeltaSeconds, OutPose);
-    StateMachine->ProcessState();
+    StateMachine->ProcessState(/*DeltaSeconds*/);
 
 #pragma region MyAnim
     USkeletalMeshComponent* SkeletalMeshComp = GetSkelMeshComponent();
-    if (!PrevAnim || !CurrAnim || !SkeletalMeshComp->GetSkeletalMeshAsset()
-        || !SkeletalMeshComp->GetSkeletalMeshAsset()->GetSkeleton() || !bPlaying)
+
+    if (!PrevAnim || !CurrAnim || !SkeletalMeshComp->GetSkeletalMeshAsset() || !SkeletalMeshComp->GetSkeletalMeshAsset()->GetSkeleton() || !bPlaying)
     {
         return;
     }
 
+    PreviousTime = ElapsedTime;
+    PreElapsedTime += DeltaSeconds * 1.0f;
+    ElapsedTime += DeltaSeconds * PlayRate;
 
-    UAnimSequence* PlayAnim = CurrAnim;  // “현재 재생중인” 애니메이션으로 결정
-    const float PreviousTime = ElapsedTime;
-    ElapsedTime += DeltaSeconds * PlayRate * (bReverse ? -1.0f : 1.0f);
+    CurrAnim->EvaluateAnimNotifies(CurrAnim->Notifies, ElapsedTime, PreviousTime, DeltaSeconds, SkeletalMeshComp, CurrAnim, bLooping);
 
-    float DeltaPlayTime = DeltaSeconds * PlayRate;
-    
-    const UAnimDataModel* DataModel = PlayAnim->GetDataModel();
-    const int32 FrameRate = DataModel->GetFrameRate();
-    const int32 NumberOfFrames = DataModel->GetNumberOfFrames();
-
-    LoopStartFrame = FMath::Clamp(LoopStartFrame, 0, NumberOfFrames - 2);
-    LoopEndFrame = FMath::Clamp(LoopEndFrame, LoopStartFrame + 1, NumberOfFrames - 1);
-    const float StartTime = static_cast<float>(LoopStartFrame) / static_cast<float>(FrameRate);
-    const float EndTime = static_cast<float>(LoopEndFrame) / static_cast<float>(FrameRate);
-    
-    float AnimLength = PlayAnim->GetPlayLength();
-    if (IsLooping())
+    if (CurrAnim && !bLooping)
     {
-        if (ElapsedTime > EndTime)
-        {
-            ElapsedTime = StartTime + FMath::Fmod(ElapsedTime - StartTime, LoopEndFrame);
-        }
-        else if (ElapsedTime <= StartTime)
-        {
-            ElapsedTime = EndTime - FMath::Fmod(EndTime - ElapsedTime, LoopEndFrame);
-        }
+        const float AnimDuration = CurrAnim->GetPlayLength();
+
+        ElapsedTime = FMath::Clamp(
+            ElapsedTime,
+            0.0f,
+            FMath::FloorToFloat(AnimDuration * 10000) / 10000
+        );
     }
 
-    PlayAnim->EvaluateAnimNotifies(
-        PlayAnim->Notifies,
-        ElapsedTime/ static_cast<float>(FrameRate),
-        PreviousTime,
-        DeltaPlayTime,
-        SkeletalMeshComp,
-        PlayAnim,
-        bLooping
-    );
-
-    // ▶ 그 다음 Blend 로직
-    if (bIsBlending)
+    if (bIsBlending && PreElapsedTime <= PrevAnim->GetDuration())
     {
-        float BlendElapsed = FMath::Abs(ElapsedTime - BlendStartTime);
+        float BlendElapsed = ElapsedTime - BlendStartTime;
         BlendAlpha = FMath::Clamp(BlendElapsed / BlendDuration, 0.f, 1.f);
+
         if (BlendAlpha >= 1.f)
         {
             bIsBlending = false;
@@ -125,34 +103,32 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
         BlendAlpha = 1.f;
     }
 
-    // ▶ 이후에 포즈 계산 및 블렌딩
+    // TODO: FPoseContext의 BoneContainer로 바꾸기
     const FReferenceSkeleton& RefSkeleton = this->GetCurrentSkeleton()->GetReferenceSkeleton();
-    if (PrevAnim->GetSkeleton()->GetReferenceSkeleton().GetRawBoneNum() != RefSkeleton.RawRefBoneInfo.Num()
-        || CurrAnim->GetSkeleton()->GetReferenceSkeleton().GetRawBoneNum() != RefSkeleton.RawRefBoneInfo.Num())
+
+    if (PrevAnim->GetSkeleton()->GetReferenceSkeleton().GetRawBoneNum() != RefSkeleton.RawRefBoneInfo.Num() || CurrAnim->GetSkeleton()->GetReferenceSkeleton().GetRawBoneNum() != RefSkeleton.RawRefBoneInfo.Num())
     {
         return;
     }
-    int32 BoneCount = RefSkeleton.RawRefBoneInfo.Num();
-    OutPose.Pose.Empty();
-    OutPose.Pose.InitBones(BoneCount);
 
     FPoseContext PrevPose(this);
     FPoseContext CurrPose(this);
-    PrevPose.Pose.InitBones(BoneCount);
-    CurrPose.Pose.InitBones(BoneCount);
-    for (int32 BoneIdx = 0; BoneIdx < BoneCount; ++BoneIdx)
+
+    PrevPose.Pose.InitBones(RefSkeleton.RawRefBoneInfo.Num());
+    CurrPose.Pose.InitBones(RefSkeleton.RawRefBoneInfo.Num());
+    for (int32 BoneIdx = 0; BoneIdx < RefSkeleton.RawRefBoneInfo.Num(); ++BoneIdx)
     {
         PrevPose.Pose[BoneIdx] = RefSkeleton.RawRefBonePose[BoneIdx];
         CurrPose.Pose[BoneIdx] = RefSkeleton.RawRefBonePose[BoneIdx];
     }
 
-    FAnimExtractContext ExtractA(ElapsedTime, false);
-    FAnimExtractContext ExtractB(ElapsedTime, false);
+    FAnimExtractContext ExtractA(PreElapsedTime, bLooping); // TODO : bPrevLooping
+    FAnimExtractContext ExtractB(ElapsedTime, bLooping);
+
     PrevAnim->GetAnimationPose(PrevPose, ExtractA);
     CurrAnim->GetAnimationPose(CurrPose, ExtractB);
-    FAnimationRuntime::BlendTwoPosesTogether(
-        CurrPose.Pose, PrevPose.Pose, BlendAlpha, OutPose.Pose
-    );
+
+    FAnimationRuntime::BlendTwoPosesTogether(CurrPose.Pose, PrevPose.Pose, BlendAlpha, OutPose.Pose);
 #pragma endregion
 }
 

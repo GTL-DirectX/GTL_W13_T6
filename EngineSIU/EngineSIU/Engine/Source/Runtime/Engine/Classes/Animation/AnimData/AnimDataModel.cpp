@@ -237,6 +237,11 @@ USkeleton* UAnimDataModel::GetSkeleton() const
     return nullptr;
 }
 
+float UAnimDataModel::GetDuration() const
+{
+    return static_cast<float>(NumberOfFrames - 1) / FrameRate;
+}
+
 FBoneAnimationTrack* UAnimDataModel::FindMutableBoneTrackByName(FName Name)
 {
     return BoneAnimationTracks.FindByPredicate([Name](const FBoneAnimationTrack& Track)
