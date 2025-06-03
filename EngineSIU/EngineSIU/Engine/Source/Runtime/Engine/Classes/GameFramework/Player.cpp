@@ -82,7 +82,7 @@ void APlayer::Tick(float DeltaTime)
         UE_LOG(ELogLevel::Error, TEXT("Velocity : %f"), Velocity);
 
         RigidActor->setAngularDamping(10.0f);
-        bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f) && PlayerState != PlayerState::MuJuck;
+        bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f) && PlayerState != EPlayerState::MuJuck && bIsGrounded;
         if (bIsMovingInput)
         {
             // 플레이어가 입력으로 움직이고 있다면 낮은 감쇠 (즉, 관성 유지)
@@ -287,7 +287,7 @@ void APlayer::UpdateFacingRotation(float DeltaTime)
 
     // 7) 두 Yaw 사이의 최소 각도 차이(Shortest Angle) 구하기
     //    ex) CurrentYaw= 179°, TargetYaw= -179° → DeltaYaw= -2°
-    float DeltaYaw = -FMath::FindDeltaAngleDegrees(CurrentYaw, TargetYaw);
+    float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentYaw, TargetYaw);
 
     // 8) 차이가 너무 작으면 무시
     const float AngleThreshold = 1.0f; // 1° 미만 변화는 건너뜀
@@ -304,7 +304,7 @@ void APlayer::UpdateFacingRotation(float DeltaTime)
     float YawChange = FMath::Clamp(DeltaYaw, -MaxDeltaThisFrame, +MaxDeltaThisFrame);
 
     // 11) 새로운 Yaw = (CurrentYaw + YawChange), 이 상태도 –180~+180 범위를 약간 벗어날 수 있음
-    float NewYawUnwound = CurrentYaw + YawChange;
+    float NewYawUnwound = CurrentYaw - YawChange;
 
     // 12) 다시 –180~+180°로 정규화하여 Actor에 적용
     float NewYaw = FMath::UnwindDegrees(NewYawUnwound);

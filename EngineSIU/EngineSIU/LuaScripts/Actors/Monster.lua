@@ -121,7 +121,7 @@ function ReturnTable:Tick(DeltaTime)
         ProcessFalling(self, DeltaTime)
         -- print("this.Falling ", this.IsFalling)
     elseif this.IsChasing then
-        print("this.Chasing ", this.IsChasing)
+        -- print("this.Chasing ", this.IsChasing)
         ProcessChasing(self, DeltaTime)
     end
     

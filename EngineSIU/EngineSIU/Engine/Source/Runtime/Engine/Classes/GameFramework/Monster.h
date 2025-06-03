@@ -32,6 +32,7 @@ public:
     void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnPlayRoaringSound(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnToggleDead(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void SetFalling(bool bInFalling) { bFalling = bInFalling; }
 
     bool GetIsChasing() const { return bIsChasing; }

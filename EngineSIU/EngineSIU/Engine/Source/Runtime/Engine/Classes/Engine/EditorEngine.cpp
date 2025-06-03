@@ -138,16 +138,20 @@ void UEditorEngine::Tick(float DeltaTime)
             {
                 World->Tick(DeltaTime);
                 ULevel* Level = World->GetActiveLevel();
+                Level->Actors.Shrink();
                 TArray CachedActors = Level->Actors;
                 if (Level)
                 {
 
                     for (AActor* Actor : CachedActors)
                     {
-                        if (Actor)
+                        if (Actor->IsActorBeingDestroyed())
+                        {
+                            continue;
+                        }
+                        if (IsValid(Actor))
                         {
                             Actor->Tick(DeltaTime);
-
                             // 물리기반 시뮬레이션을 위한 TickGroup 처리
                             for (auto* Comp : Actor->GetComponents())
                             {

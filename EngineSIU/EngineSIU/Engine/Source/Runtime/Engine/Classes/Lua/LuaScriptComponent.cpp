@@ -84,11 +84,12 @@ void ULuaScriptComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
         ActivateFunction("EndPlay", EndPlayReason);
     }
     FLuaScriptManager::Get().UnRigisterActiveLuaComponent(this);
+    Super::EndPlay(EndPlayReason);
 }
 
 void ULuaScriptComponent::DestroyComponent(bool bPromoteChildren)
 {
-    FLuaScriptManager::Get().UnRigisterActiveLuaComponent(this);
+    //FLuaScriptManager::Get().UnRigisterActiveLuaComponent(this);
     Super::DestroyComponent(bPromoteChildren);
     SelfTable.reset(); // Lua 테이블 초기화
 }

@@ -134,6 +134,17 @@ void AGameMode::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
+    MonsterCount = 0;
+    for (auto Monster : TObjectRange<AMonster>())
+    {
+		if (Monster->IsActorBeingDestroyed())
+		{
+			continue;
+		}
+
+        MonsterCount++;
+    }
+
     if (bGameRunning && !bGameEnded)
     {
         // TODO: 아래 코드에서 DeltaTime을 2로 나누는 이유가?
@@ -143,6 +154,8 @@ void AGameMode::Tick(float DeltaTime)
     {
         DrawStartUI();
     }
+
+
 }
 
 void AGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -166,7 +179,6 @@ void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
         SpawnedMonster->SetActorRotation(Rotation);
         SpawnedMonster->SetActorScale(FVector(1, 1, 1));
 
-        SetMonsterCount(GetMonsterCount() + 1);
     }
 
     if (SpawnedMonster)

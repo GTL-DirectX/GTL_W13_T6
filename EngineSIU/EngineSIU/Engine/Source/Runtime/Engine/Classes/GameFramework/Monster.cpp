@@ -13,6 +13,7 @@
 #include "Components/PrimitiveComponent.h"
 #include "UObject/Casts.h"
 #include "Player.h"
+#include "Engine/EditorEngine.h"
 
 class ULuaScriptAnimInstance;
 
@@ -174,15 +175,17 @@ void AMonster::AddAnimNotifies()
     NotifyTime = 0.3f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayRoaringSound, NewNotifyIndex);
 
-    if (bAdded)
+
+    UAnimSequenceBase* DeadAnimSeq = StateToAnimSequence["Dead"];
+    TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(DeadAnimSeq, FName(TEXT("Default")));
+    if (TrackIdx == INDEX_NONE)
     {
-        printf("[Monster] DelegateNotify 추가 성공: 트랙=%d, 시간=%.3f, 인덱스=%d\n",
-            TrackIdx, NotifyTime, NewNotifyIndex);
+        return;
     }
-    else
-    {
-        printf("[Monster] DelegateNotify 추가 실패\n");
-    }
+    NewNotifyIndex = INDEX_NONE;
+    NotifyTime = 0.95f;
+    bAdded = DeadAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleDead, NewNotifyIndex);
+
 
 
 
@@ -420,3 +423,18 @@ void AMonster::OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
     UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
 }
 
+
+void AMonster::OnToggleDead(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        return;
+    }
+    bFallingToDeath = true; // Hit 상태 해제
+    UE_LOG(ELogLevel::Error, TEXT("Monster Dead Name : %s"), *GetName());
+    //Destroy();
+    UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    /*Engine->ActiveWorld->DestroyActor(this);*/
+    //OwnedComponents.Remove(LuaScriptComponent);
+    bActorIsBeingDestroyed = true;
+}
