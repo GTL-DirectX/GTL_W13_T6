@@ -461,36 +461,7 @@ FTransform USkeletalMeshComponent::GetSocketTransform(FName SocketName) const
     {
         return GetSocketWorldTransform(SocketName, SocketInfo);
     }
-
-    // 소켓 맵에 없으면 본 이름으로 직접 찾기 (기존 동작)
-    FTransform Transform = FTransform::Identity;
-    
-    if (!GetSkeletalMeshAsset())
-        return Transform;
-
-    if (!GetSkeletalMeshAsset())
-    {
-        return Transform; 
-    }
-
-
-    if (USkeleton* Skeleton = GetSkeletalMeshAsset()->GetSkeleton())
-    {
-        int32 BoneIndex = Skeleton->FindBoneIndex(SocketName);
-
-        if (BoneIndex != INDEX_NONE)
-        {
-            TArray<FMatrix> GlobalBoneMatrices;
-            GetCurrentGlobalBoneMatrices(GlobalBoneMatrices);
-
-            if (BoneIndex < GlobalBoneMatrices.Num())
-            {
-                FMatrix BoneWorldMatrix = GlobalBoneMatrices[BoneIndex] * GetComponentTransform().ToMatrixWithScale();
-                Transform = FTransform(BoneWorldMatrix);
-            }
-        }
-    }
-    return Transform;
+    return FTransform();
 }
 
 FTransform USkeletalMeshComponent::GetSocketWorldTransform(const FName& SocketName, const FSocketInfo* SocketInfo) const
@@ -519,11 +490,13 @@ FTransform USkeletalMeshComponent::GetSocketWorldTransform(const FName& SocketNa
     }
 
     // 3. 본의 월드 트랜스폼 계산
-    FMatrix BoneWorldMatrix = GlobalBoneMatrices[BoneIndex] * GetComponentTransform().ToMatrixWithScale();
+
+    FMatrix BoneWorldMatrix = GlobalBoneMatrices[BoneIndex] * GetComponentTransform().ToMatrixNoScale();
     FTransform BoneWorldTransform(BoneWorldMatrix);
 
     // 4. 소켓의 로컬 트랜스폼을 본의 월드 트랜스폼에 적용
     FTransform SocketWorldTransform = BoneWorldTransform * SocketInfo->LocalTransform;
+    SocketWorldTransform.SetScale3D(SocketInfo->LocalTransform.GetScale3D());
 
     return SocketWorldTransform;
 }

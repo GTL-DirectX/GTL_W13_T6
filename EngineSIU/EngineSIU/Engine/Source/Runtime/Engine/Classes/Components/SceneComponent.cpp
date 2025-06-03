@@ -369,12 +369,12 @@ void USceneComponent::DetachFromComponent(USceneComponent* Target)
 
 void USceneComponent::UpdateAttachment()
 {
-    if (AttachParent && !AttachSocketName.IsNone())
+    if (AttachParent && !AttachSocketName.IsNone() && AttachSocketName != "None")
     {
         if (USkeletalMeshComponent* SkeletalParent = Cast<USkeletalMeshComponent>(AttachParent))
         {
             FTransform ParentSocketWorldTransform = SkeletalParent->GetSocketTransform(AttachSocketName);
-
+            //ParentSocketWorldTransform.SetScale3D(FVector::OneVector);
             SetWorldTransform(ParentSocketWorldTransform);
         }
         else

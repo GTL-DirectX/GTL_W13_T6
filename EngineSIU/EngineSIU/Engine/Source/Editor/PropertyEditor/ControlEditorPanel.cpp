@@ -512,8 +512,11 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     break;
                 }
                 case OBJ_WEAPON:
+                    
                     SpawnedActor = World->SpawnActor<AWeapon>();
                     SpawnedActor->SetActorLabel("OBJ_WEAPON");
+                    break;
+
                 case OBJ_COLLIDER:
 
                 case OBJ_END:

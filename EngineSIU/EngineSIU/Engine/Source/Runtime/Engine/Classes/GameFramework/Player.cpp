@@ -13,6 +13,7 @@
 
 #include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
+#include "Engine/FObjLoader.h"
 #include "sol/sol.hpp"
 
 #include "Animation/AnimSequence.h"
@@ -22,34 +23,30 @@ UObject* APlayer::Duplicate(UObject* InOuter)
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(3,0,9));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(3, 0, 9));
     // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
-    
     return NewActor;
 }
 
 void APlayer::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
+
     LuaScriptComponent->SetScriptName(ScriptName);
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(-13, 0, 12));
+    CameraComponent->SetRelativeLocation(FVector(-20,0,20));
+    CameraComponent->SetRelativeRotation(FRotator(0,-15,0));
     CameraComponent->SetupAttachment(RootComponent);
 
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
-    SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0,0,30));
-    SetActorScale(FVector(0.05));
 
-	EquippedWeapon = AddComponent<UWeaponComponent>("WeaponComponent");
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->SetRelativeLocation(FVector(0, 0, 0));
-		EquippedWeapon->SetRelativeRotation(FRotator(0, 0, 0));
-
-	}
-
+   
+    SetActorLocation(FVector(10, 10, 0) * PlayerIndex + FVector(0, 0, 30));
+    AttachSocket();
+    
+   
     BindAnimNotifys();
 }
 
@@ -94,9 +91,9 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
         PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
         PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
-        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
+        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); }); 
 
-        PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime); });
+        PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
@@ -108,8 +105,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
-        PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index){ PlayerConnected(Index); });
-        PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index){ PlayerDisconnected(Index); });
+        PlayerInputComponent->BindControllerConnected(PlayerIndex, [this](int Index) { PlayerConnected(Index); });
+        PlayerInputComponent->BindControllerDisconnected(PlayerIndex, [this](int Index) { PlayerDisconnected(Index); });
     }
 }
 
@@ -121,11 +118,11 @@ void APlayer::MoveForward(float DeltaTime)
     }
     
     Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
-    
+
     if (MoveSpeed > MaxSpeed)
     {
         MoveSpeed = MaxSpeed;
-        Velocity.Normalize() * MaxSpeed;
+        Velocity.Normalize()* MaxSpeed;
     }
 }
 
@@ -137,11 +134,11 @@ void APlayer::MoveRight(float DeltaTime)
     }
     
     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
-    
+
     if (MoveSpeed > MaxSpeed)
     {
         MoveSpeed = MaxSpeed;
-        Velocity.Normalize() * MaxSpeed;
+        Velocity.Normalize()* MaxSpeed;
     }
 }
 
@@ -291,14 +288,37 @@ void APlayer::EquipWeapon(UWeaponComponent* WeaponComponent)
 
     EquippedWeapon = WeaponComponent;
     EquippedWeapon->SetOwner(this);
+    // AttachSocket();
+     // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
+}
 
-    // 무기 컴포넌트가 장착되면 애니메이션 블루프린트에 연결
+/*
+* 현재 StaticMeshComp는 소캣 테스트를 위한 임시 컴포넌트, 
+*
+* 무기 Overlapped 구현됐을 때 StaticMeshComp대신 EquippedWeapon 사용하면 됨
+* 소캣 위치는 현재 Glove 기준. 프라이팬 기준으로 수정 필요함
+*/
+void APlayer::AttachSocket()
+{
+    if (EquippedWeapon = AddComponent<UWeaponComponent>())
+    {
+        FVector Pos = FVector(2.4f, -5.1, 40.3);
+        FRotator Rot = FRotator(178, -178, 13);
+        FVector Scale = FVector(5, 5, 5);
+        FTransform TF = FTransform(Rot, Pos, Scale);
+        SkeletalMeshComponent->AddSocket("LeftHand", "mixamorig:LeftHand", TF);
 
+        EquippedWeapon->SetupAttachment(SkeletalMeshComponent);
+
+        EquippedWeapon->SetStaticMesh(FObjManager::GetStaticMesh(L"Contents/PUBG/FlyPan.obj"));
+
+        EquippedWeapon->SetAttachSocketName("LeftHand");
+    }
 }
 
 void APlayer::BindAnimNotifys()
 {
-    UAnimSequenceBase* AttackAnim = Cast<UAnimSequenceBase>(UAssetManager::Get().GetAnimation(FName("Contents/Player_3TTook/Armature|Left_Hook")));
+    UAnimSequenceBase* AttackAnim = Cast<UAnimSequenceBase>(UAssetManager::Get().GetAnimation(FName("Contents/Player_3TTook/Armature|Armature|Armature|Left_Hook")));
     int32 TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(AttackAnim, FName(TEXT("Default")));
     if (TrackIdx == INDEX_NONE)
     {

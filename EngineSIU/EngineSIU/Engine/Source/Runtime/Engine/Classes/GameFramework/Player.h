@@ -48,6 +48,7 @@ public:
     void Attack() const;
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);
+    void AttachSocket();
 
 private:
     void BindAnimNotifys();
