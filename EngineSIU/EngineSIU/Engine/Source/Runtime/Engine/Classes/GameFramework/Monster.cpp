@@ -167,8 +167,9 @@ bool AMonster::BindSelfLuaProperties()
     return true;
 }
 
-void AMonster::OnDamaged(FVector KnockBackDir) const
+void AMonster::OnDamaged(FVector KnockBackDir)
 {
+    SetFallingToDeath(true);
     LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
 }
 

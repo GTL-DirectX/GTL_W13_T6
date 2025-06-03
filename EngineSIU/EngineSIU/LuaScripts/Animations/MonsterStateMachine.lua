@@ -20,7 +20,11 @@ AnimFSM = {
         -- self.OwnerCharacter.IsFalling()
 
         -- and self.land == false
-        if (self.OwnerCharacter.IsRoaring) then
+        if (self.OwnerCharacter.IsFallingToDeath) then
+            -- print("Anim : Roaring")
+            self.current = "Contents/Bowser/Armature|Bowser_Backhit"
+            self.BlendTime = 0.0
+        elseif (self.OwnerCharacter.IsRoaring) then
             -- print("Anim : Roaring")
             self.current = "Contents/Bowser/Armature|Bowser_Roar"
             self.BlendTime = 0.0

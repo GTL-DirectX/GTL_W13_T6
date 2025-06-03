@@ -55,7 +55,7 @@ public:
     float GetFollowTimer() const { return FollowTimer; }
     void SetFollowTimer(float Value) { FollowTimer = Value; }
 
-    void OnDamaged(FVector KnockBackDir) const;
+    void OnDamaged(FVector KnockBackDir);
 
     FVector GetTargetPosition() const { return TargetPos; }
     void SetTargetPosition(const FVector NewTargetPos) { TargetPos = NewTargetPos; }

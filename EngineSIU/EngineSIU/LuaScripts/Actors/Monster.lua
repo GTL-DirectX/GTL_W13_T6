@@ -161,7 +161,7 @@ end
 
 
 function ReturnTable:OnDamaged(KnockBackDir)
-    this = self.this
+    local this = self.this
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
