@@ -70,11 +70,18 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
         return;
     }
 
+    float PrevPlayRate = PrevAnim->RateScale;
     PreviousTime = ElapsedTime;
-    PreElapsedTime += DeltaSeconds * 1.0f;
+    PreElapsedTime += DeltaSeconds * PrevPlayRate;
     ElapsedTime += DeltaSeconds * PlayRate;
 
-    CurrAnim->EvaluateAnimNotifies(CurrAnim->Notifies, ElapsedTime, PreviousTime, DeltaSeconds, SkeletalMeshComp, CurrAnim, bLooping);
+    const float AnimDuration = CurrAnim->GetDuration();
+    auto tempPreviousTime = FMath::Clamp(PreviousTime, 0.0f, AnimDuration);
+    auto tempElapsedTime = FMath::Clamp(ElapsedTime, 0.0f, AnimDuration);
+
+    CurrAnim->EvaluateAnimNotifies(CurrAnim->Notifies, tempElapsedTime, tempPreviousTime, DeltaSeconds, SkeletalMeshComp, CurrAnim, bLooping);
+
+    //CurrAnim->EvaluateAnimNotifies(CurrAnim->Notifies, ElapsedTime, PreviousTime, DeltaSeconds, SkeletalMeshComp, CurrAnim, bLooping);
 
     if (CurrAnim && !bLooping)
     {
@@ -86,8 +93,24 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
             FMath::FloorToFloat(AnimDuration * 10000) / 10000
         );
     }
-
     if (bIsBlending && PreElapsedTime <= PrevAnim->GetDuration())
+    {
+        // ✅ BlendElapsed는 단순히 PreElapsedTime을 사용 (BlendStartTime은 항상 0)
+        float BlendElapsed = PreElapsedTime;
+        BlendAlpha = FMath::Clamp(BlendElapsed / BlendDuration, 0.f, 1.f);
+
+        if (BlendAlpha >= 1.f)
+        {
+            bIsBlending = false;
+            PrevAnim = CurrAnim;
+        }
+    }
+    else
+    {
+        BlendAlpha = 1.f;
+    }
+
+    /*if (bIsBlending && PreElapsedTime <= PrevAnim->GetDuration())
     {
         float BlendElapsed = ElapsedTime - BlendStartTime;
         BlendAlpha = FMath::Clamp(BlendElapsed / BlendDuration, 0.f, 1.f);
@@ -101,7 +124,7 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
     else
     {
         BlendAlpha = 1.f;
-    }
+    }*/
 
     // TODO: FPoseContext의 BoneContainer로 바꾸기
     const FReferenceSkeleton& RefSkeleton = this->GetCurrentSkeleton()->GetReferenceSkeleton();
@@ -130,37 +153,45 @@ void ULuaScriptAnimInstance::NativeUpdateAnimation(float DeltaSeconds, FPoseCont
 
     FAnimationRuntime::BlendTwoPosesTogether(CurrPose.Pose, PrevPose.Pose, BlendAlpha, OutPose.Pose);
 #pragma endregion
+
 }
-
-
 void ULuaScriptAnimInstance::SetAnimation(UAnimSequence* NewAnim, float BlendingTime, bool LoopAnim, bool ReverseAnim)
 {
     if (CurrAnim == NewAnim)
     {
-        return; // 이미 같은 애니메이션이 설정되어 있다면 아무 작업도 하지 않음.
+        return;
     }
 
     if (!PrevAnim && !CurrAnim)
     {
         PrevAnim = NewAnim;
         CurrAnim = NewAnim;
+        ElapsedTime = 0.0f;
+        PreElapsedTime = 0.0f;
+        BlendAlpha = 1.0f;
+        bIsBlending = false;
+        return;
     }
-    else if (PrevAnim == nullptr)
+
+    if (PrevAnim == nullptr)
     {
-        PrevAnim = CurrAnim; // 이전 애니메이션이 없으면 현재 애니메이션을 이전으로 설정.
+        PrevAnim = CurrAnim;
     }
     else if (CurrAnim)
     {
-        PrevAnim = CurrAnim; // 현재 애니메이션이 있으면 현재를 이전으로 설정.
+        PrevAnim = CurrAnim;
     }
 
     CurrAnim = NewAnim;
     BlendDuration = BlendingTime;
     bLooping = LoopAnim;
     bReverse = ReverseAnim;
-    
-    //ElapsedTime = 0.0f;
-    BlendStartTime = ElapsedTime;
+
+    // 🛠 Blend 시작을 명확하게 0부터
+    BlendStartTime = 0.0f;
+    ElapsedTime = 0.0f;
+    PreElapsedTime = 0.0f;
+
     BlendAlpha = 0.0f;
     bIsBlending = true;
     bPlaying = true;

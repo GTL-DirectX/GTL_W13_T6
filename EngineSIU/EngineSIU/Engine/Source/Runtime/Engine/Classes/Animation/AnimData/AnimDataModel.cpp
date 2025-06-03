@@ -189,7 +189,7 @@ double UAnimDataModel::GetPlayLength() const
 {
     if (FrameRate > 0)
     {
-        return static_cast<double>(NumberOfFrames) / static_cast<double>(FrameRate);
+        return static_cast<double>(NumberOfFrames) * static_cast<double>(FrameRate);
     }
     return 0.0;
 }

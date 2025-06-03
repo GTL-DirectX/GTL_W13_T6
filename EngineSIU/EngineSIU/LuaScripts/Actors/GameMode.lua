@@ -21,7 +21,6 @@ end
 
 function ReturnTable:IsBoundMonsterCount()
     local this = self.this
-    print("asdf")
     -- print("MaxMonsterCount, this.MonsterCount", MaxMonsterCount, " " , this.MonsterCount)
     return MaxMonsterCount > this.MonsterCount
 end
