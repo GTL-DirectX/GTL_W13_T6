@@ -90,7 +90,7 @@ void ACharacter::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
         "State", sol::property(&APlayer::GetState, &APlayer::SetState),
-        "IsGrounded", sol::property(&ACharacter::CheckGrounded, nullptr) // CheckGrounded는 bool 반환
+        "IsGrounded", &ACharacter::CheckGrounded
         )
 }
 

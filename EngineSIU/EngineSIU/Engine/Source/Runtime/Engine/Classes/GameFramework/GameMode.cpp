@@ -157,6 +157,7 @@ void AGameMode::SpawnMonster(const FVector& Location, const FRotator& Rotation)
     {
         SpawnedMonster->SetActorLocation(Location);
         SpawnedMonster->SetActorRotation(Rotation);
+        SpawnedMonster->SetActorScale(FVector(1, 1, 1));
     }
 
     if (SpawnedMonster)
