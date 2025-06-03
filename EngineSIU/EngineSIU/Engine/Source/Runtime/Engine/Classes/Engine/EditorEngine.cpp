@@ -755,7 +755,7 @@ void UEditorEngine::SelectActor(AActor* InActor)
 {
     if (InActor && CanSelectActor(InActor))
     {
-        UE_LOGFMT(ELogLevel::Display, "Select Actor: {}", InActor->GetName());
+        //UE_LOGFMT(ELogLevel::Display, "Select Actor: {}", InActor->GetName());
         PrivateEditorSelection::GActorSelected = InActor;
     }
 }
@@ -764,7 +764,7 @@ void UEditorEngine::DeselectActor(AActor* InActor)
 {
     if (PrivateEditorSelection::GActorSelected == InActor && InActor)
     {
-        UE_LOGFMT(ELogLevel::Display, "Deselect Actor: {}", InActor->GetName());
+        //UE_LOGFMT(ELogLevel::Display, "Deselect Actor: {}", InActor->GetName());
         PrivateEditorSelection::GActorSelected = nullptr;
         ClearComponentSelection();
     }
@@ -809,7 +809,7 @@ void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
 {
     if (InComponent && CanSelectComponent(InComponent))
     {
-        UE_LOGFMT(ELogLevel::Display, "Select Component: {}", InComponent->GetName());
+        //UE_LOGFMT(ELogLevel::Display, "Select Component: {}", InComponent->GetName());
         PrivateEditorSelection::GComponentSelected = InComponent;
     }
 }
@@ -819,7 +819,7 @@ void UEditorEngine::DeselectComponent(USceneComponent* InComponent)
     // 전달된 InComponent가 현재 선택된 컴포넌트와 같다면 선택 해제
     if (PrivateEditorSelection::GComponentSelected == InComponent && InComponent != nullptr)
     {
-        UE_LOGFMT(ELogLevel::Display, "Deselect Component: {}", InComponent->GetName());
+        //UE_LOGFMT(ELogLevel::Display, "Deselect Component: {}", InComponent->GetName());
         PrivateEditorSelection::GComponentSelected = nullptr;
     }
 }

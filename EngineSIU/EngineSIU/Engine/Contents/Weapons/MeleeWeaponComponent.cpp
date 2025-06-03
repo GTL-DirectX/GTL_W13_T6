@@ -61,12 +61,16 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
         }
         else if (APlayer* OtherPlayer = Cast<APlayer>(OtherActor))
         {
+            if (OtherActor == GetOwner())
+            {
+                return;
+            }
             FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
             OtherPlayer->OnDamaged(DamageDir);
         }
         if (OtherActor && HitParticle)
         {
-            HitParticle->SetWorldLocation(GetOwner()->GetActorLocation());
+            HitParticle->SetWorldLocation(OtherActor->GetActorLocation());
             HitParticle->StartEmissions();
         }
     }

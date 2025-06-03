@@ -61,7 +61,7 @@ void APlayer::Tick(float DeltaTime)
     if (PxRigidDynamic* RigidActor = BodyInstance->BIGameObject->DynamicRigidBody)
     {
         LinearSpeed = RigidActor->getLinearVelocity().magnitude();
-        UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
+        //UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
     }
     // if (SkeletalMeshComponent)
     // {
