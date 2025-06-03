@@ -88,16 +88,16 @@ void APlayer::Tick(float DeltaTime)
 
         RigidActor->setAngularDamping(10.0f);
         bool bIsMovingInput = !Velocity.IsNearlyZero(1e-3f) && PlayerState != EPlayerState::MuJuck && bIsGrounded;
-        if (bIsMovingInput)
-        {
-            // 플레이어가 입력으로 움직이고 있다면 낮은 감쇠 (즉, 관성 유지)
-            RigidActor->setLinearDamping(0.1f);
-        }
-        else
-        {
-            // 플레이어가 입력을 안 해서 멈춰 있거나 거의 멈춰 있으면 높은 감쇠
-            RigidActor->setLinearDamping(100.0f);
-        }
+        //if (bIsMovingInput)
+        //{
+        //    // 플레이어가 입력으로 움직이고 있다면 낮은 감쇠 (즉, 관성 유지)
+        //    RigidActor->setLinearDamping(0.1f);
+        //}
+        //else
+        //{
+        //    // 플레이어가 입력을 안 해서 멈춰 있거나 거의 멈춰 있으면 높은 감쇠
+        //    RigidActor->setLinearDamping(100.0f);
+        //}
         //UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
     }
 

@@ -36,7 +36,7 @@ UObject* AMonster::Duplicate(UObject* InOuter)
 
 void AMonster::PostSpawnInitialize()
 {
-    TargetDistributionVector = FDistributionVector(FVector(-140.0f, -140.0f, 0.0f), FVector(140.0f, 140.0f, 0.f));
+    TargetDistributionVector = FDistributionVector(FVector(-110.0f, -110.0f, 0.0f), FVector(110.0f, 110.0f, 0.f));
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
 
@@ -128,7 +128,9 @@ void AMonster::AddAnimNotifies()
     }
     int32 NewNotifyIndex = INDEX_NONE;
     float NotifyTime = 0.9f;
-    bool bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
+    bool bAdded = 
+        
+        LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
     /*NotifyTime = 0.0f;
     bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>( TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex );*/
 
@@ -308,7 +310,7 @@ void AMonster::Tick(float DeltaTime)
 
     if (bDead == false && bIsChasing)
     {
-        if (TargetDir.Length() < 1.0f)
+        if (TargetDir.Length() < 5.0f)
         {
             UpdateTargetPosition();
         }
