@@ -112,6 +112,23 @@ void AGameMode::StartMatch()
   
     /*LuaScriptComponent->GetLuaSelfTable()["ElapsedTime"] = GameInfo.ElapsedGameTime;
     LuaScriptComponent->ActivateFunction("StartMatch");*/
+
+    if (GEngine->ActiveWorld->GetPlayer(0))
+    {
+        GEngine->ActiveWorld->GetPlayer(0)->SetActorLocation(FVector(-10, -10, 30));
+    }
+    if (GEngine->ActiveWorld->GetPlayer(1))
+    {
+        GEngine->ActiveWorld->GetPlayer(1)->SetActorLocation(FVector(-10, 10, 30));
+    }
+    if (GEngine->ActiveWorld->GetPlayer(2))
+    {
+        GEngine->ActiveWorld->GetPlayer(2)->SetActorLocation(FVector(10, -10, 30));
+    }
+    if (GEngine->ActiveWorld->GetPlayer(3))
+    {
+        GEngine->ActiveWorld->GetPlayer(3)->SetActorLocation(FVector(10, 10, 30));
+    }
     
     OnGameStart.Broadcast();
 }
@@ -127,6 +144,8 @@ void AGameMode::BeginPlay()
     }
     FSoundManager::GetInstance().StopAllSounds();
     FSoundManager::GetInstance().PlaySound("BGM");
+
+    StartMatch();
 }
 
 void AGameMode::Tick(float DeltaTime)
@@ -137,6 +156,21 @@ void AGameMode::Tick(float DeltaTime)
     {
         // TODO: 아래 코드에서 DeltaTime을 2로 나누는 이유가?
         GameInfo.ElapsedGameTime += DeltaTime / 2.0f;
+
+        bool bAllPlayersDead = true;
+        for (int i=0; i<MAX_PLAYER; i++)
+        {
+            APlayer* Player = GEngine->ActiveWorld->GetPlayer(i);
+            if (Player && Player->GetState() != static_cast<int>(EPlayerState::Dead))
+            {
+                bAllPlayersDead = false;
+                break;
+            }
+        }
+        if (bAllPlayersDead)
+        {
+            EndMatch(false);
+        }
     }
 }
 
@@ -183,6 +217,7 @@ void AGameMode::EndMatch(bool bIsWin)
         return;
     }
 
+    FSoundManager::GetInstance().StopAllSounds();
     this->Reset();
     
     GameInfo.TotalGameTime = GameInfo.ElapsedGameTime;

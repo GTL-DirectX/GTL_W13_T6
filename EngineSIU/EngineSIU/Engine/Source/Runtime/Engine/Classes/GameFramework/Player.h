@@ -35,9 +35,10 @@ private:
     void RotateYaw(float DeltaTime);
     void RotatePitch(float DeltaTime) const;
 
-
     void PlayerConnected(int TargetIndex) const;
     void PlayerDisconnected(int TargetIndex) const;
+
+    void SetControllerVibration(float LeftMotor, float RightMotor) const;
 
     FName Socket = "jx_c_camera";
     

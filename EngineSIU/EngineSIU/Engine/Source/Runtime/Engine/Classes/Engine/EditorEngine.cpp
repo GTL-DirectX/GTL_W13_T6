@@ -549,7 +549,7 @@ void UEditorEngine::BindEssentialObjects()
         {
             ActiveWorld->SetPlayer(BindPlayerIndex, Player);
             Player->SetPlayerIndex(BindPlayerIndex);
-            Player->SetActorLocation(FVector(10 * BindPlayerIndex, 10 * BindPlayerIndex, 30));
+            // Player->SetActorLocation(FVector(10 * BindPlayerIndex, 10 * BindPlayerIndex, 30));
             
             // PlayerController 생성
             APlayerController* PC = CreatePlayerController(BindPlayerIndex);
@@ -586,7 +586,7 @@ void UEditorEngine::CreatePlayer(int PlayerIndex) const // TODO: World.cpp로 �
     Player->SetActorTickInEditor(false);
     ActiveWorld->SetPlayer(PlayerIndex, Player);
     Player->SetPlayerIndex(PlayerIndex);
-    Player->SetActorLocation(FVector(10.0f * PlayerIndex, 10.0f * PlayerIndex, 30));
+    // Player->SetActorLocation(FVector(10.0f * PlayerIndex, 10.0f * PlayerIndex, 30));
 
     APlayerController* PC = CreatePlayerController(PlayerIndex);
     

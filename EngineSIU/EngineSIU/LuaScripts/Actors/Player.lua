@@ -38,7 +38,7 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.01;
+    this.Velocity = this.Velocity * 0.01
     
     if(this.ActorLocation.Z < -100) then
         self:OnDead()
@@ -133,16 +133,15 @@ function ReturnTable:KnockBack(KnockBackDir)
     this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower, KnockBackDir.Y * this.KnockBackPower,
         KnockBackDir.Z * this.KnockBackPower)
 
-    print("KnockBackPower : ", this.KnockBackPower, "Velocity", this.Velocity.X, this.Velocity.Y, this.Velocity.Z)
-
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작
-
+        this:SetControllerVibration(1.0, 1.0)
         -- 1초 대기
         self:Wait(1.0)
 
         -- 넉백 종료 (코루틴 안에서 처리)
         print("KnockBack 종료")
+        this:SetControllerVibration(0.0, 0.0)
         this.MoveSpeed = 0
 
         -- 스턴 체크도 코루틴 안에서

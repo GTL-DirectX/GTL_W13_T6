@@ -53,8 +53,8 @@ AnimFSM = {
             print("Self is nill!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end
             -- print(self.OwnerCharacter:GetIsLanding())
-        print("Current Anim : ", self.current)
-
+        --print("Current Anim : ", self.current)
+        
         return {
             anim = self.current,
             blend = self.BlendTime

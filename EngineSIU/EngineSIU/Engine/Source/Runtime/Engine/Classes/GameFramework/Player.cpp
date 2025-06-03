@@ -219,6 +219,20 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
     }
 }
 
+void APlayer::SetControllerVibration(float LeftMotor, float RightMotor) const
+{
+    // XINPUT_VIBRATION 구조체 설정
+    XINPUT_VIBRATION vibration;
+    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+    
+    // 진동 강도 설정 (0.0f ~ 1.0f를 0 ~ 65535로 변환)
+    vibration.wLeftMotorSpeed = (WORD)(LeftMotor * 65535.0f);   // 저주파 모터 (왼쪽)
+    vibration.wRightMotorSpeed = (WORD)(RightMotor * 65535.0f); // 고주파 모터 (오른쪽)
+    
+    // 진동 설정 적용
+    XInputSetState(PlayerIndex, &vibration);
+}
+
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
@@ -226,7 +240,8 @@ void APlayer::RegisterLuaType(sol::state& Lua)
     "MaxSpeed", &APlayer::MaxSpeed,
     "RawSpeed", &APlayer::RawSpeed,
     "PitchSpeed", &APlayer::PitchSpeed,
-    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer
+    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
+    "SetControllerVibration", &APlayer::SetControllerVibration
     )
 }
 
@@ -251,6 +266,7 @@ bool APlayer::BindSelfLuaProperties()
 void APlayer::OnDamaged(FVector KnockBackDir) const
 {
     LuaScriptComponent->ActivateFunction("OnDamaged", KnockBackDir);
+    
 }
 
 void APlayer::Stun() const
