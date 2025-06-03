@@ -38,7 +38,7 @@ function ReturnTable:Tick(DeltaTime)
     
     --print(this.State, this.MoveSpeed)
     
-    this.Velocity = this.Velocity * 0.1;
+    this.Velocity = this.Velocity * 0.05;
     
     if(this.ActorLocation.Z < -10) then
         self:Dead()
