@@ -31,7 +31,7 @@ void AMonster::PostSpawnInitialize()
     TargetDistributionVector = FDistributionVector(FVector(-140.0f, -140.0f, 0.0f), FVector(140.0f, 140.0f, 0.f));
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
-    
+
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Bowser/Bowser_Hit")));
     /*SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
     SkeletalMeshComponent->SetAnimClass(UClass::FindClass(FName("ULuaScriptAnimInstance")));*/
@@ -40,9 +40,9 @@ void AMonster::PostSpawnInitialize()
 
     /*if (!bNotifyInitialized)
     {*/
-        AddMonsterAnimSequenceCache();
-        AddAnimNotifies();
-        bNotifyInitialized = true;
+    AddMonsterAnimSequenceCache();
+    AddAnimNotifies();
+    bNotifyInitialized = true;
     //}
 }
 
@@ -98,6 +98,10 @@ void AMonster::AddAnimNotifies()
     NewNotifyIndex = INDEX_NONE;
     NotifyTime = 0.9f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleRoaring, NewNotifyIndex);
+  
+    NewNotifyIndex = INDEX_NONE;
+    NotifyTime = 0.3f;
+    bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayRoaringSound, NewNotifyIndex);
 
     if (bAdded)
     {
@@ -107,6 +111,17 @@ void AMonster::AddAnimNotifies()
     else
     {
         printf("[Monster] DelegateNotify 추가 실패\n");
+    }
+
+
+
+    {
+        UAnimSequenceBase* SpinAnimSeq = StateToAnimSequence["Spin"];
+        TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(SpinAnimSeq, FName(TEXT("Default")));
+
+        NewNotifyIndex = INDEX_NONE;
+        NotifyTime = 0.3f;
+        bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
     }
 
 }
@@ -127,11 +142,11 @@ void AMonster::RegisterLuaType(sol::state& Lua)
         "IsFalling", sol::property(&ThisClass::IsFalling, &ThisClass::SetFalling),
         "IsRoaring", sol::property(&ThisClass::IsRoaring, &ThisClass::SetIsRoaring),
         "IsFallingToDeath", sol::property(&ThisClass::IsFallingToDeath, &ThisClass::SetFallingToDeath),
-        "GetIsLanding", & ThisClass::IsLanding
+        "GetIsLanding", &ThisClass::IsLanding
     )
-    /*DEFINE_LUA_TYPE_NO_PARENT(AMonster,
-        "GetTargetPosition", &ThisClass::GetTargetPosition
-    )*/
+        /*DEFINE_LUA_TYPE_NO_PARENT(AMonster,
+            "GetTargetPosition", &ThisClass::GetTargetPosition
+        )*/
 }
 
 bool AMonster::BindSelfLuaProperties()
@@ -150,7 +165,7 @@ bool AMonster::BindSelfLuaProperties()
     LuaTable["this"] = this;
     LuaTable["Name"] = *GetName();
 
-    return true;    
+    return true;
 }
 
 void AMonster::UpdateTargetPosition()
@@ -173,9 +188,6 @@ void AMonster::BeginPlay()
             }
         }
     }
-    FSoundManager::GetInstance().PlaySound("SpawnKoopa");
-
-
 }
 void AMonster::Tick(float DeltaTime)
 {
@@ -197,7 +209,7 @@ bool AMonster::IsLanding()
 
 bool AMonster::IsFalling() const
 {
-    return bFalling; 
+    return bFalling;
 }
 
 bool AMonster::TestToggleVariable() const
@@ -220,13 +232,22 @@ void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     if (bLandEnded == true)
     {
         return;
-    }   
+    }
     bIsLanding = false; // 착지 상태 해제
     bIsRoaring = true;
     //bIsChasing = true; // Roar이후 추격하는 것으로 변경
     bLandEnded = true; // 다시는 위 Notify 실행 X
 
     UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
+}
+
+void AMonster::OnPlayParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        // 다른 몬스터의 Notify이므로 무시
+        return;
+    }
 }
 
 void AMonster::OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -246,6 +267,15 @@ void AMonster::OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
     bIsChasing = true;
 
     bRoarEnded = true;
+}
+
+void AMonster::OnPlayRoaringSound(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        return;
+    }
+    FSoundManager::GetInstance().PlaySound("SpawnKoopa");
 }
 
 /* Falling, Landing, Roaring 도중엔 Hit 시작되지 않도록 함 */

@@ -26,7 +26,9 @@ public:
     bool IsFalling() const;
     bool TestToggleVariable() const;
     void OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnPlayParticle(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnPlayRoaringSound(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void SetFalling(bool bInFalling) { bFalling = bInFalling; }
 
