@@ -52,6 +52,9 @@ public:
     int32 GetPlayerCount() const { return PlayerCount; }
 
     void SetMonsterCount(int32 InMonsterCount) { MonsterCount = InMonsterCount; }
+
+    void DrawStartUI();
+
     int32 GetMonsterCount() const { return MonsterCount; }
 
     FOnGameInit OnGameInit;
