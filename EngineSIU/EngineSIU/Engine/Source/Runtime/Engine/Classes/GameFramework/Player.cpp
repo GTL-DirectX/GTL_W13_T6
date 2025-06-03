@@ -1,22 +1,27 @@
 #include "Player.h"
 
+#include "PhysicsManager.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
 #include "World/World.h"
 
 #include "Engine/Contents/Weapons/Weapon.h"
 #include "Engine/Contents/Weapons/WeaponComponent.h"
 
+#include "Lua/LuaScriptComponent.h"
 #include "Lua/LuaUtils/LuaTypeMacros.h"
-#include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
+#include "sol/sol.hpp"
 
 UObject* APlayer::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewActor->Socket = Socket;
     NewActor->CameraComponent = Cast<UCameraComponent>(CameraComponent->Duplicate(NewActor));
-    NewActor->CameraComponent->SetRelativeLocation(FVector(2,0,0));
+    NewActor->CameraComponent->SetRelativeLocation(FVector(3,0,9));
+    // TODO: 미리 만들어둔 Player Duplicate 할 때 Component들 복제 필요한 애들 복제해주기
     
     return NewActor;
 }
@@ -24,15 +29,27 @@ UObject* APlayer::Duplicate(UObject* InOuter)
 void APlayer::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
+    LuaScriptComponent->SetScriptName(ScriptName);
 
-    SkeletalMeshComponent->SetRelativeLocation(FVector(0, 0, -10000));
-    CameraComponent = AddComponent<UCameraComponent>();
+    CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
+    CameraComponent->SetRelativeLocation(FVector(3,0,9));
     CameraComponent->SetupAttachment(RootComponent);
+
+    SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
+    SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
+    
+    SetActorLocation(FVector(10, 10, 0) * PlayerIndex);
+    SetActorScale(FVector(0.05));
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    MoveSpeed = Velocity.Length();
+    PxVec3 MoveDir = PxVec3(Velocity.X, Velocity.Y, Velocity.Z);
+    CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->addForce(MoveDir);
+    
+    Velocity *= 0.8f;
 
     // if (SkeletalMeshComponent)
     // {
@@ -75,7 +92,7 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { MoveUp(DeltaTime); });
-        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { MoveUp(-DeltaTime); });
+        PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });
 
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
@@ -88,35 +105,28 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
     }
 }
 
-void APlayer::RegisterLuaType(sol::state& Lua)
-{
-    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-        "Speed", &APlayer::MoveSpeed
-        )
-}
-
-bool APlayer::BindSelfLuaProperties()
-{
-    if (!Super::BindSelfLuaProperties())
-    {
-        return false;
-    }
-
-    
-
-    return true;
-}
-
 void APlayer::MoveForward(float DeltaTime)
 {
-    FVector Delta = GetActorForwardVector() * MoveSpeed * DeltaTime;
-    SetActorLocation(GetActorLocation() + Delta);
+    bIsAttacking = false;
+    Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+    
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity.Normalize() * MaxSpeed;
+    }
 }
 
 void APlayer::MoveRight(float DeltaTime)
 {
-    FVector Delta = GetActorRightVector() * MoveSpeed * DeltaTime;
-    SetActorLocation(GetActorLocation() + Delta);
+    bIsAttacking = false;
+    Velocity += GetActorRightVector() * Acceleration * DeltaTime;
+    
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity.Normalize() * MaxSpeed;
+    }
 }
 
 void APlayer::MoveUp(float DeltaTime)
@@ -158,9 +168,54 @@ void APlayer::PlayerDisconnected(int TargetIndex) const
     }
 }
 
+void APlayer::RegisterLuaType(sol::state& Lua)
+{
+    DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
+    "Speed", &APlayer::MoveSpeed,
+    "Velocity", &APlayer::Velocity,
+    "Acceleration", &APlayer::Acceleration,
+    "MaxSpeed", &APlayer::MaxSpeed,
+    "RotationSpeed", &APlayer::RotationSpeed,
+    "IsAttacking", sol::property(&ThisClass::IsAttacking, &ThisClass::SetIsAttacking)
+    )
+    
+    
+    
+   //  DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, ACharacter>(),
+   //      "Velocity", sol::property(&ThisClass::GetVelocity),
+   //      "Acceleration", sol::property(&ThisClass::GetAcceleration, &ThisClass::SetAcceleration),
+   //      "MaxSpeed", sol::property(&ThisClass::GetMaxSpeed, &ThisClass::SetMaxSpeed),
+   //      "RotationSpeed", sol::property(&ThisClass::GetRotationSpeed, &ThisClass::SetRotationSpeed)
+   // )
+   // "Destroy", &ThisClass::Destroy
+}
+
+bool APlayer::BindSelfLuaProperties()
+{
+    if (!Super::BindSelfLuaProperties())
+    {
+        return false;
+    }
+
+    sol::table& LuaTable = LuaScriptComponent->GetLuaSelfTable();
+    if (!LuaTable.valid())
+    {
+        return false;
+    }
+
+    LuaTable["this"] = this;
+    // LuaTable["MoveSpeed"] = MoveSpeed;
+    // LuaTable["Acceleration"] = Acceleration;
+    // LuaTable["MaxSpeed"] = MaxSpeed;
+    // LuaTable["RotationSpeed"] = RotationSpeed;
+    
+    return true;
+}
+
 void APlayer::Attack()
 {
-    if (!EquippedWeapon)
+    bIsAttacking = true;
+    if (!EquippedWeapon || bIsAttacking)
     {
         return;
     }

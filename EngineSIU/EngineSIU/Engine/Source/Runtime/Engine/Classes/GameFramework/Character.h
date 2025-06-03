@@ -34,6 +34,5 @@ public:
     // bool IsJumping();
     // bool IsAttacking();
 
-    FString Test;
 
 };

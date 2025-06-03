@@ -1,5 +1,6 @@
 #include "Character.h"
 
+#include "PhysicsManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Lua/LuaScriptComponent.h"
@@ -26,13 +27,22 @@ void ACharacter::PostSpawnInitialize()
 {
     Super::PostSpawnInitialize();
 
-    RootComponent = AddComponent<USceneComponent>("Root");
-
-
     if (!CapsuleComponent)
     {
         CapsuleComponent = AddComponent<UCapsuleComponent>("CapsuleComponent");
         CapsuleComponent->SetupAttachment(RootComponent);
+        CapsuleComponent->AddScale(FVector(5.0f, 5.0f, 5.0f));
+        CapsuleComponent->AddLocation({ 0.0f, 0.0f, 0.0f });
+        CapsuleComponent->bSimulate = true;
+        CapsuleComponent->bApplyGravity = true;
+        CapsuleComponent->RigidBodyType = ERigidBodyType::DYNAMIC;
+
+        AggregateGeomAttributes CapsuleGeomAttributes;
+        CapsuleGeomAttributes.GeomType = EGeomType::ECapsule;
+        CapsuleGeomAttributes.Offset = FVector::ZeroVector;
+        CapsuleGeomAttributes.Extent = FVector(1.0f, 1.0f, 1.0f); // Half Extent
+        CapsuleGeomAttributes.Rotation = FRotator(90.0f, 0.0f, 00.0f);
+        CapsuleComponent->GeomAttributes.Add(CapsuleGeomAttributes);
     }
 
     if (!SkeletalMeshComponent)
@@ -48,6 +58,14 @@ void ACharacter::PostSpawnInitialize()
 void ACharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (CapsuleComponent)
+    {
+        CapsuleComponent->CreatePhysXGameObject();
+        CapsuleComponent->BodyInstance->BIGameObject->DynamicRigidBody->
+        setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X
+            | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y); // X, Y축 회전 잠금
+    }
 
     if (SkeletalMeshComponent)
     {
@@ -68,10 +86,7 @@ void ACharacter::Tick(float DeltaTime)
 
 void ACharacter::RegisterLuaType(sol::state& Lua)
 {
-    Test = "Test";
-    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>(),
-        "Test", &ACharacter::Test
-        )
+    DEFINE_LUA_TYPE_WITH_PARENT(ACharacter, sol::bases<AActor, APawn>())
 }
 
 bool ACharacter::BindSelfLuaProperties()

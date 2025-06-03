@@ -46,6 +46,8 @@
 #include "GameFramework/SequencerPlayer.h"
 #include "Particles/ParticleSystemComponent.h"
 
+#include "Engine/Contents/Objects/Collider.h"
+
 
 ControlEditorPanel::ControlEditorPanel()
 {
@@ -379,6 +381,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { .Label = "SequencerPlayer",   .OBJ = OBJ_SEQUENCERPLAYER },
             { .Label = "Player",   .OBJ = OBJ_PLAYER },
             { .Label = "Weapon",            .OBJ = OBJ_WEAPON },
+            {.Label = "Collider",            .OBJ = OBJ_COLLIDER },
         };
 
         for (const auto& primitive : primitives)
@@ -511,7 +514,11 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                 case OBJ_WEAPON:
                     SpawnedActor = World->SpawnActor<AWeapon>();
                     SpawnedActor->SetActorLabel("OBJ_WEAPON");
+                case OBJ_COLLIDER:
+
                 case OBJ_END:
+                    SpawnedActor = World->SpawnActor<ACollider>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_COLLIDER"));
                     break;
                 }
 

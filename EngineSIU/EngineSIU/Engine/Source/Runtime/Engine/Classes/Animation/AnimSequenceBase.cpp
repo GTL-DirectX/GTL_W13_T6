@@ -124,7 +124,7 @@ bool UAnimSequenceBase::AddNotifyEvent(int32 TargetTrackIndex, float Time, float
     NewEvent.Duration = Duration;
     NewEvent.TrackIndex = TargetTrackIndex;
     NewEvent.NotifyName = NotifyName;
-    NewEvent.bTriggered = false;
+    
     NewEvent.SetAnimNotify(FObjectFactory::ConstructObject<UAnimNotify>(this));
     NewEvent.SetAnimNotifyState(FObjectFactory::ConstructObject<UAnimNotifyState>(this));
 

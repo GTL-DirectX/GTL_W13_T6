@@ -19,5 +19,6 @@ UObject* ASkeletalMeshActor::Duplicate(UObject* InOuter)
     ASkeletalMeshActor* NewActor = Cast<ASkeletalMeshActor>(Super::Duplicate(InOuter));
 
     NewActor->SkeletalMeshComponent = NewActor->GetComponentByClass<USkeletalMeshComponent>();
+
     return NewActor;
 }
