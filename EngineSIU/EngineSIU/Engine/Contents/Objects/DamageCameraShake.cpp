@@ -9,12 +9,12 @@ UDamageCameraShake::UDamageCameraShake()
     UPerlinNoiseCameraShakePattern* Pattern = new UPerlinNoiseCameraShakePattern();
 
     // 전체 지속 시간 및 블렌드 설정
-    Pattern->Duration = 0.1f;
+    Pattern->Duration = 0.2f;
     Pattern->BlendInTime = 0.f;
     Pattern->BlendOutTime = 0.f;
 
     // Rotation (회전) 축 강도 조정
-    Pattern->RotationAmplitudeMultiplier = 0.2f;   // 전체 회전 강도 비율 감소
+    Pattern->RotationAmplitudeMultiplier = 0.3f;   // 전체 회전 강도 비율 감소
     Pattern->RotationFrequencyMultiplier = 1.f;
 
     Pattern->Yaw.Amplitude = .6f;   // 기존 3.0f → 1.5f
