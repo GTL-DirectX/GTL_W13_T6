@@ -18,8 +18,6 @@ local followDuration = 3.0           -- 타겟 갱신 주기
 local targetUpdateDistance = 10.0  -- 거리 기준. 이 값 이내면 타겟 갱신
 local waitForChaseTime = 0.01
 
-ReturnTable.landingTimer       = 0.0
-ReturnTable.waitingForChase    = false
 
 -- ======================
 -- 유틸리티 함수
@@ -58,10 +56,6 @@ end
 local function ProcessFalling(self, DeltaTime)
     local this = self.this
     this.ActorLocation = ApplyGravity(this.ActorLocation, DeltaTime)
-    
-    -- 아직 추격 시작 전이므로 카운터 리셋
-    self.watingForChase = false
-    self.landingTimer = 0.0
     -- print("Falling... Z = ", newLocation.Z)
 end
 
@@ -92,7 +86,7 @@ local function ProcessChasing(self, DeltaTime)
         this.TargetPosition.Z = 0
         -- targetPos.Z = 0
     end
-        -- print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
+        print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
 
     -- print("New Target Acquired: ", this.TargetPosition.X, this.TargetPosition.Y, this.TargetPosition.Z)
     this.ActorLocation = MoveTowards(this.ActorLocation, this.TargetPosition, DeltaTime, chaseSpeed)

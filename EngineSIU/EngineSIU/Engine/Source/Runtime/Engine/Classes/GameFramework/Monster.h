@@ -32,6 +32,7 @@ public:
     void OnToggleRoaring(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnPlayRoaringSound(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
+    void OnToggleDead(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
     void SetFalling(bool bInFalling) { bFalling = bInFalling; }
 
     bool GetIsChasing() const { return bIsChasing; }
@@ -88,6 +89,9 @@ protected:
 
     FDistributionVector TargetDistributionVector;
     FVector TargetPos;
+    FVector TargetDir;
+
+    float ChaseSpeed = 30.0f;
 
 private:
     void OnComponentBeginOverlap(class UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);

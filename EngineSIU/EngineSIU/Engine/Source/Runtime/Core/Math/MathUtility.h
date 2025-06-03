@@ -647,4 +647,6 @@ struct FMath
         // 와 같은 방식을 고려할 수 있지만, 대부분의 경우 FRand() 기반이면 충분합니다.
         return InMin + (InMax - InMin) * FRand();
     }
+
+    static float FindDeltaAngleDegrees(float A1, float A2);
 };
