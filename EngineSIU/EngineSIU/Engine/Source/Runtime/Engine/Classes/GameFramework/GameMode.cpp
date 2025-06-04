@@ -27,25 +27,25 @@ void AGameMode::PostSpawnInitialize()
         {
             this->InitGame();
         });*/
-        Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
-            {
-                // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
-                if (KeyEvent.GetKeyCode() == VK_SPACE &&
-                    !bGameRunning && bGameEnded)
-                {
-                    StartMatch();
-                }
-            });
-
-        Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
-            {
-                // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
-                if (KeyEvent.GetKeyCode() == VK_RCONTROL &&
-                    bGameRunning && !bGameEnded)
-                {
-                    EndMatch(false);
-                }
-            });
+        // Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
+        //     {
+        //         // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
+        //         if (KeyEvent.GetKeyCode() == VK_SPACE &&
+        //             !bGameRunning && bGameEnded)
+        //         {
+        //             StartMatch();
+        //         }
+        //     });
+        //
+        // Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& KeyEvent)
+        //     {
+        //         // 키가 Space, 아직 게임이 안 시작됐고, 실패 또는 종료되지 않았다면
+        //         if (KeyEvent.GetKeyCode() == VK_RCONTROL &&
+        //             bGameRunning && !bGameEnded)
+        //         {
+        //             EndMatch(false);
+        //         }
+        //     });
     }
 }
 
@@ -123,22 +123,23 @@ void AGameMode::StartMatch()
     }
     FSoundManager::GetInstance().StopAllSounds();
     FSoundManager::GetInstance().PlaySound("BGM");
-    
+
+    float Distance = 20;
     if (GEngine->ActiveWorld->GetPlayer(0))
     {
-        GEngine->ActiveWorld->GetPlayer(0)->SetActorLocation(FVector(-10, -10, 30));
+        GEngine->ActiveWorld->GetPlayer(0)->SetActorLocation(FVector(-Distance, -Distance, 30));
     }
     if (GEngine->ActiveWorld->GetPlayer(1))
     {
-        GEngine->ActiveWorld->GetPlayer(1)->SetActorLocation(FVector(-10, 10, 30));
+        GEngine->ActiveWorld->GetPlayer(1)->SetActorLocation(FVector(-Distance, Distance, 30));
     }
     if (GEngine->ActiveWorld->GetPlayer(2))
     {
-        GEngine->ActiveWorld->GetPlayer(2)->SetActorLocation(FVector(10, -10, 30));
+        GEngine->ActiveWorld->GetPlayer(2)->SetActorLocation(FVector(Distance, -Distance, 30));
     }
     if (GEngine->ActiveWorld->GetPlayer(3))
     {
-        GEngine->ActiveWorld->GetPlayer(3)->SetActorLocation(FVector(10, 10, 30));
+        GEngine->ActiveWorld->GetPlayer(3)->SetActorLocation(FVector(Distance, Distance, 30));
     }
     
     OnGameStart.Broadcast();
@@ -289,7 +290,6 @@ void AGameMode::EndMatch(bool bIsWin)
         return;
     }
 
-    FSoundManager::GetInstance().StopAllSounds();
     this->Reset();
 
     GameInfo.TotalGameTime = GameInfo.ElapsedGameTime;

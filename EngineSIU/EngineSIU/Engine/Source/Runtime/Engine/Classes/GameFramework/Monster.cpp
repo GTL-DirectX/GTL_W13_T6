@@ -27,7 +27,6 @@ AMonster::AMonster()
     StateToAnimName.Add("Land", "Armature|Bowser_Land");
     StateToAnimName.Add("Spin", "Armature|Bowser_Spin");
     StateToAnimName.Add("Roar", "Armature|Bowser_Roar");
-
 }
 
 UObject* AMonster::Duplicate(UObject* InOuter)
@@ -90,7 +89,7 @@ void AMonster::PostSpawnInitialize()
         UParticleSystemComponent* ParticleComponent = AddComponent<UParticleSystemComponent>("ParticleComponent");
 
         ParticleComponent->SetupAttachment(SkeletalMeshComponent);
-    
+
         UObject* Object = UAssetManager::Get().GetAsset(EAssetType::ParticleSystem, "Contents/ParticleSystem/Hit");
         if (UParticleSystem* ParticleSystem = Cast<UParticleSystem>(Object))
         {
@@ -130,16 +129,18 @@ void AMonster::AddAnimNotifies()
     }
     int32 NewNotifyIndex = INDEX_NONE;
     float NotifyTime = 0.9f;
-    bool bAdded = 
-        
+    bool bAdded =
+
         LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
     /*NotifyTime = 0.0f;
     bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>( TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex );*/
 
     if (bAdded)
     {
-        printf("[Monster] DelegateNotify 추가 성공: 트랙=%d, 시간=%.3f, 인덱스=%d\n",
-            TrackIdx, NotifyTime, NewNotifyIndex);
+        printf(
+            "[Monster] DelegateNotify 추가 성공: 트랙=%d, 시간=%.3f, 인덱스=%d\n",
+            TrackIdx, NotifyTime, NewNotifyIndex
+        );
     }
     else
     {
@@ -147,22 +148,26 @@ void AMonster::AddAnimNotifies()
     }
 
 
-    { //FootDust
+    {
+        //FootDust
         UAnimSequenceBase* LandingAnimSeq = StateToAnimSequence["Land"];
         TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(LandingAnimSeq, FName(TEXT("Default")));
 
         NewNotifyIndex = INDEX_NONE;
         NotifyTime = 0.005f;
-        bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayFootDustParticle, NewNotifyIndex);
+        bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(
+            TrackIdx, NotifyTime, this, &AMonster::OnPlayFootDustParticle, NewNotifyIndex
+        );
 
-    {//Spin
-        UAnimSequenceBase* SpinAnimSeq = StateToAnimSequence["Spin"];
-        TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(SpinAnimSeq, FName(TEXT("Default")));
+        {
+            //Spin
+            UAnimSequenceBase* SpinAnimSeq = StateToAnimSequence["Spin"];
+            TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(SpinAnimSeq, FName(TEXT("Default")));
 
-        NewNotifyIndex = INDEX_NONE;
-        NotifyTime = 0.5f;
-        bAdded = SpinAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlaySpinParticle, NewNotifyIndex);
-    }
+            NewNotifyIndex = INDEX_NONE;
+            NotifyTime = 0.5f;
+            bAdded = SpinAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlaySpinParticle, NewNotifyIndex);
+        }
     }
 
     UAnimSequenceBase* RoaringAnimSeq = StateToAnimSequence["Roar"];
@@ -189,15 +194,12 @@ void AMonster::AddAnimNotifies()
     NewNotifyIndex = INDEX_NONE;
     NotifyTime = 0.95f;
     bAdded = DeadAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleDead, NewNotifyIndex);
-
-
-
-
 }
 
 void AMonster::RegisterLuaType(sol::state& Lua)
 {
-    DEFINE_LUA_TYPE_WITH_PARENT(AMonster,
+    DEFINE_LUA_TYPE_WITH_PARENT(
+        AMonster,
         sol::bases<AActor, ACharacter, APawn>(),
         "GetTargetPosition", &ThisClass::UpdateTargetPosition,
         "UpdateTargetPosition", &ThisClass::UpdateTargetPosition,
@@ -212,9 +214,9 @@ void AMonster::RegisterLuaType(sol::state& Lua)
         "IsFallingToDeath", sol::property(&ThisClass::IsFallingToDeath, &ThisClass::SetFallingToDeath),
         "GetIsLanding", &ThisClass::IsLanding
     )
-        /*DEFINE_LUA_TYPE_NO_PARENT(AMonster,
-            "GetTargetPosition", &ThisClass::GetTargetPosition
-        )*/
+    /*DEFINE_LUA_TYPE_NO_PARENT(AMonster,
+        "GetTargetPosition", &ThisClass::GetTargetPosition
+    )*/
 }
 
 bool AMonster::BindSelfLuaProperties()
@@ -250,11 +252,11 @@ void AMonster::UpdateTargetPosition()
 
 void AMonster::AttatchParticleComponent()
 {
-    UParticleSystemComponent* ParticleComp =  ParticleSystemComponentMap["FootDust"];
+    UParticleSystemComponent* ParticleComp = ParticleSystemComponentMap["FootDust"];
 
     if (ParticleComp)
     {
-        FVector Pos = FVector(0,0,10);
+        FVector Pos = FVector(0, 0, 10);
         FRotator Rot = FRotator();
         FVector Scale = FVector::OneVector;
         FTransform TF = FTransform(Rot, Pos, Scale);
@@ -262,13 +264,15 @@ void AMonster::AttatchParticleComponent()
 
         ParticleComp->SetupAttachment(SkeletalMeshComponent);
 
-       
+
         ParticleComp->SetAttachSocketName("Hip");
     }
-
 }
 
-void AMonster::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
+void AMonster::OnComponentBeginOverlap(
+    UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+    const FHitResult& Hit
+)
 {
     if (!OtherActor || !OtherComp || Cast<UWeaponComponent>(OtherComp))
     {
@@ -300,6 +304,7 @@ void AMonster::BeginPlay()
         }
     }
 }
+
 void AMonster::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -311,7 +316,17 @@ void AMonster::Tick(float DeltaTime)
         bFalling = false;
         // bLandEnded는 아직 false, Notify가 붙어 있는 애니메이션이 끝날 때까지 기다린다.
     }
-
+    if (bDead)
+    {
+        if (UParticleSystemComponent* ParticleComp = ParticleSystemComponentMap["FootDust"])
+        {
+            ParticleComp->StopEmissions();
+        }
+        if (UParticleSystemComponent* ParticleComp = ParticleSystemComponentMap["Spin"])
+        {
+            ParticleComp->StopEmissions();
+        }
+    }
     if (bDead == false && bIsChasing)
     {
         if (TargetDir.Length() < 5.0f)
@@ -348,7 +363,6 @@ bool AMonster::TestToggleVariable() const
     bToggle = !bToggle;
     return bToggle;
 }
-
 
 
 void AMonster::OnToggleLanding(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -430,7 +444,7 @@ void AMonster::OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
         // 다른 몬스터의 Notify이므로 무시
         return;
     }
-    bIsHit = false; // Hit 상태 해제
+    bIsHit = false;    // Hit 상태 해제
     bIsChasing = true; // Hit 이후 추격하는 것으로 변경
     UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
 }

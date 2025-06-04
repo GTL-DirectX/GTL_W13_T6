@@ -30,7 +30,7 @@ function ReturnTable:BeginPlay()
     this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 40
-    this.KnockBackPower = 3000
+    this.KnockBackPower = 2500
     this.KnockBackExp = 1
     
     self.CurrentTime = 0
@@ -67,7 +67,7 @@ function ReturnTable:Tick(DeltaTime)
     
     this.Velocity = this.Velocity * 0.01
     
-    if(this.ActorLocation.Z < -50) then
+    if (this.ActorLocation.Z < -50 or this.ActorLocation:Length() > 600) then
         self:OnDead()
     end
     
@@ -147,8 +147,8 @@ function ReturnTable:KnockBack(KnockBackDir)
 
     print(this.KnockBackPower, this.KnockBackExp)
 
-    this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
-        0.01 * this.KnockBackPower * this.KnockBackExp)
+    this.Velocity = FVector(15000 + KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, 15000 + KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
+        68000 + this.KnockBackPower * this.KnockBackExp)
         -- fixed : KnockBackDir.Z into 0.01
 
     self.KnockBackCoroutine = coroutine.create(function()

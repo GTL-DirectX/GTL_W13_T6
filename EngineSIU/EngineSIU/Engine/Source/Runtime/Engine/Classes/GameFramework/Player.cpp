@@ -502,6 +502,7 @@ void APlayer::ChangeTargetViewPlayer(int ChangeAmount)
 {
     TargetViewPlayer += ChangeAmount;
     TargetViewPlayer %= 4;
+    int DeadCount = 0;
     while (true) // 죽은 플레이어 건너뛰기
     {
         APlayer* TargetPlayer = GetWorld()->GetPlayer(TargetViewPlayer);
@@ -510,8 +511,14 @@ void APlayer::ChangeTargetViewPlayer(int ChangeAmount)
             break;
         }
 
+        DeadCount++;
         TargetViewPlayer += ChangeAmount;
         TargetViewPlayer %= 4;
+
+        if (DeadCount >= MAX_PLAYER)
+        {
+            break;
+        }
     }
 }
 

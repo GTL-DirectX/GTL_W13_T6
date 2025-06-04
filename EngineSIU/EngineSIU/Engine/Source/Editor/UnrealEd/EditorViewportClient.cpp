@@ -407,6 +407,11 @@ void FEditorViewportClient::GetViewInfo(FMinimalViewInfo& OutViewInfo) const
     {
         TargetViewPlayer = Player->GetTargetViewPlayer();
     }
+    APlayer* TargetPlayer = GEngine->ActiveWorld->GetPlayer(TargetViewPlayer);
+    if (TargetPlayer && TargetPlayer->GetState() == static_cast<int>(EPlayerState::Dead))
+    {
+        Player->ChangeTargetViewPlayer(1);
+    }
     
     if (APlayerController* PC = GEngine->ActiveWorld->GetPlayerController(TargetViewPlayer))
     {

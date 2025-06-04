@@ -47,7 +47,7 @@ UHitCameraShake::UHitCameraShake()
     UPerlinNoiseCameraShakePattern* Pattern = new UPerlinNoiseCameraShakePattern();
 
     // 전체 지속 시간 및 블렌드 설정
-    Pattern->Duration = 0.25f;       // 기존 0.5f → 0.25f로 단축
+    Pattern->Duration = 0.1f;       // 기존 0.5f → 0.25f로 단축
     Pattern->BlendInTime = 0.f;
     Pattern->BlendOutTime = 0.f;
 
