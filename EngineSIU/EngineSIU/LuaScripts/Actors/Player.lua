@@ -30,7 +30,7 @@ function ReturnTable:BeginPlay()
     this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 40
-    this.KnockBackPower = 1000
+    this.KnockBackPower = 3000
     this.KnockBackExp = 1
     
     self.CurrentTime = 0
@@ -114,8 +114,10 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
-    this.KnockBackExp = this.KnockBackExp * 1.5
+    this.KnockBackExp = this.KnockBackExp * 1.2
     this.State = 5
+
+    print(this.KnockBackExp, this.KnockBackPower)
     
     print("OnDamaged 실행")
     print("누적 Damage: ", this.StunGauge)

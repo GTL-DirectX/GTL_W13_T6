@@ -554,6 +554,7 @@ void APlayer::OnDamaged(FVector KnockBackDir)
     Super::OnDamaged(KnockBackDir);
     UWorld* World = GetWorld();
     World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UDamageCameraShake::StaticClass());
+    CollisionComponent->BodyInstance->AddForce(KnockBackDir * KnockBackPower * KnockBackExp, true);
 }
 
 
