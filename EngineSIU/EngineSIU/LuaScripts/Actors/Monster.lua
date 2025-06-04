@@ -86,7 +86,7 @@ local function ProcessChasing(self, DeltaTime)
         this.TargetPosition.Z = 0
         -- targetPos.Z = 0
     end
-        print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
+        -- print("New Target Acquired: ", targetPos.X, targetPos.Y, targetPos.Z)
 
     -- print("New Target Acquired: ", this.TargetPosition.X, this.TargetPosition.Y, this.TargetPosition.Z)
     this.ActorLocation = MoveTowards(this.ActorLocation, this.TargetPosition, DeltaTime, chaseSpeed)
@@ -201,7 +201,7 @@ function ReturnTable:KnockBack(KnockBackDir)
         this.Velocity = FVector(0, 0, 0)
 
         -- 넉백 종료 (코루틴 안에서 처리)
-        print("KnockBack 종료 캐릭터")
+        print("KnockBack 종료")
         this.MoveSpeed = 0
 
         -- 스턴 체크도 코루틴 안에서

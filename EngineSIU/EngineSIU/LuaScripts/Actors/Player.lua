@@ -56,7 +56,7 @@ function ReturnTable:Tick(DeltaTime)
     -- 예) 이 시점에서 this.State 값에 따라 애니메이션 트랜지션을 처리
 
     -- 3) 최종 Velocity 보정 (예시: 감속 개념)
-    this.Velocity = this.Velocity * 0.05
+    -- this.Velocity = this.Velocity * 0.05
     -- if this.State == 0 and this.MoveSpeed > 100 then
     --     this.State = 1
     -- elseif this.State == 1 and this.MoveSpeed < 90 then
@@ -142,7 +142,6 @@ end
 
 function ReturnTable:KnockBack(KnockBackDir)
     local this = self.this -- local 추가
-    print("KnockBack 시작")
 
     print(this.KnockBackPower, this.KnockBackExp)
 
@@ -151,13 +150,14 @@ function ReturnTable:KnockBack(KnockBackDir)
 
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작
+
         this:SetControllerVibration(1.0, 1.0)
         -- 1초 대기
         self:Wait(1.0)
 
         -- 넉백 종료 (코루틴 안에서 처리)
-        print("KnockBack 종료")
         this:SetControllerVibration(0.0, 0.0)
+
         this.MoveSpeed = 0
 
         -- 스턴 체크도 코루틴 안에서
