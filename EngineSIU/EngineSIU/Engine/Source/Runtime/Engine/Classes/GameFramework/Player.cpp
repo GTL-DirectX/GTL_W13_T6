@@ -58,7 +58,7 @@ void APlayer::PostSpawnInitialize()
 
     AttachSocket();
     
-    BindAnimNotifys();
+    BindAnimNotifys(); 
 }
 
 void APlayer::Tick(float DeltaTime)
