@@ -28,6 +28,9 @@ public:
     virtual void RegisterLuaType(sol::state& Lua) override; // Lua에 클래스 등록해주는 함수.
     virtual bool BindSelfLuaProperties() override; // LuaEnv에서 사용할 멤버 변수 등록 함수.
     virtual void OnDamaged(FVector KnockBackDir) override;
+    void PlayDamageCameraShake();
+    void PlayHitCameraShake();
+    void VibrateMotorHit();
 
     float GetScore() const { return Score; }
 private:
@@ -60,7 +63,7 @@ public:
     void Stun() const;
     void KnockBack(FVector KnockBackDir) const;
     void OnDead() const;
-    void Attack() const;
+    void Attack();
 
     void EquipWeapon(UWeaponComponent* WeaponComponent);
     void AttachSocket();
@@ -88,6 +91,8 @@ private:
     float RawSpeed = 100.0f; // 좌우 회전 속도
     float PitchSpeed = 100.0f;
 
-
+    bool hitted = false;
+    float ElapsedMotorTime = 0.f;
+    float MotorTime = 0.2f;
     float LinearSpeed;
 };

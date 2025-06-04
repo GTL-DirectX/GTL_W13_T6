@@ -49,34 +49,43 @@ void APlayer::PostSpawnInitialize()
 
 
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetRelativeLocation(FVector(-20,0,20));
-    CameraComponent->SetRelativeRotation(FRotator(-40,0,0));
+    CameraComponent->SetRelativeLocation(FVector(-20, 0, 20));
+    CameraComponent->SetRelativeRotation(FRotator(-40, 0, 0));
     CameraComponent->SetupAttachment(RootComponent);
-    
+
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
 
     AttachSocket();
-    
+ 
     BindAnimNotifys(); 
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
+    if (hitted)
+    {
+        ElapsedMotorTime += DeltaTime;
+        if (ElapsedMotorTime >= MotorTime)
+        {
+            SetControllerVibration(0.f, 0.f);
+            hitted = false;
+            ElapsedMotorTime = 0.f;
+        }
+    }
     if (PlayerState != EPlayerState::Dead)
     {
         Score = GetWorld()->GetGameMode()->GetGameInfo().ElapsedGameTime;
     }
-    
+
     FBodyInstance* BodyInstance = CollisionComponent->BodyInstance;
     if (!BodyInstance)
     {
         return;
     }
 
-    
+
     if (PxRigidDynamic* RigidActor = BodyInstance->BIGameObject->DynamicRigidBody)
     {
         LinearSpeed = RigidActor->getLinearVelocity().magnitude();
@@ -98,7 +107,7 @@ void APlayer::Tick(float DeltaTime)
         //UE_LOG(ELogLevel::Error, TEXT("Linear Speed: %f"), LinearSpeed);
     }
 
-    
+
 
     // if (SkeletalMeshComponent)
     // {
@@ -130,20 +139,17 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
     // 카메라 조작용 축 바인딩
     if (PlayerInputComponent)
     {
-        if (PlayerIndex == 0)
-        {
-            PlayerInputComponent->BindAction("W", [this](float DeltaTime) { MoveForward(DeltaTime); });
-            PlayerInputComponent->BindAction("S", [this](float DeltaTime) { MoveForward(-DeltaTime); });
-            PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
-            PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
-            PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
-            PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
+        PlayerInputComponent->BindAction("W", [this](float DeltaTime) { MoveForward(DeltaTime); });
+        PlayerInputComponent->BindAction("S", [this](float DeltaTime) { MoveForward(-DeltaTime); });
+        PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
+        PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
+        PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
+        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
 
-            PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
+        PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
 
-            PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
-            PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
-        }
+        PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
+        PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         // PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });
@@ -238,18 +244,18 @@ void APlayer::MoveRight(float DeltaTime)
         Velocity = Velocity.GetSafeNormal() * MaxSpeed;
     }
 
-     if (PlayerState >= EPlayerState::Attacking)
-     {
-         return;
-     }
+    if (PlayerState >= EPlayerState::Attacking)
+    {
+        return;
+    }
 
-     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
+    Velocity += GetActorRightVector() * Acceleration * DeltaTime;
 
-     if (MoveSpeed > MaxSpeed)
-     {
-         MoveSpeed = MaxSpeed;
-         Velocity.Normalize()* MaxSpeed;
-     }
+    if (MoveSpeed > MaxSpeed)
+    {
+        MoveSpeed = MaxSpeed;
+        Velocity.Normalize()* MaxSpeed;
+    }
     //UpdateFacingRotation(DeltaTime);
 }
 void APlayer::UpdateFacingRotation(float DeltaTime)
@@ -530,11 +536,11 @@ void APlayer::SetControllerVibration(float LeftMotor, float RightMotor) const
     // XINPUT_VIBRATION 구조체 설정
     XINPUT_VIBRATION vibration;
     ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-    
+
     // 진동 강도 설정 (0.0f ~ 1.0f를 0 ~ 65535로 변환)
     vibration.wLeftMotorSpeed = (WORD)(LeftMotor * 65535.0f);   // 저주파 모터 (왼쪽)
     vibration.wRightMotorSpeed = (WORD)(RightMotor * 65535.0f); // 고주파 모터 (오른쪽)
-    
+
     // 진동 설정 적용
     XInputSetState(PlayerIndex, &vibration);
 }
@@ -542,22 +548,39 @@ void APlayer::SetControllerVibration(float LeftMotor, float RightMotor) const
 void APlayer::RegisterLuaType(sol::state& Lua)
 {
     DEFINE_LUA_TYPE_WITH_PARENT(APlayer, sol::bases<AActor, APawn, ACharacter>(),
-    "Acceleration", &APlayer::Acceleration,
-    "MaxSpeed", &APlayer::MaxSpeed,
-    "RawSpeed", &APlayer::RawSpeed,
-    "PitchSpeed", &APlayer::PitchSpeed,
-    "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
-    "SetControllerVibration", &APlayer::SetControllerVibration,
-    "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
+        "Acceleration", &APlayer::Acceleration,
+        "MaxSpeed", &APlayer::MaxSpeed,
+        "RawSpeed", &APlayer::RawSpeed,
+        "PitchSpeed", &APlayer::PitchSpeed,
+        "ChangeViewTarget", &APlayer::ChangeTargetViewPlayer,
+        "SetControllerVibration", &APlayer::SetControllerVibration,
+        "LinearSpeed", sol::property(&APlayer::GetLinearSpeed, &APlayer::SetLinearSpeed)
     )
 }
 
 void APlayer::OnDamaged(FVector KnockBackDir)
 {
     Super::OnDamaged(KnockBackDir);
+    CollisionComponent->BodyInstance->AddForce(KnockBackDir * KnockBackPower * KnockBackExp, true);
+    PlayDamageCameraShake();
+}
+
+void APlayer::PlayDamageCameraShake()
+{
     UWorld* World = GetWorld();
     World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UDamageCameraShake::StaticClass());
-    CollisionComponent->BodyInstance->AddForce(KnockBackDir * KnockBackPower * KnockBackExp, true);
+}
+
+void APlayer::PlayHitCameraShake()
+{
+    UWorld* World = GetWorld();
+    World->GetPlayerController(PlayerIndex)->PlayerCameraManager->StartCameraShake(UHitCameraShake::StaticClass());
+}
+
+void APlayer::VibrateMotorHit()
+{
+    SetControllerVibration(0.6, 0.f);
+    hitted = true;
 }
 
 
@@ -601,15 +624,14 @@ void APlayer::OnDead() const
 {
     LuaScriptComponent->ActivateFunction("OnDead");
 }
- 
-void APlayer::Attack() const
+
+void APlayer::Attack() 
 {
     LuaScriptComponent->ActivateFunction("Attack");
     if (!EquippedWeapon)
     {
         return;
     }
-
     EquippedWeapon->Attack();
 }
 

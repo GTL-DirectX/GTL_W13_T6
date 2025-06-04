@@ -72,11 +72,17 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
             FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
             OtherPlayer->KnockBackExp *= 2.0f;
             OtherPlayer->OnDamaged(DamageDir);
+
         }
         if (OtherActor && HitParticle)
         {
             HitParticle->SetWorldLocation(OtherActor->GetActorLocation());
             HitParticle->StartEmissions();
+            if (APlayer* Owner = Cast<APlayer>(GetOwner()))
+            {
+                Owner->PlayHitCameraShake();
+                Owner->VibrateMotorHit();
+            }
         }
     }
 }
