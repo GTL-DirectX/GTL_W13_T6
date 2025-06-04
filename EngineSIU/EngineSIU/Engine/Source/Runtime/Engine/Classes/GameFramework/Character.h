@@ -72,6 +72,8 @@ protected:
     float MaxStunGauge = 100.0f;
 
     float KnockBackPower = 500;
+
+public:
     float KnockBackExp = 1.0f;
 
 };
