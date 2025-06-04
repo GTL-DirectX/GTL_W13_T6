@@ -600,7 +600,7 @@ void APlayer::OnDead() const
 {
     LuaScriptComponent->ActivateFunction("OnDead");
 }
-
+ 
 void APlayer::Attack() const
 {
     LuaScriptComponent->ActivateFunction("Attack");
