@@ -30,7 +30,7 @@ function ReturnTable:BeginPlay()
     this.RawSpeed = 150
     this.PitchSpeed = 100
     this.MaxStunGauge = 20
-    this.KnockBackPower = 200
+    this.KnockBackPower = 1000
     this.KnockBackExp = 1
     
     self.CurrentTime = 0
@@ -67,7 +67,7 @@ function ReturnTable:Tick(DeltaTime)
     
     this.Velocity = this.Velocity * 0.01
     
-    if(this.ActorLocation.Z < -100) then
+    if(this.ActorLocation.Z < -50) then
         self:OnDead()
     end
     

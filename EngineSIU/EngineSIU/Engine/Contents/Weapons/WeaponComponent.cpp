@@ -24,19 +24,18 @@ UObject* UWeaponComponent::Duplicate(UObject* InOuter)
 
 void UWeaponComponent::Attack()
 {
-    bIsAttacking = true;
-    
-    if (OwnerCharacter)
+    if (OwnerCharacter && OwnerCharacter->GetState() < static_cast<int>(EPlayerState::Attacking))
     {
+        bIsAttacking = true;
         OwnerCharacter->SetState(static_cast<int>(EPlayerState::Attacking));
     }
 }
 
 void UWeaponComponent::FinishAttack()
 {
-    bIsAttacking = false;
-    if (OwnerCharacter)
+    if (OwnerCharacter && OwnerCharacter->GetState() < static_cast<int>(EPlayerState::Stun))
     {
+        bIsAttacking = false;
         OwnerCharacter->SetState(static_cast<int>(EPlayerState::Idle));
     }
 }
