@@ -130,17 +130,20 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
     // 카메라 조작용 축 바인딩
     if (PlayerInputComponent)
     {
-        PlayerInputComponent->BindAction("W", [this](float DeltaTime) { MoveForward(DeltaTime); });
-        PlayerInputComponent->BindAction("S", [this](float DeltaTime) { MoveForward(-DeltaTime); });
-        PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
-        PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
-        PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
-        PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
+        if (PlayerIndex == 0)
+        {
+            PlayerInputComponent->BindAction("W", [this](float DeltaTime) { MoveForward(DeltaTime); });
+            PlayerInputComponent->BindAction("S", [this](float DeltaTime) { MoveForward(-DeltaTime); });
+            PlayerInputComponent->BindAction("A", [this](float DeltaTime) { MoveRight(-DeltaTime); });
+            PlayerInputComponent->BindAction("D", [this](float DeltaTime) { MoveRight(DeltaTime); });
+            PlayerInputComponent->BindAction("E", [this](float DeltaTime) { MoveUp(DeltaTime); });
+            PlayerInputComponent->BindAction("Q", [this](float DeltaTime) { MoveUp(-DeltaTime); });
 
-        PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
+            PlayerInputComponent->BindAction("P", [this](float DeltaTime) { Attack(); }); // 공격 액션 바인딩
 
-        PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
-        PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
+            PlayerInputComponent->BindAxis("Turn", [this](float DeltaTime) { RotateYaw(DeltaTime * 0.01f); });
+            PlayerInputComponent->BindAxis("LookUp", [this](float DeltaTime) { RotatePitch(DeltaTime); });
+        }
 
         // PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_A, [this](float DeltaTime) { OnDamaged(FVector(-1, 0, 0)); }); // 테스트 코드
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_B, [this](float DeltaTime) { Attack(); });

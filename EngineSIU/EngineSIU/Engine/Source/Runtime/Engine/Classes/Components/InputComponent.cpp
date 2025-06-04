@@ -234,12 +234,11 @@ void UInputComponent::BindInputDelegate()
         InputControllerButton(InControllerEvent);
     }));
     
-    // 아날로그 입력 이벤트 바인딩 (새로 추가)
+    // 아날로그 입력 이벤트 바인딩
     BindControllerAnalogDelegateHandles.Add(Handler->OnXboxControllerAnalogDelegate.AddLambda([this](const FControllerAnalogEvent& InAnalogEvent)
     {
         InputControllerAnalog(InAnalogEvent);
     }));
-    
 }
 
 void UInputComponent::UnPossess()
@@ -281,6 +280,10 @@ void UInputComponent::ClearBindDelegate()
     {
         Handler->OnControllerButtonUpDelegate.Remove(DelegateHandle);
     }
+    for (FDelegateHandle DelegateHandle : BindControllerAnalogDelegateHandles)
+    {
+        Handler->OnXboxControllerAnalogDelegate.Remove(DelegateHandle);
+    }
 
     BindKeyDownDelegateHandles.Empty();
     BindKeyUpDelegateHandles.Empty();
@@ -289,6 +292,7 @@ void UInputComponent::ClearBindDelegate()
     BindMouseUpDelegateHandles.Empty();
     BindControllerDownDelegateHandles.Empty();
     BindControllerUpDelegateHandles.Empty();
+    BindControllerAnalogDelegateHandles.Empty();
 }
 
 void UInputComponent::InputKey(const FKeyEvent& InKeyEvent)
@@ -499,11 +503,7 @@ void UInputComponent::InputControllerAnalog(const FControllerAnalogEvent& InAnal
     float AnalogValue = InAnalogEvent.GetAnalogValue();
     
     // 현재 아날로그 값 저장 (필요시 이전 값과 비교 가능)
-    float* PreviousValue = CurrentAnalogValues.Find(AnalogType); // TODO: 파이 모드 진입 후 스틱을 가장 먼저 조작하면 터짐
-    if (PreviousValue == nullptr)
-    {
-        int temp = 0;
-    }
+    float* PreviousValue = CurrentAnalogValues.Find(AnalogType);
     float PrevValue = PreviousValue ? *PreviousValue : 0.0f;
     CurrentAnalogValues.Add(AnalogType, AnalogValue);
     
