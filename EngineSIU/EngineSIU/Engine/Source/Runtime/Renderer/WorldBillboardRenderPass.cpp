@@ -24,16 +24,16 @@ void FWorldBillboardRenderPass::PrepareRenderArr()
         }
     }
 
+    const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
     BillboardComps.Sort(
-        [](const UBillboardComponent* A, const UBillboardComponent* B)
+        [LocCam](const UBillboardComponent* A, const UBillboardComponent* B)
         {
             const FVector LocA = A->GetComponentLocation();
             const FVector LocB = B->GetComponentLocation();
-            const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
 
             const float DistA = (LocCam - LocA).SquaredLength();
             const float DistB = (LocCam - LocB).SquaredLength();
-            
+
             return DistA > DistB;
         }
     );

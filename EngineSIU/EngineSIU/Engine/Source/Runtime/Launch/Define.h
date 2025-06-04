@@ -465,7 +465,7 @@ struct FLitUnlitConstants
 
 struct FIsShadowConstants
 {
-    int bIsShadow;
+    int bIsShadow = 1;
     FVector pad;
 };
 

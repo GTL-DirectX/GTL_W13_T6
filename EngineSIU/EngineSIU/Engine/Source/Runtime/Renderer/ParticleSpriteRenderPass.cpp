@@ -52,16 +52,22 @@ void FParticleSpriteRenderPass::PrepareRenderArr()
         }
     }
 
+    const FVector CurrentCamLoc = GEngineLoop
+        .GetLevelEditor()
+        ->GetActiveViewportClient()
+        ->GetCameraLocation();
+
+    // 2) 정렬 시 캡처하여 사용
     ParticleComponents.Sort(
-        [](const UParticleSystemComponent* A, const UParticleSystemComponent* B)
+        [CurrentCamLoc](const UParticleSystemComponent* A, const UParticleSystemComponent* B) -> bool
         {
             const FVector LocA = A->GetComponentLocation();
             const FVector LocB = B->GetComponentLocation();
-            const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
 
-            const float DistA = (LocCam - LocA).SquaredLength();
-            const float DistB = (LocCam - LocB).SquaredLength();
-            
+            const float DistA = (CurrentCamLoc - LocA).SquaredLength();
+            const float DistB = (CurrentCamLoc - LocB).SquaredLength();
+
+            // '>'를 이용하여 거리 큰 순서대로 배치(후방 정렬)
             return DistA > DistB;
         }
     );
@@ -90,7 +96,7 @@ void FParticleSpriteRenderPass::PrepareRender(const std::shared_ptr<FEditorViewp
     {
         return;
     }
-    
+
     const FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(EResourceType::ERT_Translucent);
     const FDepthStencilRHI* DepthStencilRHI = ViewportResource->GetDepthStencil(EResourceType::ERT_Scene);
 
@@ -106,7 +112,7 @@ void FParticleSpriteRenderPass::PrepareRender(const std::shared_ptr<FEditorViewp
     Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(PixelShader, nullptr, 0);
     Graphics->DeviceContext->IASetInputLayout(nullptr);
-    
+
     BufferManager->BindStructuredBufferSRV("ParticleSpriteInstanceBuffer", 1, EShaderStage::Vertex);
 
     BufferManager->BindConstantBuffer(TEXT("FObjectConstantBuffer"), 12, EShaderStage::Vertex);
@@ -170,10 +176,10 @@ void FParticleSpriteRenderPass::ProcessParticles(const FDynamicSpriteEmitterRepl
     }
 
     TArray<FParticleSpriteVertex> SpriteVertices;
-    
+
     const uint8* ParticleData = ReplayData->DataContainer.ParticleData;
     const int32 ParticleStride = ReplayData->ParticleStride;
-    
+
     const int32 SubImages_Horizontal = ReplayData->SubImages_Horizontal;
     const int32 SubImages_Vertical = ReplayData->SubImages_Vertical;
     const int32 SubUVDataOffset = ReplayData->SubUVDataOffset;
@@ -181,7 +187,7 @@ void FParticleSpriteRenderPass::ProcessParticles(const FDynamicSpriteEmitterRepl
     for (int32 i = 0; i < ReplayData->ActiveParticleCount; i++)
     {
         const uint8* ParticleBase = ParticleData + i * ParticleStride;
-        
+
         DECLARE_PARTICLE_CONST(Particle, ParticleBase)
         FParticleSpriteVertex SpriteVertex = {};
         SpriteVertex.Position = Particle.Location;
@@ -199,26 +205,26 @@ void FParticleSpriteRenderPass::ProcessParticles(const FDynamicSpriteEmitterRepl
 
         SpriteVertices.Add(SpriteVertex);
     }
-    
-    SpriteVertices.Sort(
-    [](const FParticleSpriteVertex& A, const FParticleSpriteVertex& B)
-    {
-        const FVector LocA = A.Position;
-        const FVector LocB = B.Position;
-        const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
 
-        const float DistA = (LocCam - LocA).SquaredLength();
-        const float DistB = (LocCam - LocB).SquaredLength();
-        
-        return DistA > DistB;
-    });
-    
+    const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
+    SpriteVertices.Sort(
+        [LocCam](const FParticleSpriteVertex& A, const FParticleSpriteVertex& B)
+        {
+            const FVector LocA = A.Position;
+            const FVector LocB = B.Position;
+
+            const float DistA = (LocCam - LocA).SquaredLength();
+            const float DistB = (LocCam - LocB).SquaredLength();
+
+            return DistA > DistB;
+        });
+
     BufferManager->UpdateStructuredBuffer("ParticleSpriteInstanceBuffer", SpriteVertices);
 
     if (UMaterial* Material = ReplayData->MaterialInterface)
     {
         const FMaterialInfo& MaterialInfo = Material->GetMaterialInfo();
-        
+
         MaterialUtils::UpdateMaterial(BufferManager, Graphics, MaterialInfo);
     }
 
@@ -227,7 +233,7 @@ void FParticleSpriteRenderPass::ProcessParticles(const FDynamicSpriteEmitterRepl
 
     FSubUVConstant SubUVConstant = {
         FVector2D(0.0f, 0.0f),
-        FVector2D(SubUVScale_Horizontal, SubUVScale_Vertical)   
+        FVector2D(SubUVScale_Horizontal, SubUVScale_Vertical)
     };
     BufferManager->UpdateConstantBuffer(TEXT("FSubUVConstant"), SubUVConstant);
 

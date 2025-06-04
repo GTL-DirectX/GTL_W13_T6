@@ -22,8 +22,8 @@ struct FMinimalViewInfo
     FVector Location;
     FRotator Rotation;
     float FOV;
-    float PerspectiveNearClip;
-    float PerspectiveFarClip;
+    float PerspectiveNearClip = 1000;
+    float PerspectiveFarClip = 5000;
 
     /*float OrthoWidth;
     float OrthoNearClipPlane;

@@ -415,8 +415,10 @@ void FEditorViewportClient::GetViewInfo(FMinimalViewInfo& OutViewInfo) const
     
     if (APlayerController* PC = GEngine->ActiveWorld->GetPlayerController(TargetViewPlayer))
     {
+        UE_LOG(ELogLevel::Error, "PC!!!!");
         if (APlayerCameraManager* PCM = PC->PlayerCameraManager)
         {
+        UE_LOG(ELogLevel::Error, "PCM!!!!");
             if (PCM->PendingViewTarget.Target != nullptr)
             {
                 OutViewInfo = PCM->LastFrameViewTarget.POV;
@@ -427,6 +429,8 @@ void FEditorViewportClient::GetViewInfo(FMinimalViewInfo& OutViewInfo) const
             bGotViewInfo = true;
         }
     }
+    else
+        UE_LOG(ELogLevel::Error, "Not Found!!!!!");
 
     if (!bGotViewInfo)
     {

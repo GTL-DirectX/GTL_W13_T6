@@ -41,16 +41,16 @@ void FBillboardRenderPass::PrepareRenderArr()
         }
     }
 
+    const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
     BillboardComps.Sort(
-        [](const UBillboardComponent* A, const UBillboardComponent* B)
+        [LocCam](const UBillboardComponent* A, const UBillboardComponent* B)
         {
             const FVector LocA = A->GetComponentLocation();
             const FVector LocB = B->GetComponentLocation();
-            const FVector LocCam = GEngineLoop.GetLevelEditor()->GetActiveViewportClient()->GetCameraLocation();
 
             const float DistA = (LocCam - LocA).SquaredLength();
             const float DistB = (LocCam - LocB).SquaredLength();
-            
+
             return DistA > DistB;
         }
     );
@@ -95,7 +95,7 @@ void FBillboardRenderPass::CreateResource()
     {
         return;
     }
-    
+
     hr = ShaderManager->AddPixelShader(L"BillBoardPixelShader", L"Shaders/BillBoardPixelShader.hlsl", "main");
     if (FAILED(hr))
     {
@@ -108,7 +108,7 @@ void FBillboardRenderPass::UpdateShader()
     ID3D11VertexShader* VertexShader = ShaderManager->GetVertexShaderByKey(L"BillBoardVertexShader");
     ID3D11InputLayout* InputLayout = ShaderManager->GetInputLayoutByKey(L"BillBoardVertexShader");
     ID3D11PixelShader* PixelShader = ShaderManager->GetPixelShaderByKey(L"BillBoardPixelShader");
-    
+
     Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(PixelShader, nullptr, 0);
     Graphics->DeviceContext->IASetInputLayout(InputLayout);
@@ -126,12 +126,12 @@ void FBillboardRenderPass::PrepareRender(const std::shared_ptr<FEditorViewportCl
     Graphics->DeviceContext->RSSetViewports(1, &Viewport->GetViewportResource()->GetD3DViewport());
 
     Graphics->DeviceContext->RSSetState(Graphics->RasterizerSolidBack);
-    
+
     Graphics->DeviceContext->OMSetBlendState(Graphics->BlendState_AlphaBlend, nullptr, 0xffffffff);
     Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState_DepthWriteDisabled, 1);
-    
+
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    
+
     UpdateShader();
 
     BufferManager->BindConstantBuffer(TEXT("FObjectConstantBuffer"), 0, EShaderStage::Vertex);
@@ -160,7 +160,7 @@ void FBillboardRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& 
     for (auto BillboardComp : BillboardComps)
     {
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        
+
         FMatrix Model = BillboardComp->CreateBillboardMatrix();
         FVector4 UUIDColor = BillboardComp->EncodeUUID() / 255.0f;
         bool bIsSelected = (Engine && Engine->GetSelectedActor() == BillboardComp->GetOwner());

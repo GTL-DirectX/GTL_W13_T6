@@ -195,12 +195,6 @@ void AGameMode::Tick(float DeltaTime)
             EndMatch(false);
         }
     }
-    else
-    {
-        DrawStartUI();
-    }
-
-
 }
 
 void AGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
