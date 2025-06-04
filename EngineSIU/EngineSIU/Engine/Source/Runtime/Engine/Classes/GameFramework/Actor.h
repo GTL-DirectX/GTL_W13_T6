@@ -117,7 +117,7 @@ protected:
     UPROPERTY
     (USceneComponent*, RootComponent, = nullptr)
 
-private:
+protected:
     /** 이 Actor를 소유하고 있는 다른 Actor의 정보 */
     UPROPERTY
     (AActor*, Owner, = nullptr)

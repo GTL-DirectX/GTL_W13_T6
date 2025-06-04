@@ -282,6 +282,11 @@ void FOpaqueRenderPass::RenderSkeletalMesh(const std::shared_ptr<FEditorViewport
 {
     for (const USkeletalMeshComponent* Comp : SkeletalMeshComponents)
     {
+        if (Comp->GetOwner()->IsActorBeingDestroyed())
+        {
+            continue;
+        }
+
         if (!Comp || !Comp->GetSkeletalMeshAsset())
         {
             continue;

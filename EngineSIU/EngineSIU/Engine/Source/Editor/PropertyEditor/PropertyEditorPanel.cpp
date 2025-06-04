@@ -176,7 +176,7 @@ void PropertyEditorPanel::Render()
 
     if (USpringArmComponent* SpringArmComponent = GetTargetComponent<USpringArmComponent>(SelectedActor, SelectedComponent))
     {
-        RenderForSpringArmComponent(SpringArmComponent);
+        //RenderForSpringArmComponent(SpringArmComponent);
     }
 
     if (UParticleSystemComponent* ParticleSystemComponent = GetTargetComponent<UParticleSystemComponent>(SelectedActor, SelectedComponent))
@@ -1385,79 +1385,79 @@ void PropertyEditorPanel::RenderForShapeComponent(UShapeComponent* ShapeComponen
     ImGui::PopStyleColor();
 }
 
-void PropertyEditorPanel::RenderForSpringArmComponent(USpringArmComponent* SpringArmComponent) const
-{
-    if (ImGui::TreeNodeEx("SpringArm", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        // --- TargetOffset (FVector) ---
-        float TargetOffsetValues[3] = {
-            SpringArmComponent->TargetOffset.X,
-            SpringArmComponent->TargetOffset.Y,
-            SpringArmComponent->TargetOffset.Z
-        };
-        if (ImGui::DragFloat3("TargetOffset", TargetOffsetValues, 1.0f, -1000.0f, 1000.0f))
-        {
-            SpringArmComponent->TargetOffset.X = TargetOffsetValues[0];
-            SpringArmComponent->TargetOffset.Y = TargetOffsetValues[1];
-            SpringArmComponent->TargetOffset.Z = TargetOffsetValues[2];
-        }
-        ImGui::Spacing();
-
-        // --- Floats: ArmLength / ProbeSize ---
-        ImGui::DragFloat("ArmLength", &SpringArmComponent->TargetArmLength, 1.0f, 0.0f, 1000.0f);
-        ImGui::DragFloat("ProbeSize", &SpringArmComponent->ProbeSize, 0.1f, 0.0f, 30.0f);
-        ImGui::Spacing();
-
-        // --- Bools (2 per line) ---
-        bool DoCollisionTest = SpringArmComponent->bDoCollisionTest;
-        if (ImGui::Checkbox("DoCollisionTest", &DoCollisionTest))
-            SpringArmComponent->bDoCollisionTest = DoCollisionTest;
-        ImGui::SameLine();
-        bool UsePawnControlRotation = SpringArmComponent->bUsePawnControlRotation;
-        if (ImGui::Checkbox("UsePawnControlRotation", &UsePawnControlRotation))
-            SpringArmComponent->bUsePawnControlRotation = UsePawnControlRotation;
-
-        bool UseAbsolRot = SpringArmComponent->IsUsingAbsoluteRotation();
-        if (ImGui::Checkbox("UseAbsoluteRot", &UseAbsolRot))
-            SpringArmComponent->SetUsingAbsoluteRotation(UseAbsolRot);
-
-        bool InheritPitch = SpringArmComponent->bInheritPitch;
-        if (ImGui::Checkbox("InheritPitch", &InheritPitch))
-            SpringArmComponent->bInheritPitch = InheritPitch;
-        ImGui::SameLine();
-        bool InheritYaw = SpringArmComponent->bInheritYaw;
-        if (ImGui::Checkbox("InheritYaw", &InheritYaw))
-            SpringArmComponent->bInheritYaw = InheritYaw;
-
-        bool InheritRoll = SpringArmComponent->bInheritRoll;
-        if (ImGui::Checkbox("InheritRoll", &InheritRoll))
-            SpringArmComponent->bInheritRoll = InheritRoll;
-        ImGui::SameLine();
-        bool EnableCameraLag = SpringArmComponent->bEnableCameraLag;
-        if (ImGui::Checkbox("EnableCameraLag", &EnableCameraLag))
-            SpringArmComponent->bEnableCameraLag = EnableCameraLag;
-
-        bool EnableCameraRotationLag = SpringArmComponent->bEnableCameraRotationLag;
-        if (ImGui::Checkbox("EnableCameraRotationLag", &EnableCameraRotationLag))
-            SpringArmComponent->bEnableCameraRotationLag = EnableCameraRotationLag;
-        ImGui::SameLine();
-        bool UseCameraLagSubstepping = SpringArmComponent->bUseCameraLagSubstepping;
-        if (ImGui::Checkbox("UseCameraLagSubstepping", &UseCameraLagSubstepping))
-            SpringArmComponent->bUseCameraLagSubstepping = UseCameraLagSubstepping;
-        ImGui::Spacing();
-
-        // --- Lag speeds / limits ---
-        ImGui::DragFloat("LocSpeed", &SpringArmComponent->CameraLagSpeed, 0.1f, 0.0f, 100.0f);
-
-        ImGui::DragFloat("RotSpeed", &SpringArmComponent->CameraRotationLagSpeed, 0.1f, 0.0f, 100.0f);
-        //ImGui::NewLine();
-        ImGui::DragFloat("LagMxStep", &SpringArmComponent->CameraLagMaxTimeStep, 0.005f, 0.0f, 1.0f);
-        ImGui::SameLine();
-        ImGui::DragFloat("LogMDist", &SpringArmComponent->CameraLagMaxDistance, 1.0f, 0.0f, 1000.0f);
-
-        ImGui::TreePop();
-    }
-}
+//void PropertyEditorPanel::RenderForSpringArmComponent(USpringArmComponent* SpringArmComponent) const
+//{
+//    if (ImGui::TreeNodeEx("SpringArm", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+//    {
+//        // --- TargetOffset (FVector) ---
+//        float TargetOffsetValues[3] = {
+//            SpringArmComponent->TargetOffset.X,
+//            SpringArmComponent->TargetOffset.Y,
+//            SpringArmComponent->TargetOffset.Z
+//        };
+//        if (ImGui::DragFloat3("TargetOffset", TargetOffsetValues, 1.0f, -1000.0f, 1000.0f))
+//        {
+//            SpringArmComponent->TargetOffset.X = TargetOffsetValues[0];
+//            SpringArmComponent->TargetOffset.Y = TargetOffsetValues[1];
+//            SpringArmComponent->TargetOffset.Z = TargetOffsetValues[2];
+//        }
+//        ImGui::Spacing();
+//
+//        // --- Floats: ArmLength / ProbeSize ---
+//        ImGui::DragFloat("ArmLength", &SpringArmComponent->TargetArmLength, 1.0f, 0.0f, 1000.0f);
+//        ImGui::DragFloat("ProbeSize", &SpringArmComponent->ProbeSize, 0.1f, 0.0f, 30.0f);
+//        ImGui::Spacing();
+//
+//        // --- Bools (2 per line) ---
+//        bool DoCollisionTest = SpringArmComponent->bDoCollisionTest;
+//        if (ImGui::Checkbox("DoCollisionTest", &DoCollisionTest))
+//            SpringArmComponent->bDoCollisionTest = DoCollisionTest;
+//        ImGui::SameLine();
+//        bool UsePawnControlRotation = SpringArmComponent->bUsePawnControlRotation;
+//        if (ImGui::Checkbox("UsePawnControlRotation", &UsePawnControlRotation))
+//            SpringArmComponent->bUsePawnControlRotation = UsePawnControlRotation;
+//
+//        bool UseAbsolRot = SpringArmComponent->IsUsingAbsoluteRotation();
+//        if (ImGui::Checkbox("UseAbsoluteRot", &UseAbsolRot))
+//            SpringArmComponent->SetUsingAbsoluteRotation(UseAbsolRot);
+//
+//        bool InheritPitch = SpringArmComponent->bInheritPitch;
+//        if (ImGui::Checkbox("InheritPitch", &InheritPitch))
+//            SpringArmComponent->bInheritPitch = InheritPitch;
+//        ImGui::SameLine();
+//        bool InheritYaw = SpringArmComponent->bInheritYaw;
+//        if (ImGui::Checkbox("InheritYaw", &InheritYaw))
+//            SpringArmComponent->bInheritYaw = InheritYaw;
+//
+//        bool InheritRoll = SpringArmComponent->bInheritRoll;
+//        if (ImGui::Checkbox("InheritRoll", &InheritRoll))
+//            SpringArmComponent->bInheritRoll = InheritRoll;
+//        ImGui::SameLine();
+//        bool EnableCameraLag = SpringArmComponent->bEnableCameraLag;
+//        if (ImGui::Checkbox("EnableCameraLag", &EnableCameraLag))
+//            SpringArmComponent->bEnableCameraLag = EnableCameraLag;
+//
+//        bool EnableCameraRotationLag = SpringArmComponent->bEnableCameraRotationLag;
+//        if (ImGui::Checkbox("EnableCameraRotationLag", &EnableCameraRotationLag))
+//            SpringArmComponent->bEnableCameraRotationLag = EnableCameraRotationLag;
+//        ImGui::SameLine();
+//        bool UseCameraLagSubstepping = SpringArmComponent->bUseCameraLagSubstepping;
+//        if (ImGui::Checkbox("UseCameraLagSubstepping", &UseCameraLagSubstepping))
+//            SpringArmComponent->bUseCameraLagSubstepping = UseCameraLagSubstepping;
+//        ImGui::Spacing();
+//
+//        // --- Lag speeds / limits ---
+//        ImGui::DragFloat("LocSpeed", &SpringArmComponent->CameraLagSpeed, 0.1f, 0.0f, 100.0f);
+//
+//        ImGui::DragFloat("RotSpeed", &SpringArmComponent->CameraRotationLagSpeed, 0.1f, 0.0f, 100.0f);
+//        //ImGui::NewLine();
+//        ImGui::DragFloat("LagMxStep", &SpringArmComponent->CameraLagMaxTimeStep, 0.005f, 0.0f, 1.0f);
+//        ImGui::SameLine();
+//        ImGui::DragFloat("LogMDist", &SpringArmComponent->CameraLagMaxDistance, 1.0f, 0.0f, 1000.0f);
+//
+//        ImGui::TreePop();
+//    }
+//}
 
 void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp)
 {

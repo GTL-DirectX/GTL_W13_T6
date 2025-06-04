@@ -1,274 +1,259 @@
 #include "SpringArmComponent.h"
-
-#include "Actor.h"
-#include "HAL/PlatformType.h"
-#include "Components/BoxComponent.h"
-#include "Components/SphereComponent.h"
-#include "Engine/OverlapResult.h"
-#include "UObject/UObjectIterator.h"
+#include "GameFramework/Actor.h"
+#include "Camera/CameraComponent.h"
+#include "Launch/EngineLoop.h"
 #include "World/World.h"
+
+static float NormalizeAngle(float Angle)
+{
+	// 360° 단위로 순환
+	float A = FMath::Fmod(Angle, 360.f);
+	return (A < 0.f) ? A + 360.f : A;
+}
 
 USpringArmComponent::USpringArmComponent()
 {
-    // SetRelativeRotation(FRotator(FVector(-3, -14, -5)));
 
-    TargetArmLength = 5.f;
-    TargetOffset = FVector(-13.f, 0.f, 4.f); // 부모에 대한 상대 위치
-
-    bUsePawnControlRotation = true;
-    bDoCollisionTest = false;
-
-    bInheritPitch = bInheritYaw = bInheritRoll = true;
-    bEnableCameraLag = true;
-    bEnableCameraRotationLag = true;
-    bUseCameraLagSubstepping = true;
-
-    ProbeSize = 0.3f;
-    CameraLagSpeed = 10.f;
-    CameraRotationLagSpeed = 10.f;
-    CameraLagMaxTimeStep = 1.f / 60.f;
-    CameraLagMaxDistance = 0.f;
-
-    bAbsoluteRotation = false;
-    
 }
 
-FRotator USpringArmComponent::GetDesiredRotation() const
+UObject* USpringArmComponent::Duplicate(UObject* InOuter)
 {
-    return GetComponentRotation();
+	ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+	NewComponent->TargetArmLength = TargetArmLength;
+	NewComponent->SocketOffset = SocketOffset;
+	NewComponent->MinPitch = MinPitch;
+	NewComponent->MaxPitch = MaxPitch;
+	NewComponent->MinYaw = MinYaw;
+	NewComponent->MaxYaw = MaxYaw;
+	return NewComponent;
 }
 
-FRotator USpringArmComponent::GetTargetRotation() const
+void USpringArmComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 {
-    FRotator DesiredRot = GetDesiredRotation();
-
-    /* bUsePawnControlRotation : 액터의 ViewRotation을 기준으로 삼음 */
-    if (AActor* OwningActor = Cast<AActor>(GetOwner()))
-    {
-        if (bUsePawnControlRotation)
-        {
-            const FRotator ActorViewRoation = OwningActor->GetActorRotation();
-            DesiredRot = ActorViewRoation;
-        }
-    }
-
-    /* 만일 월드 기준 절대 회전 값이 아닌 상대 회전 값을 쓴다면
-     * binheritPitch, bInheritYaw, bInheritRoll를 검사하여
-     * 일부 회전 값만 부모에서 가져오고, 나머지는 본인의 로컬 회전 사용
-     * ex) bInheritYaw == false : 부모의 Yaw 회전 무시하고, 본인의 Yaw 회전 사용
-     */
-    if (!IsUsingAbsoluteRotation())
-    {
-        const FRotator LocalRelativeRotation = GetRelativeRotation();
-        if (!bInheritPitch)
-        {
-            DesiredRot.Pitch = LocalRelativeRotation.Pitch;
-        }
-        if (!bInheritYaw)
-        {
-            DesiredRot.Yaw = LocalRelativeRotation.Yaw;
-        }
-        if (!bInheritRoll)
-        {
-            DesiredRot.Roll = LocalRelativeRotation.Roll;
-        }
-    }
-
-    return DesiredRot;
+	Super::GetProperties(OutProperties);
+	// 카메라의 FOV, AspectRatio, NearClip, FarClip을 OutProperties에 추가
+	OutProperties.Add(TEXT("TargetArmLength"), FString::Printf(TEXT("%f"), TargetArmLength));
+	OutProperties.Add(TEXT("SocketOffset"), *SocketOffset.ToString());
+	OutProperties.Add(TEXT("MinPitch"), FString::Printf(TEXT("%f"), MinPitch));
+	OutProperties.Add(TEXT("MaxPitch"), FString::Printf(TEXT("%f"), MaxPitch));
+	OutProperties.Add(TEXT("MinYaw"), FString::Printf(TEXT("%f"), MinYaw));
+	OutProperties.Add(TEXT("MaxYaw"), FString::Printf(TEXT("%f"), MaxYaw));
 }
 
+void USpringArmComponent::SetProperties(const TMap<FString, FString>& InProperties)
+{// 카메라의 FOV, AspectRatio, NearClip, FarClip을 InProperties에서 읽어와 설정
+	Super::SetProperties(InProperties);
+	const FString* TempStr = nullptr;
+	TempStr = InProperties.Find(TEXT("TargetArmLength"));
+	if (TempStr) TargetArmLength = FCString::Atof(**TempStr);
+	TempStr = InProperties.Find(TEXT("SocketOffset"));
+	if (TempStr) SocketOffset.InitFromString(*TempStr);
+	TempStr = InProperties.Find(TEXT("MinPitch"));
+	if (TempStr) MinPitch = FCString::Atof(**TempStr);
+	TempStr = InProperties.Find(TEXT("MaxPitch"));
+	if (TempStr) MaxPitch = FCString::Atof(**TempStr);
+	TempStr = InProperties.Find(TEXT("MinYaw"));
+	if (TempStr) MinYaw = FCString::Atof(**TempStr);
+	TempStr = InProperties.Find(TEXT("MaxYaw"));
+	if (TempStr) MaxYaw = FCString::Atof(**TempStr);
+}
+
+void USpringArmComponent::InitializeComponent()
+{
+	// !TODO : Input 시스템 찾아서 바인드
+	Super::InitializeComponent();
+
+}
+
+void USpringArmComponent::BeginPlay()
+{
+	// SpringArmComponent는 BeginPlay에서 카메라 찾거나 생성
+	Super::BeginPlay();
+	AActor* Owner = GetOwner();
+	if (Owner == nullptr)
+	{
+		UE_LOG(ELogLevel::Error, TEXT("SpringArmComponent With No Owner"));
+		return;
+	}
+	Camera = Owner->GetComponentByClass<UCameraComponent>();
+	bIsCameraAttached = Camera != nullptr;
+
+	// 에디터에서는 인풋바인딩 하지 않는다
+	UWorld* World = GetWorld();
+	if (World && World->WorldType != EWorldType::Editor)
+	{
+		/*MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddUObject(this, &USpringArmComponent::OnRawMouseInput);*/
+	}
+}
+
+void USpringArmComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (MouseInputHandle.has_value() && MouseInputHandle->IsValid())
+	{
+		/*GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
+		MouseInputHandle.reset();*/
+	}
+}
 
 void USpringArmComponent::TickComponent(float DeltaTime)
 {
-
-    //Super::TickComponent(DeltaTime);
-    UpdateDesiredArmLocation(bDoCollisionTest, bEnableCameraLag, bEnableCameraRotationLag, DeltaTime);
+	Super::TickComponent(DeltaTime);
+	UpdateCameraTransform(DeltaTime);
+	//Camera->LookAt
 }
 
-void USpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLocationLag, bool bDoRotationLag, float DeltaTime)
+void USpringArmComponent::SetTargetArmLength(float InLength)
 {
-    FRotator DesiredRot = GetTargetRotation();
-    //UE_LOG(ELogLevel::Display, TEXT("Target Rotation : %.2f %.2f %.2f"), DesiredRot.Yaw, DesiredRot.Pitch, DesiredRot.Roll);
-
-    /* 회전 지연 여부 검사 및 반영 : bDoRotationLag */
-    /* 서브스텝 분기 및 단일 스텝 분기 (DeltaTime 전체를 여러 LagMaxTimeStep이하 조각으로 나누고, 각 조각마다 RInterTo를 호출 */
-    if (bDoRotationLag)
-    {
-        if (bUseCameraLagSubstepping && DeltaTime > CameraLagMaxTimeStep && CameraLagSpeed > 0.f)
-        {
-            const FRotator ArmRotStep = (DesiredRot - PreviousDesiredRot).GetNormalized() * (1.f / DeltaTime);
-            FRotator LerpTarget = PreviousDesiredRot;
-            float RemainingTime = DeltaTime;
-            while (RemainingTime > KINDA_SMALL_NUMBER)
-            {
-                const float LerpAmount = FMath::Min(CameraLagMaxTimeStep, RemainingTime);
-                LerpTarget += ArmRotStep * LerpAmount;
-                RemainingTime -= LerpAmount;
-
-                DesiredRot = FMath::RInterpTo(PreviousDesiredRot, LerpTarget, LerpAmount, CameraRotationLagSpeed);
-                PreviousDesiredRot = DesiredRot;
-            }
-        }
-        else
-        {
-            DesiredRot = FMath::RInterpTo(PreviousDesiredRot, DesiredRot, DeltaTime, CameraRotationLagSpeed);
-        }
-    }
-    PreviousDesiredRot = DesiredRot;
-
-    /* 위치 지연 여부 검사 및 반영 : bDoLocationLag */
-    
-
-    /* 카메라 포지션으로부터 회전을 반영한 TargetOffset 만큼 떨어짐  */
-    FVector RotatedOffset = DesiredRot.RotateVector(TargetOffset);
-    FVector ArmOrigin = GetOwner()->GetActorLocation() + RotatedOffset;
-    FVector DesiredLoc = ArmOrigin;
-
-
-    if (bDoLocationLag)
-    {
-        if (bUseCameraLagSubstepping && DeltaTime > CameraLagMaxTimeStep && CameraLagSpeed > 0.f)
-        {
-            const FVector ArmMovementStep = (DesiredLoc - PreviousDesiredLoc) * (1.f / DeltaTime);
-            FVector LerpTarget = PreviousDesiredLoc;
-
-            float RemainingTime = DeltaTime;
-            while (RemainingTime > KINDA_SMALL_NUMBER)
-            {
-                const float LerpAmount = FMath::Min(CameraLagMaxTimeStep, RemainingTime);
-                LerpTarget += ArmMovementStep * LerpAmount;
-                RemainingTime -= LerpAmount;
-
-                DesiredLoc = FMath::VInterpTo(PreviousDesiredLoc, LerpTarget, LerpAmount, CameraLagSpeed);
-                PreviousDesiredLoc = DesiredLoc;
-            }
-        }
-        else
-        {
-            DesiredLoc = FMath::VInterpTo(PreviousDesiredLoc, DesiredLoc, DeltaTime, CameraLagSpeed);
-        }
-    }
-    //PreviousArmOrigin = ArmOrigin;
-    //PreviousDesiredLoc = DesiredLoc; // 예외 처리일라나?
-
-    DesiredLoc -= DesiredRot.ToVector() * TargetArmLength;
-    //DesiredLoc += FMatrix::GetRotationMatrix(DesiredRot).TransformVector(SocketOffset); // [unused] 로컬 공간 오프셋 추가
-
-    //FTransform WorldCamTM;
-    // 반영 및 child transform 반영
-
-
-    FVector ResultLoc;
-    /* 충돌 검사 및 암 길이 줄일지 여부 결정 : bDoTrace */
-    if (bDoTrace)
-    {
-        FVector RayStart = GetOwner()->GetActorLocation() + FVector(0,0, TargetOffset.Z);
-        FVector RayEnd = ArmOrigin + FVector(0, 0, TargetOffset.Z);
-        FVector RayDelta = RayEnd - RayStart;
-        float RayLen = RayDelta.Length();
-
-        if (RayLen < KINDA_SMALL_NUMBER)
-        {
-            ResultLoc = DesiredLoc;
-        }
-        else
-        {
-            FVector RayDir = RayDelta / RayLen;
-            //UE_LOG(ELogLevel::Error, "Ray direction : %.2f %.2f %.2f", RayDir.X, RayDir.Y, RayDir.Z);
-            bool bHitSomething = false;
-            float ClosestT = 1.f;               // 가중치 (0: 시작점, 1: 끝점)
-            FVector BestHitWorld = DesiredLoc;
-
-            for (UBoxComponent* BoxComp : TObjectRange<UBoxComponent>())
-            {
-                if (BoxComp->GetOwner() == GetOwner()) { continue; }
-
-                float t;
-                if (RaySweepBox(
-                    RayStart,
-                    RayDir,
-                    RayLen,
-                    BoxComp->GetWorldMatrix(),
-                    BoxComp->GetBoxExtent(),
-                    ProbeSize,
-                    t))
-                {
-                    if (t < ClosestT)
-                    {
-                        ClosestT = t;
-                        bHitSomething = true;
-                        BestHitWorld = RayStart + RayDir * (t * RayLen - ProbeSize);
-                        // 실제 충돌 지점으로 BestHitWorld 위치 조정
-                    }
-                }
-            }
-
-            if (bHitSomething)
-            {
-                ResultLoc = BlendLocations(DesiredLoc, BestHitWorld, bHitSomething, DeltaTime);
-            }
-            else
-            {
-                ResultLoc = DesiredLoc;
-            }
-
-        }
-    }
-    else
-    {
-        ResultLoc = DesiredLoc;
-    }
-
-    //UE_LOG(ELogLevel::Display, TEXT("Result Location : %.2f %.2f %.2f"), ResultLoc.X, ResultLoc.Y, ResultLoc.Z);
-    SetWorldLocation(ResultLoc);
-    SetWorldRotation(DesiredRot);
+	TargetArmLength = InLength;
 }
 
-FVector USpringArmComponent::BlendLocations(const FVector& DesiredArmLocation, const FVector& TraceHitLocation, bool bHitSomething, float DeltaTime)
+float USpringArmComponent::GetTargetArmLength() const
 {
-    return bHitSomething ? TraceHitLocation : DesiredArmLocation;
+	return TargetArmLength;
+}
+
+void USpringArmComponent::SetSocketOffset(const FVector& InOffset)
+{
+	SocketOffset = InOffset;
+}
+
+FVector USpringArmComponent::GetSocketOffset() const
+{
+	return SocketOffset;
+}
+
+FVector USpringArmComponent::GetCameraForwardVector()
+{
+	if (Camera)
+	{
+		FVector CameraForwardVector = Camera->GetForwardVector();
+		CameraForwardVector.Z = 0;
+		CameraForwardVector.Normalize();
+		return CameraForwardVector;
+	}
+	return GetForwardVector(); // 카메라가 없을 경우 기본값 반환
+}
+
+FVector USpringArmComponent::GetCameraRightVector()
+{
+	if (Camera)
+	{
+		FVector CameraRightVector = Camera->GetRightVector();
+		CameraRightVector.Z = 0;
+		CameraRightVector.Normalize();
+		return CameraRightVector;
+	}
+	return GetRightVector(); // 카메라가 없을 경우 기본값 반환
+}
+
+void USpringArmComponent::AttachCamera(UCameraComponent* InCamera)
+{
+	if (InCamera == nullptr)
+		return;
+
+	if (Camera != InCamera)
+	{
+		//원래 카메라와 다른 카메라가 들어오면 기존 카메라 날리고 새로운 카메라로 세팅
+		GetOwner()->RemoveOwnedComponent(Camera);
+		// !TODO : 기존재하는 컴포넌트를 액터에 붙이는 API 필요함
+		//GetOwner()->AddComponent(InCamera);
+		//Camera = InCamera;
+
+		//Camera->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+	}
+
+	bIsCameraAttached = true;
+}
+
+void USpringArmComponent::DetachCamera()
+{
+	// 플래그만 false처리해주고, 원래 카메라 참조는 유지
+	bIsCameraAttached = false;
+}
+
+void USpringArmComponent::OnRawMouseInput(const FPointerEvent& InEvent)
+{
+	FVector2D MouseDelta = InEvent.GetCursorDelta();
+	HandleRotation(MouseDelta);
+}
+
+void USpringArmComponent::OnRawJoyStickYawInput(float DeltaTime)
+{
+	HandleRotation(DeltaTime);
+}
+
+/* 상하 */
+void USpringArmComponent::OnRawJoyStickPitchInput(float DeltaTime)
+{
+	HandleRotation(DeltaTime);
+}
+
+void USpringArmComponent::HandleRotation(const FVector2D& Vector)
+{
+	if (!Camera)
+		return;
+	//return;
+	float yaw = Vector.X;
+	float pitch = Vector.Y;
+
+	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
+	CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);
+}
+
+void USpringArmComponent::HandleYawRotation(float YawDeltaTime)
+{
+	if (!Camera)
+		return;
+	//return;
+	float yaw = YawDeltaTime * 1000.f;
+	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", YawDeltaTime);
+
+	//CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);
+	/*CurrentYawAngle = FMath::Clamp(CurrentYawAngle + yaw / 10.f, MinYaw, MaxYaw);*/
+
+	float YawInput = YawDeltaTime * 1000.f;
+	CurrentYawAngle += YawInput / 10.f;
+	//CurrentYawAngle = NormalizeAngle(CurrentYawAngle + YawInput / 10.f);
+}
+
+void USpringArmComponent::HandlePitchRotation(float PitchDeltaTime)
+{
+	if (!Camera)
+		return;
+
+	/*float pitch = PitchDeltaTime * -1000.f;
+	UE_LOG(ELogLevel::Error, "Pitch Delta : %.5f", PitchDeltaTime);
+	CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, MinPitch, MaxPitch);*/
+	float PitchInput = PitchDeltaTime * -1000.f;
+	CurrentPitchAngle += PitchInput / 10.f;
+	//CurrentPitchAngle = NormalizeAngle(CurrentPitchAngle + PitchInput / 10.f);
 }
 
 
-bool USpringArmComponent::RaySweepBox(const FVector& Start, const FVector& Dir,
-                                      float MaxDist, const FMatrix& BoxMatrix,
-                                      const FVector& BoxExtents, float ProbeRadius, float& OutT)       // 0~1
+
+void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
 {
-    // 1) OBB 를 Probe만큼 확장한 AABB 로 변환
-    FVector Extents = BoxExtents + FVector(ProbeRadius);
+	AActor* Owner = GetOwner();
+	if (!Owner || !Camera || !bIsCameraAttached)
+		return;
 
-    // 2) 월드→박스 로컬
-    FMatrix InvBox = FMatrix::Inverse(BoxMatrix);
-    FVector LocalStart = InvBox.TransformPosition(Start);
-    FVector LocalDir = FMatrix::TransformVector(Dir, InvBox);
+	FVector BaseLocation = Owner->GetActorLocation();
 
-    // 3) 슬랩(slab) Ray‐AABB
-    float tMin = 0.f, tMax = MaxDist;
-    for (int i = 0;i < 3;++i)
-    {
-        float origin = LocalStart[i];
-        float dir = LocalDir[i];
-        float e = Extents[i];
-        if (FMath::Abs(dir) < SMALL_NUMBER)
-        {
-            if (origin < -e || origin > e)
-                return false;
-        }
-        else
-        {
-            float invD = 1.f / dir;
-            float t1 = (-e - origin) * invD;
-            float t2 = (e - origin) * invD;
-            if (t1 > t2) std::swap(t1, t2);
-            tMin = FMath::Max(tMin, t1);
-            tMax = FMath::Min(tMax, t2);
-            if (tMin > tMax) return false;
-        }
-    }
+	// 회전 계산: Owner 기준으로 Yaw, Pitch 적용
+	FRotator CameraRotation(0.f, CurrentYawAngle, 0.f); // Yaw만 먼저 적용
+	FVector YawDirection = CameraRotation.ToVector(); // Forward 벡터
 
-    if (tMin < 0.f || tMin > MaxDist)
-        return false;
+	FVector OffsetFromOwner =
+		-YawDirection * TargetArmLength * FMath::Cos(FMath::DegreesToRadians(CurrentPitchAngle)) +
+		FVector(0, 0, FMath::Sin(FMath::DegreesToRadians(CurrentPitchAngle)) * TargetArmLength);
 
-    OutT = tMin / MaxDist;
-    return true;
+	FVector DesiredLocation = BaseLocation + OffsetFromOwner + SocketOffset;
+	TargetLocation = FMath::Lerp(DesiredLocation, TargetLocation, DeltaTime);
+
+	FVector LookDirection = BaseLocation - TargetLocation;
+	LookDirection.Normalize();
+	FRotator TargetLookRotation = FRotator::MakeLookAtRotation(TargetLocation,BaseLocation);
+
+	Camera->SetWorldLocation(TargetLocation);
+	Camera->SetWorldRotation(TargetLookRotation);
 }

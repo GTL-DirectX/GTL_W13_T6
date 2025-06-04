@@ -222,6 +222,15 @@ bool FQuat::ContainsNaN() const
     return FMath::IsNaN(X) || FMath::IsNaN(Y) || FMath::IsNaN(Z) || FMath::IsNaN(W);
 }
 
+FVector FQuat::GetForwardVector() const
+{
+    return RotateVector(FVector::ForwardVector);
+}
+FVector FQuat::GetRightVector() const
+{
+    return RotateVector(FVector::RightVector);
+}
+
 FQuat FQuat::Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp)
 {
     // Get cosine of angle between quats.

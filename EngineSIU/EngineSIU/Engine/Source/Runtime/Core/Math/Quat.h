@@ -128,6 +128,8 @@ public:
     }
 
     bool ContainsNaN() const;
+    FVector GetForwardVector() const;
+    FVector GetRightVector() const;
 
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
 

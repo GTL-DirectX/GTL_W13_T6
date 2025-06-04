@@ -14,6 +14,7 @@
 #include "Engine/Contents/Weapons/WeaponComponent.h"
 #include "UObject/Casts.h"
 #include "Player.h"
+#include "Engine/EditorEngine.h"
 
 class ULuaScriptAnimInstance;
 
@@ -36,7 +37,7 @@ UObject* AMonster::Duplicate(UObject* InOuter)
 
 void AMonster::PostSpawnInitialize()
 {
-    TargetDistributionVector = FDistributionVector(FVector(-140.0f, -140.0f, 0.0f), FVector(140.0f, 140.0f, 0.f));
+    TargetDistributionVector = FDistributionVector(FVector(-110.0f, -110.0f, 0.0f), FVector(110.0f, 110.0f, 0.f));
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
 
@@ -128,7 +129,9 @@ void AMonster::AddAnimNotifies()
     }
     int32 NewNotifyIndex = INDEX_NONE;
     float NotifyTime = 0.9f;
-    bool bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
+    bool bAdded = 
+        
+        LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex);
     /*NotifyTime = 0.0f;
     bAdded = LandingAnimSeq->AddDelegateNotifyEventAndBind<AMonster>( TrackIdx, NotifyTime, this, &AMonster::OnToggleLanding, NewNotifyIndex );*/
 
@@ -175,15 +178,17 @@ void AMonster::AddAnimNotifies()
     NotifyTime = 0.3f;
     bAdded = RoaringAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnPlayRoaringSound, NewNotifyIndex);
 
-    if (bAdded)
+
+    UAnimSequenceBase* DeadAnimSeq = StateToAnimSequence["Dead"];
+    TrackIdx = UAnimSequenceBase::EnsureNotifyTrack(DeadAnimSeq, FName(TEXT("Default")));
+    if (TrackIdx == INDEX_NONE)
     {
-        printf("[Monster] DelegateNotify 추가 성공: 트랙=%d, 시간=%.3f, 인덱스=%d\n",
-            TrackIdx, NotifyTime, NewNotifyIndex);
+        return;
     }
-    else
-    {
-        printf("[Monster] DelegateNotify 추가 실패\n");
-    }
+    NewNotifyIndex = INDEX_NONE;
+    NotifyTime = 0.95f;
+    bAdded = DeadAnimSeq->AddDelegateNotifyEventAndBind<AMonster>(TrackIdx, NotifyTime, this, &AMonster::OnToggleDead, NewNotifyIndex);
+
 
 
 
@@ -239,6 +244,7 @@ void AMonster::OnDamaged(FVector KnockBackDir)
 void AMonster::UpdateTargetPosition()
 {
     TargetPos = TargetDistributionVector.GetValue();
+    TargetDir = TargetPos - GetActorLocation();
 }
 
 void AMonster::AttatchParticleComponent()
@@ -303,6 +309,19 @@ void AMonster::Tick(float DeltaTime)
         bIsLanding = true;
         bFalling = false;
         // bLandEnded는 아직 false, Notify가 붙어 있는 애니메이션이 끝날 때까지 기다린다.
+    }
+
+    if (bDead == false && bIsChasing)
+    {
+        if (TargetDir.Length() < 5.0f)
+        {
+            UpdateTargetPosition();
+        }
+        if (GetCapsuleComponent() && GetCapsuleComponent()->BodyInstance)
+        {
+            auto* CapsuleComp = GetCapsuleComponent();
+            CapsuleComp->BodyInstance->AddForce(TargetDir * ChaseSpeed);
+        }
     }
 }
 
@@ -409,3 +428,18 @@ void AMonster::OnToggleHit(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
     UE_LOG(ELogLevel::Display, TEXT("Monster Name : %s"), *GetName());
 }
 
+
+void AMonster::OnToggleDead(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+{
+    if (MeshComp != SkeletalMeshComponent)
+    {
+        return;
+    }
+    bFallingToDeath = true; // Hit 상태 해제
+    UE_LOG(ELogLevel::Error, TEXT("Monster Dead Name : %s"), *GetName());
+    //Destroy();
+    UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    /*Engine->ActiveWorld->DestroyActor(this);*/
+    //OwnedComponents.Remove(LuaScriptComponent);
+    bActorIsBeingDestroyed = true;
+}
