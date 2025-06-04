@@ -33,9 +33,9 @@ void UWeaponComponent::Attack()
 
 void UWeaponComponent::FinishAttack()
 {
+    bIsAttacking = false;
     if (OwnerCharacter && OwnerCharacter->GetState() < static_cast<int>(EPlayerState::Stun))
     {
-        bIsAttacking = false;
         OwnerCharacter->SetState(static_cast<int>(EPlayerState::Idle));
     }
 }
