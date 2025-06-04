@@ -17,7 +17,7 @@ public:
     virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 public:
-    /** 코드에서 이 Notify에 바인딩할 수 있는 델리게이트 */
+    /** 이 Notify에 바인딩할 수 있는 델리게이트 */
     FOnAnimNotify OnNotifyTriggered;
 };
 

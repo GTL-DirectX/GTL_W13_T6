@@ -57,6 +57,10 @@ void UMeleeWeaponComponent::ComponentBeginOverlap(UPrimitiveComponent* Overlappe
         if (AMonster* Monster = Cast<AMonster>(OtherActor))
         {
             FVector DamageDir = OtherActor->GetActorLocation() - GetComponentLocation();
+            if (Monster->IsActorBeingDestroyed())
+            {
+                return;
+            }
             Monster->OnDamaged(DamageDir);
         }
         else if (APlayer* OtherPlayer = Cast<APlayer>(OtherActor))

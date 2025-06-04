@@ -80,6 +80,10 @@ void FShadowRenderPass::PrepareRenderArr()
 
     for (const auto Iter : TObjectRange<USkeletalMeshComponent>())
     {
+        if (Iter->GetOwner()->IsActorBeingDestroyed())
+        {
+            continue;
+        }
         if (Iter->GetWorld() != GEngine->ActiveWorld)
         {
             continue;
