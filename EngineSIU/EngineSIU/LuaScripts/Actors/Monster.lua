@@ -98,8 +98,14 @@ function ReturnTable:BeginPlay()
 
     print("Monster BeginPlay ", self.Name) -- Table에 등록해 준 Name 출력.
     
+    local this = self.this
+
+
     self.CurrentTime = 0
     self.this.KnockBackExp = 1
+
+    this.KnockBackPower = 2000
+    this.KnockBackExp = 1
 
 end
 

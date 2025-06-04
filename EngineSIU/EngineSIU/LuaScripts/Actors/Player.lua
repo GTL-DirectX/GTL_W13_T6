@@ -29,7 +29,7 @@ function ReturnTable:BeginPlay()
     this.MaxSpeed = 100000
     this.RawSpeed = 150
     this.PitchSpeed = 100
-    this.MaxStunGauge = 20
+    this.MaxStunGauge = 40
     this.KnockBackPower = 1000
     this.KnockBackExp = 1
     
