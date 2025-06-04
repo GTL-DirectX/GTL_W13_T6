@@ -19,6 +19,8 @@ AnimFSM = {
         elseif State == 2 then
             self.current = "Contents/Player_3TTook/Armature|Player_Walk"
             self.BlendTime = 0.5
+        elseif State == 4 then
+            self.current = "Contents/Player_3TTook/Armature|Player_Stunned"
         elseif State == 5 then
             self.current = "Contents/Player_3TTook/Armature|Armature|Armature|Head_Hit"
         end

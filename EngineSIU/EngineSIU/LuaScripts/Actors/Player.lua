@@ -146,7 +146,8 @@ function ReturnTable:KnockBack(KnockBackDir)
     print(this.KnockBackPower, this.KnockBackExp)
 
     this.Velocity = FVector(KnockBackDir.X * this.KnockBackPower * this.KnockBackExp, KnockBackDir.Y * this.KnockBackPower * this.KnockBackExp,
-        KnockBackDir.Z * this.KnockBackPower * this.KnockBackExp)
+        0.01 * this.KnockBackPower * this.KnockBackExp)
+        -- fixed : KnockBackDir.Z into 0.01
 
     self.KnockBackCoroutine = coroutine.create(function()
         -- 넉백 시작

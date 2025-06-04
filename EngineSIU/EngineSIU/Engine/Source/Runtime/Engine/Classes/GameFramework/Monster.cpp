@@ -1,5 +1,6 @@
 #include "Monster.h"
 
+#include "PhysicsManager.h"
 #include "Animation/AnimSequence.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Contents/AnimInstance/LuaScriptAnimInstance.h"
@@ -37,7 +38,7 @@ UObject* AMonster::Duplicate(UObject* InOuter)
 
 void AMonster::PostSpawnInitialize()
 {
-    TargetDistributionVector = FDistributionVector(FVector(-110.0f, -110.0f, 0.0f), FVector(110.0f, 110.0f, 0.f));
+    TargetDistributionVector = FDistributionVector(FVector(-70.0f, -70.0f, 0.0f), FVector(70.0f, 70.0f, 0.f));
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
 
@@ -320,7 +321,13 @@ void AMonster::Tick(float DeltaTime)
         if (GetCapsuleComponent() && GetCapsuleComponent()->BodyInstance)
         {
             auto* CapsuleComp = GetCapsuleComponent();
-            CapsuleComp->BodyInstance->AddForce(TargetDir * ChaseSpeed);
+            PxVec3 currentVelocity = CapsuleComp->BodyInstance->BIGameObject->DynamicRigidBody->getLinearVelocity();
+            float currentSpeed = currentVelocity.magnitude();
+            UE_LOG(ELogLevel::Display, TEXT("Current Speed: %f"), currentSpeed);
+            if (currentSpeed <= 60.f)
+            {
+                CapsuleComp->BodyInstance->AddForce(TargetDir * ChaseSpeed);
+            }
         }
     }
 }

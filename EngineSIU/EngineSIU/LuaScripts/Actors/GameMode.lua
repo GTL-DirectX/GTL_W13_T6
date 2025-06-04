@@ -10,7 +10,7 @@ local FRotator = EngineTypes.FRotator
 
 local SpawnRate = 5.0                  -- 초 단위, 몬스터 생성 주기
 local ElapsedTimeSinceLastSpawn = 0.0   -- 누적 시간 트래킹
-local MaxMonsterCount = 10
+local MaxMonsterCount = 20
 local GameStart = false
 -- BeginPlay: Actor가 처음 활성화될 때 호출
 function ReturnTable:BeginPlay()
