@@ -114,7 +114,7 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
-    this.KnockBackExp = this.KnockBackExp * 1.2
+    this.KnockBackExp = this.KnockBackExp * 1.5
     this.State = 5
     
     print("OnDamaged 실행")
