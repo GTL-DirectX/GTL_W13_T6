@@ -104,7 +104,7 @@ function ReturnTable:BeginPlay()
     self.CurrentTime = 0
     self.this.KnockBackExp = 1
 
-    this.KnockBackPower = 2000
+    this.KnockBackPower = 5000
     this.KnockBackExp = 1
 
 end
@@ -163,7 +163,7 @@ function ReturnTable:OnDamaged(KnockBackDir)
     if this.State >= 5 then return end
     
     this.StunGauge = this.StunGauge + 10
-    this.KnockBackExp = this.KnockBackExp * 4
+    this.KnockBackExp = this.KnockBackExp * 2.5
     this.State = 5
     
     print("OnDamaged 실행", KnockBackDir.X, KnockBackDir.Y, KnockBackDir.Z)
