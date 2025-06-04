@@ -39,23 +39,20 @@ void APlayer::PostSpawnInitialize()
     Super::PostSpawnInitialize();
     LuaScriptComponent->SetScriptName(ScriptName);
 
-    SpringArmComponent = AddComponent<USpringArmComponent>("SpringArmComponent");
-    SpringArmComponent->SetTargetArmLength(37.8f);
-    SpringArmComponent->SetSocketOffset(FVector(0, 14, 25.3));
-    SpringArmComponent->SetupAttachment(RootComponent);
+    // SpringArmComponent = AddComponent<USpringArmComponent>("SpringArmComponent");
+    // SpringArmComponent->SetTargetArmLength(37.8f);
+    // SpringArmComponent->SetSocketOffset(FVector(0, 14, 25.3));
+    // SpringArmComponent->SetupAttachment(RootComponent);
+    // CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
+    // CameraComponent->SetupAttachment(SpringArmComponent);
+
+
+
     CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
-    CameraComponent->SetupAttachment(SpringArmComponent);
-
-
-
-    /*CameraComponent = AddComponent<UCameraComponent>("CameraComponent");
     CameraComponent->SetRelativeLocation(FVector(-20,0,20));
     CameraComponent->SetRelativeRotation(FRotator(-40,0,0));
-    CameraComponent->SetupAttachment(RootComponent);*/
-    // CameraComponent->SetRelativeLocation(FVector(-20, 0, 20));
-    // CameraComponent->SetRelativeRotation(FRotator(-40, 0, 0));
-    // CameraComponent->SetupAttachment(RootComponent);
-
+    CameraComponent->SetupAttachment(RootComponent);
+    
     SkeletalMeshComponent->SetSkeletalMeshAsset(UAssetManager::Get().GetSkeletalMesh(FName("Contents/Player_3TTook/Player_Running")));
     SkeletalMeshComponent->SetStateMachineFileName(StateMachineFileName);
 
@@ -154,8 +151,8 @@ void APlayer::SetupInputComponent(UInputComponent* PlayerInputComponent)
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickY, [this](float DeltaTime) { MoveForward(DeltaTime); });
         PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::LeftStickX, [this](float DeltaTime) { MoveRight(DeltaTime); });
 
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { SpringArmComponent->HandleYawRotation(DeltaTime); });
-        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { SpringArmComponent->HandlePitchRotation(DeltaTime); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickX, [this](float DeltaTime) { RotateYaw(DeltaTime); });
+        PlayerInputComponent->BindControllerAnalog(EXboxAnalog::Type::RightStickY, [this](float DeltaTime) { RotatePitch(DeltaTime); });
 
         PlayerInputComponent->BindControllerButton(XINPUT_GAMEPAD_START, [this](float) { StartGame(); });
 
@@ -184,8 +181,8 @@ void APlayer::MoveForward(float DeltaTime)
     const FQuat RotationQuat = FQuat(PhysXTransform.q.x, PhysXTransform.q.y, PhysXTransform.q.z, PhysXTransform.q.w);
     FVector ForwardVector = RotationQuat.GetForwardVector();
 
-    Velocity += ForwardVector * Acceleration * DeltaTime;
-    // Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
+    // Velocity += ForwardVector * Acceleration * DeltaTime;
+    Velocity += GetActorForwardVector() * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)
     {
@@ -193,7 +190,7 @@ void APlayer::MoveForward(float DeltaTime)
         Velocity = Velocity.GetSafeNormal() * MaxSpeed;
     }
 
-    UpdateFacingRotation(DeltaTime);
+    //UpdateFacingRotation(DeltaTime);
     //if (PlayerState >= EPlayerState::Attacking)
     //{
     //    return;
@@ -212,25 +209,25 @@ void APlayer::MoveForward(float DeltaTime)
 
 void APlayer::MoveRight(float DeltaTime)
 {
-    if (PlayerState >= EPlayerState::Attacking || !GetCapsuleComponent())
-    {
-        return;
-    }
+    // if (PlayerState >= EPlayerState::Attacking || !GetCapsuleComponent())
+    // {
+    //     return;
+    // }
+    //
+    // FBodyInstance* BodyInstance = GetCapsuleComponent()->BodyInstance;
+    // if (!BodyInstance || !BodyInstance->BIGameObject || !BodyInstance->BIGameObject->DynamicRigidBody)
+    // {
+    //     return;
+    // }
 
-    FBodyInstance* BodyInstance = GetCapsuleComponent()->BodyInstance;
-    if (!BodyInstance || !BodyInstance->BIGameObject || !BodyInstance->BIGameObject->DynamicRigidBody)
-    {
-        return;
-    }
-
-    PxRigidDynamic* RigidBody = BodyInstance->BIGameObject->DynamicRigidBody;
-
-    // PhysX → Unreal 회전 정보
-    const PxTransform PhysXTransform = RigidBody->getGlobalPose();
-    const FQuat RotationQuat = FQuat(PhysXTransform.q.x, PhysXTransform.q.y, PhysXTransform.q.z, PhysXTransform.q.w);
-    FVector RightVector = RotationQuat.GetRightVector(); // 오른쪽 방향 추출
-
-    Velocity += RightVector * Acceleration * DeltaTime;
+    // PxRigidDynamic* RigidBody = BodyInstance->BIGameObject->DynamicRigidBody;
+    //
+    // // PhysX → Unreal 회전 정보
+    // const PxTransform PhysXTransform = RigidBody->getGlobalPose();
+    // const FQuat RotationQuat = FQuat(PhysXTransform.q.x, PhysXTransform.q.y, PhysXTransform.q.z, PhysXTransform.q.w);
+    // FVector RightVector = RotationQuat.GetRightVector(); // 오른쪽 방향 추출
+    //
+    // Velocity += RightVector * Acceleration * DeltaTime;
 
     if (MoveSpeed > MaxSpeed)
     {
@@ -238,19 +235,19 @@ void APlayer::MoveRight(float DeltaTime)
         Velocity = Velocity.GetSafeNormal() * MaxSpeed;
     }
 
-    /*if (PlayerState >= EPlayerState::Attacking)
-    {
-        return;
-    }
+     if (PlayerState >= EPlayerState::Attacking)
+     {
+         return;
+     }
 
-    Velocity += GetActorRightVector() * Acceleration * DeltaTime;
+     Velocity += GetActorRightVector() * Acceleration * DeltaTime;
 
-    if (MoveSpeed > MaxSpeed)
-    {
-        MoveSpeed = MaxSpeed;
-        Velocity.Normalize()* MaxSpeed;
-    }*/
-    UpdateFacingRotation(DeltaTime);
+     if (MoveSpeed > MaxSpeed)
+     {
+         MoveSpeed = MaxSpeed;
+         Velocity.Normalize()* MaxSpeed;
+     }
+    //UpdateFacingRotation(DeltaTime);
 }
 void APlayer::UpdateFacingRotation(float DeltaTime)
 {
